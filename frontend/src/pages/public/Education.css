@@ -1,0 +1,774 @@
+/* ==========================================================================
+   Panchpokhari Thangpal Rural Municipality - Public Education Portal
+   Design System: Modern Municipal Glassmorphism, Nepal Gov Colors & A4 Print
+   ========================================================================== */
+
+.public-education-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 18%, #f1f5f9 100%);
+  color: #1e293b;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding-bottom: 4rem;
+}
+
+/* ── 1. TOP INFORMATION BANNER STRIP ─────────────────────────────────────── */
+.edu-info-strip {
+  background: linear-gradient(90deg, #1e3a8a 0%, #0369a1 50%, #0d9488 100%);
+  color: #ffffff;
+  padding: 0.65rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.82rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.edu-info-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.edu-badge-pulsing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.edu-info-strip-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.edu-strip-link {
+  color: #f8fafc;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.edu-strip-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+/* ── 2. HERO SECTION ─────────────────────────────────────────────────────── */
+.edu-hero {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 1.5rem 1.5rem;
+}
+
+.edu-hero-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.edu-title-group h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.4rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.edu-title-group p {
+  color: #475569;
+  font-size: 1.05rem;
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.edu-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.edu-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.edu-btn-primary {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+}
+
+.edu-btn-primary:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.edu-btn-outline {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.edu-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* ── 3. KPI STATS GRID ───────────────────────────────────────────────────── */
+.edu-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.edu-stat-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.edu-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.edu-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.edu-stat-card.blue::before { background: #0284c7; }
+.edu-stat-card.emerald::before { background: #10b981; }
+.edu-stat-card.purple::before { background: #8b5cf6; }
+.edu-stat-card.amber::before { background: #f59e0b; }
+.edu-stat-card.teal::before { background: #0d9488; }
+.edu-stat-card.indigo::before { background: #4f46e5; }
+
+.edu-stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.edu-stat-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.edu-stat-icon-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edu-stat-card.blue .edu-stat-icon-wrapper { background: #e0f2fe; color: #0284c7; }
+.edu-stat-card.emerald .edu-stat-icon-wrapper { background: #d1fae5; color: #059669; }
+.edu-stat-card.purple .edu-stat-icon-wrapper { background: #ede9fe; color: #7c3aed; }
+.edu-stat-card.amber .edu-stat-icon-wrapper { background: #fef3c7; color: #d97706; }
+.edu-stat-card.teal .edu-stat-icon-wrapper { background: #ccfbf1; color: #0d9488; }
+.edu-stat-card.indigo .edu-stat-icon-wrapper { background: #e0e7ff; color: #4338ca; }
+
+.edu-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+
+.edu-stat-subtext {
+  font-size: 0.78rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ── 4. FILTER DOCK & SEARCH ─────────────────────────────────────────────── */
+.edu-filter-dock {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  margin-bottom: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edu-filter-dock-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.edu-search-bar {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.edu-search-bar input {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 0.9rem;
+  color: #0f172a;
+  transition: all 0.2s;
+}
+
+.edu-search-bar input:focus {
+  outline: none;
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.edu-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.edu-search-clear {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.edu-search-clear:hover {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.edu-view-toggle {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.edu-view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.edu-view-toggle-btn.active {
+  background: #ffffff;
+  color: #0284c7;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Filter Badges Strip */
+.edu-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.edu-filter-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  margin-right: 0.35rem;
+}
+
+.edu-pill-filter {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edu-pill-filter:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.edu-pill-filter.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+.edu-facility-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #334155;
+  background: #f8fafc;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.edu-facility-checkbox:hover {
+  background: #e2e8f0;
+}
+
+.edu-facility-checkbox.checked {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+  font-weight: 600;
+}
+
+/* ── 5. SCHOOL CARDS GRID ────────────────────────────────────────────────── */
+.edu-schools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.edu-school-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edu-school-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+  border-color: #cbd5e1;
+}
+
+.edu-card-head {
+  padding: 1.15rem 1.25rem 0.85rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.edu-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.edu-badge-level {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+}
+
+.edu-badge-level.sec {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.edu-badge-level.basic {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.edu-badge-emis {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.edu-badge-ward {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #b45309;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  margin-left: auto;
+}
+
+.edu-school-name-nep {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.2rem 0;
+  line-height: 1.35;
+}
+
+.edu-school-name-en {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.edu-school-location {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+/* Card Body Metrics */
+.edu-card-body {
+  padding: 1rem 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.edu-card-metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.edu-card-metric-item .label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.edu-card-metric-item .val {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Facility Badges Row */
+.edu-card-facilities-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.edu-facility-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.edu-facility-chip.available {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+/* Card Footer Actions */
+.edu-card-footer {
+  padding: 0.85rem 1.25rem;
+  background: #fafafa;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.edu-btn-report {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edu-btn-report:hover {
+  background: #0369a1;
+}
+
+.edu-btn-portal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.edu-btn-portal:hover {
+  background: #ecfdf5;
+}
+
+/* ── 6. SCHOOLS TABLE VIEW ───────────────────────────────────────────────── */
+.edu-table-container {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  overflow-x: auto;
+  margin-bottom: 2.5rem;
+}
+
+.edu-schools-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.edu-schools-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.edu-schools-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.edu-schools-table tr:hover {
+  background: #f8fafc;
+}
+
+/* ── 7. WARD STATS COMPARISON SECTION ────────────────────────────────────── */
+.edu-section {
+  max-width: 1280px;
+  margin: 0 auto 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.edu-section-head {
+  margin-bottom: 1.25rem;
+}
+
+.edu-section-head h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.35rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edu-section-head p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.edu-ward-table-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  overflow-x: auto;
+}
+
+/* ── 8. CITIZEN PROGRAMS & SERVICES ──────────────────────────────────────── */
+.edu-programs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.edu-program-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.edu-program-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.edu-program-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.edu-program-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+
+.edu-program-card p {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 1rem 0;
+}
+
+.edu-program-highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.edu-program-highlights li {
+  font-size: 0.78rem;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+/* ── 9. RESPONSIVE BREAKPOINTS ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .edu-hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .edu-title-group h1 {
+    font-size: 1.75rem;
+  }
+  .edu-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .edu-schools-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .edu-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

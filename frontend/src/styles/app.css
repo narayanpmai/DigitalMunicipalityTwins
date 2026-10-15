@@ -1,0 +1,399 @@
+/* Modern Municipal Digital Twins Design System */
+:root {
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #e0f2fe;
+  --gov-primary: #0F4C81;
+  --gov-primary-hover: #0A3660;
+  --gov-primary-light: #EBF3FA;
+  --gov-primary-border: #BCD5EB;
+  --secondary: #475569;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --font-nepali: 'Noto Sans Devanagari', sans-serif;
+  --font-latin: 'Outfit', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-latin), var(--font-nepali), system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--background);
+}
+
+.page-body {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 1.25rem 1.75rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.page-body > div,
+.page-body [style*="1440px"],
+.page-body .sifaris-container,
+.page-body .sifaris-content-card,
+.page-body .eoffice-container,
+.page-body .eoffice-content-card,
+.page-body .mdm-container,
+.page-body .mdm-content-card,
+.page-body .project-container,
+.page-body .project-content-card,
+.page-body .ebps-container,
+.page-body .ebps-content-card,
+.page-body .dashboard-container,
+.page-body .dashboard-grid,
+.page-body .twin-container,
+.page-body .twin-content-card,
+.page-body .ai-container,
+.page-body .ai-layout {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════════
+   PUBLIC PORTAL FLUID FULL-WIDTH LAYOUT (Eliminate Empty Left & Right Gaps)
+   ═════════════════════════════════════════════════════════════════════════ */
+.public-portal-layout .page-body,
+.public-page-body {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 1.25rem 1.75rem !important;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Ensure top-level page containers stretch to 100% of available screen width */
+.public-portal-layout .public-page-body > div,
+.public-portal-layout .public-page-body > main,
+.public-portal-layout .public-page-body > section {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Expand content containers that had artificial narrow max-width & auto margins */
+.public-portal-layout .public-page-body [style*="850px"],
+.public-portal-layout .public-page-body [style*="1200px"],
+.public-portal-layout .public-page-body [style*="1240px"],
+.public-portal-layout .public-page-body [style*="1280px"],
+.public-portal-layout .public-page-body [style*="1380px"],
+.public-portal-layout .public-page-body [style*="1440px"] {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+
+.public-portal-layout .public-page-body .public-health-container,
+.public-portal-layout .public-page-body .gov-content-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Card Styles */
+.dt-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dt-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+/* Buttons */
+.dt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.dt-btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.dt-btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.dt-btn-outline {
+  background-color: transparent;
+  border-color: var(--border);
+  color: var(--text-main);
+}
+
+.dt-btn-outline:hover {
+  background-color: #f1f5f9;
+}
+
+/* Badges */
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.dt-badge-success {
+  background-color: var(--success-light);
+  color: #065f46;
+}
+
+.dt-badge-warning {
+  background-color: var(--warning-light);
+  color: #92400e;
+}
+
+.dt-badge-info {
+  background-color: var(--primary-light);
+  color: #0369a1;
+}
+
+.dt-badge-danger {
+  background-color: var(--danger-light);
+  color: #991b1b;
+}
+
+/* Data Table */
+.dt-table-wrapper {
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.dt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.dt-table th {
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.dt-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+.dt-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Form Inputs */
+.dt-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.875rem;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dt-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.dt-select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.875rem;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────
+   Mobile Responsive — Sidebar & Layout
+   ───────────────────────────────────────── */
+@media (max-width: 991px) {
+  /* Hide desktop sidebar, show mobile drawer & toggle */
+  .sidebar-desktop {
+    display: none !important;
+  }
+
+  .sidebar-mobile {
+    display: flex !important;
+  }
+
+  .sidebar-mobile-toggle {
+    display: flex !important;
+  }
+
+  .sidebar-overlay {
+    display: block !important;
+  }
+
+  /* Narrower page body padding on mobile */
+  .page-body {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 992px) {
+  /* Ensure mobile elements are hidden on desktop */
+  .sidebar-mobile {
+    display: none !important;
+  }
+
+  .sidebar-mobile-toggle {
+    display: none !important;
+  }
+
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* Smooth spin animation for loading spinners */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  padding: 1rem;
+}
+
+.modal-panel {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+}
+
+/* Responsive Utilities added for Phase 2 UI Optimization */
+.dt-responsive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+.dt-modal-responsive {
+  width: 95% !important;
+  max-width: 100% !important;
+}
+
+@media (min-width: 640px) {
+  .dt-modal-responsive {
+    width: auto !important;
+    max-width: 90vw !important;
+  }
+}
+
+/* Stacking grids smoothly on mobile */
+@media (max-width: 640px) {
+  .dt-responsive-grid-stack {
+    grid-template-columns: 1fr !important;
+  }
+  .dt-responsive-flex-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .dt-hide-on-mobile {
+    display: none !important;
+  }
+}
+
+

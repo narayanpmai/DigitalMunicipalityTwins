@@ -1,0 +1,49 @@
+{
+  "name": "पाँचपोखरी नागरिक मोबाइल एप (Panchpokhari Citizen App)",
+  "short_name": "नागरिक एप",
+  "description": "पाँचपोखरी थाङपाल गाउँपालिकाको अफलाइन नागरिक बडापत्र, आपतकालीन SOS उद्धार र डिजिटल नागरिक सेवा",
+  "start_url": "/pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/panchpokhari-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "नागरिक बडापत्र (Offline Charter)",
+      "short_name": "बडापत्र",
+      "description": "इन्टरनेट बिना नै स्थानीय सेवाहरूको विवरण हेर्नुहोस्",
+      "url": "/pwa?tab=charter",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "आपतकालीन SOS साइरन",
+      "short_name": "SOS साइरन",
+      "description": "तत्काल आपतकालीन साइरन र जीपीएस उद्धार एसएमएस",
+      "url": "/pwa?tab=sos",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "सूचना तथा बाढी सतर्कता",
+      "short_name": "सूचना",
+      "description": "नदी बाढी पूर्वसूचना तथा पालिका बुलेटिन",
+      "url": "/pwa?tab=notifications",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["government", "utilities", "safety"]
+}

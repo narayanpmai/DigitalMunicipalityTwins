@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">पाँचपोखरी नागरिक एप</string>
+    <string name="title_activity_main">पाँचपोखरी नागरिक एप</string>
+    <string name="package_name">np.gov.panchpokhari.citizen</string>
+    <string name="custom_url_scheme">np.gov.panchpokhari.citizen</string>
+</resources>

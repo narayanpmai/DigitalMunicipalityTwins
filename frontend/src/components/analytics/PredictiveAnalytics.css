@@ -1,0 +1,323 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PredictiveAnalytics.css — Gov Design System (Light Mode)
+   Matches DashboardOverview color tokens & card styles exactly
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.analytics-container {
+  padding: 28px 32px;
+  background-color: var(--gov-bg, #F8FAFC);
+  color: var(--gov-text-primary, #0F172A);
+  font-family: 'Noto Sans Devanagari', 'Outfit', 'Inter', sans-serif;
+  overflow-y: auto;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.analytics-header {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.analytics-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analytics-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--gov-text-primary, #0F172A);
+  -webkit-text-fill-color: unset;
+  background: none;
+}
+
+.analytics-header p {
+  color: var(--gov-text-muted, #64748B);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.analytics-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gov-success-bg, #ECFDF5);
+  color: var(--gov-success-text, #065F46);
+  border: 1px solid var(--gov-success-border, #A7F3D0);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.analytics-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+/* ── Grid Layout ─────────────────────────────────────────────────────────── */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 20px;
+}
+
+/* ── Prediction Cards ────────────────────────────────────────────────────── */
+.prediction-card {
+  background: var(--gov-surface, #FFFFFF);
+  border: 1.5px solid var(--gov-border, #E2E8F0);
+  border-radius: var(--gov-radius-lg, 14px);
+  padding: 24px;
+  box-shadow: var(--gov-shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prediction-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--gov-shadow-hover);
+  border-color: var(--gov-border-strong, #CBD5E1);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gov-border, #E2E8F0);
+}
+
+.card-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--gov-radius-md, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-header-icon.green {
+  background-color: var(--gov-success-bg, #ECFDF5);
+}
+
+.card-header-icon.blue {
+  background-color: var(--gov-primary-light, #EBF3FA);
+}
+
+.card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--gov-text-primary, #0F172A);
+}
+
+.card-header-sub {
+  font-size: 0.75rem;
+  color: var(--gov-text-muted, #64748B);
+  margin: 2px 0 0 0;
+}
+
+/* ── Controls ────────────────────────────────────────────────────────────── */
+.card-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--gov-surface-subtle, #F1F5F9);
+  padding: 16px;
+  border-radius: var(--gov-radius-md, 10px);
+  border: 1px solid var(--gov-border, #E2E8F0);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gov-text-secondary, #475569);
+}
+
+.modern-input {
+  background: var(--gov-surface, #FFFFFF);
+  border: 1.5px solid var(--gov-border, #E2E8F0);
+  color: var(--gov-text-primary, #0F172A);
+  padding: 9px 12px;
+  border-radius: var(--gov-radius-sm, 6px);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modern-input:focus {
+  border-color: var(--gov-primary, #0F4C81);
+  box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+}
+
+/* Sliders */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-value-pill {
+  background: var(--gov-primary, #0F4C81);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.modern-slider {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 5px;
+  background: var(--gov-border-strong, #CBD5E1);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.modern-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gov-success, #10B981);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+  transition: transform 0.1s;
+}
+
+.modern-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.slider-blue::-webkit-slider-thumb {
+  background: var(--gov-primary, #0F4C81);
+  box-shadow: 0 2px 6px rgba(15, 76, 129, 0.4);
+}
+
+/* ── Results ─────────────────────────────────────────────────────────────── */
+.result-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.metric-box {
+  background: var(--gov-surface-subtle, #F1F5F9);
+  border: 1px solid var(--gov-border, #E2E8F0);
+  padding: 16px;
+  border-radius: var(--gov-radius-md, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-box.full-width {
+  grid-column: 1 / -1;
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  color: var(--gov-text-muted, #64748B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--gov-text-primary, #0F172A);
+}
+
+.metric-value span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gov-text-muted, #64748B);
+}
+
+.text-green { color: var(--gov-success, #10B981); }
+.text-blue  { color: var(--gov-primary, #0F4C81); }
+
+/* ── Tags ────────────────────────────────────────────────────────────────── */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sector-tag {
+  background: var(--gov-primary-light, #EBF3FA);
+  color: var(--gov-primary, #0F4C81);
+  border: 1px solid var(--gov-primary-border, #BCD5EB);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.loading-state {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--gov-text-muted, #64748B);
+  padding: 32px 0;
+  font-size: 0.85rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .analytics-container {
+    padding: 20px;
+  }
+}

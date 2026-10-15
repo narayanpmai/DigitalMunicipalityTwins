@@ -1,0 +1,551 @@
+/* FacilityDetailPage.css - Unified Public Facility Profile Design System */
+
+.facility-detail-container {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
+  padding-bottom: 60px;
+}
+
+/* Top Breadcrumb & Navigation */
+.facility-nav-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.facility-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.facility-back-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.facility-actions-top {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.btn-action-pill:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-action-pill.primary {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.btn-action-pill.primary:hover {
+  background: #1e40af;
+}
+
+/* Hero Header Banner */
+.facility-hero-banner {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 36px 24px 28px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 4px solid #3b82f6;
+}
+
+.facility-hero-banner.health {
+  border-bottom-color: #e11d48;
+}
+
+.facility-hero-banner.ward {
+  border-bottom-color: #10b981;
+}
+
+.facility-hero-banner.tourism {
+  border-bottom-color: #f59e0b;
+}
+
+.facility-hero-inner {
+  max-width: 100%;
+  padding: 0 24px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.facility-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.badge-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-tag.type-school {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.badge-tag.type-health {
+  background: rgba(225, 29, 72, 0.2);
+  color: #fda4af;
+  border: 1px solid rgba(225, 29, 72, 0.4);
+}
+
+.badge-tag.type-ward {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-tag.type-tourism {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-tag.light {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.facility-title-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.facility-logo-emblem {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.facility-main-heading {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.facility-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-style: italic;
+  color: #cbd5e1;
+  font-family: Georgia, Cambria, serif;
+}
+
+.facility-location-line {
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* KPI Summary Cards Grid */
+.facility-kpi-grid {
+  max-width: 100%;
+  margin: -20px auto 28px;
+  padding: 0 44px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.facility-kpi-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.facility-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.facility-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.facility-kpi-card.green .facility-kpi-icon {
+  background: #ecfdf5;
+}
+
+.facility-kpi-card.rose .facility-kpi-icon {
+  background: #fff1f2;
+}
+
+.facility-kpi-card.amber .facility-kpi-icon {
+  background: #fffbeb;
+}
+
+.facility-kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.facility-kpi-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.facility-kpi-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.facility-kpi-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Tabbed Navigation Bar */
+.facility-content-wrapper {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 44px;
+}
+
+.facility-tab-nav {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 0px;
+}
+
+.facility-tab-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  padding: 14px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px 10px 0 0;
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.02);
+}
+
+.facility-tab-btn:hover {
+  color: #1e293b;
+  background: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.facility-tab-btn.active {
+  color: #1d4ed8;
+  background: #ffffff;
+  border-color: #1d4ed8;
+  border-top-width: 3px;
+  box-shadow: 0 -4px 12px rgba(29, 78, 216, 0.1);
+}
+
+.facility-tab-btn.active.health {
+  color: #e11d48;
+  border-color: #e11d48;
+  box-shadow: 0 -4px 12px rgba(225, 29, 72, 0.1);
+}
+
+.facility-tab-btn.active.ward {
+  color: #059669;
+  border-color: #059669;
+  box-shadow: 0 -4px 12px rgba(5, 150, 105, 0.1);
+}
+
+.facility-tab-btn.active.tourism {
+  color: #d97706;
+  border-color: #d97706;
+  box-shadow: 0 -4px 12px rgba(217, 119, 6, 0.1);
+}
+
+/* Card Section Boxes */
+.facility-card-box {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.facility-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+
+.facility-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.facility-paragraph {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #334155;
+  margin-bottom: 16px;
+}
+
+/* Objectives / Highlights List */
+.objective-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.objective-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #334155;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+}
+
+/* Tables */
+.facility-table-wrapper {
+  overflow-x: auto;
+}
+
+.facility-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.facility-table th {
+  background: #f8fafc;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.facility-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.facility-table tr:hover td {
+  background: #fafafa;
+}
+
+/* Assessment Classification Bar */
+.assessment-scale-bar {
+  display: flex;
+  gap: 6px;
+  margin: 16px 0 24px;
+}
+
+.scale-tier {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.scale-tier.active {
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+}
+
+/* Mini Map Preview Box */
+.facility-map-box {
+  height: 480px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  margin-top: 12px;
+  position: relative;
+}
+
+/* Toast Message */
+.facility-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .facility-hero-banner {
+    padding: 24px 16px;
+  }
+  .facility-title-block {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .facility-main-heading {
+    font-size: 22px;
+  }
+  .facility-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    margin-top: -12px;
+  }
+  .facility-nav-bar {
+    padding: 10px 16px;
+  }
+  .facility-map-box {
+    height: 350px;
+  }
+}
+
+/* Print Stylesheet */
+@media print {
+  .facility-nav-bar,
+  .facility-actions-top,
+  .facility-tab-nav,
+  .facility-toast,
+  .btn-action-pill {
+    display: none !important;
+  }
+  .facility-detail-container {
+    background: #ffffff;
+    padding: 0;
+  }
+  .facility-hero-banner {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-bottom: 2px solid #000000 !important;
+    padding: 16px 0;
+  }
+  .facility-main-heading {
+    color: #000000 !important;
+  }
+  .facility-slogan,
+  .facility-location-line {
+    color: #333333 !important;
+  }
+  .facility-card-box {
+    border: 1px solid #cccccc;
+    box-shadow: none;
+    page-break-inside: avoid;
+    margin-bottom: 16px;
+  }
+}

@@ -1,0 +1,534 @@
+[
+  {
+    "id": "org-ptrm-001",
+    "name": "पाँचपोखरी पर्यटन तथा वातावरण विकास मञ्च",
+    "nameEn": "Panchpokhari Tourism & Environment Development Forum",
+    "type": "ngo",
+    "registrationNo": "४५/२०७२",
+    "registrationDate": "२०७२/०४/१२",
+    "suchikritMiti": "२०७८/०२/१०",
+    "registrationNikaya": "जिल्ला प्रशासन कार्यालय, सिन्धुपाल्चोक",
+    "pan": "३०२९१८२३४",
+    "chairperson": "पासाङ दोर्जे तामाङ",
+    "contactPerson": "पेम्बा शेर्पा (सचिव)",
+    "phone": "९८५११२३४५६",
+    "telePhone": "०११-४९०१२२",
+    "email": "ptedf.panchpokhari@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 3,
+    "address": "थाङपालधाप-३, सिन्धुपाल्चोक",
+    "sector": "पर्यटन, वातावरण तथा जैविक विविधता",
+    "objectives": "पाँचपोखरी क्षेत्रको जैविक विविधता संरक्षण, पदमार्ग फोहोरमैला व्यवस्थापन, पर्यटन प्रवर्द्धन र स्थानीय गाइडहरूको क्षमता अभिवृद्धि गर्ने।",
+    "status": "active",
+    "isActive": true,
+    "registrationCertificateUrl": "/uploads/org-reg-001.pdf",
+    "panCertificateUrl": "/uploads/org-pan-001.pdf",
+    "logoUrl": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-01", "name": "पासाङ दोर्जे तामाङ", "designation": "अध्यक्ष", "phone": "९८५११२३४५६", "address": "थाङपालधाप-३", "termEnd": "२०८२/०४/११" },
+      { "id": "m-02", "name": "डोल्मा लामा", "designation": "उपाध्यक्ष", "phone": "९८४१२२३३४४", "address": "भोताङ-३", "termEnd": "२०८२/०४/११" },
+      { "id": "m-03", "name": "पेम्बा शेर्पा", "designation": "सचिव", "phone": "९८६०११२२३३", "address": "थाङपालधाप-३", "termEnd": "२०८२/०४/११" },
+      { "id": "m-04", "name": "मिङमार तामाङ", "designation": "कोषाध्यक्ष", "phone": "९८०३३४४५५६", "address": "गुन्सा-५", "termEnd": "२०८२/०४/११" },
+      { "id": "m-05", "name": "आङ फुर्वा शेर्पा", "designation": "सदस्य", "phone": "९८१२२३३४४५", "address": "भोताङ-३", "termEnd": "२०८२/०४/११" }
+    ],
+    "renewals": [
+      { "id": "r-01", "fiscalYear": "2080/081", "renewalDate": "२०८०/०४/२५", "fee": 1500, "receiptNo": "PTRM-RN-402", "validUntil": "२०८१/०३/३२", "remarks": "सम्पन्न तथा प्रमाणीकृत" },
+      { "id": "r-02", "fiscalYear": "2079/080", "renewalDate": "२०७९/०५/१०", "fee": 1500, "receiptNo": "PTRM-RN-289", "validUntil": "२०८०/०३/३२", "remarks": "प्रमाणीकृत" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-01",
+        "subject": "पाँचपोखरी पदमार्ग जैविक फोहोर व्यवस्थापन तथा सूचना केन्द्र सञ्चालन",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०६/१५",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 1500000,
+        "palikaBudget": 1000000,
+        "orgBudget": 500000,
+        "donorAgency": "पाँचपोखरी थाङपाल गाउँपालिका (पर्यटन शाखा)",
+        "firstParty": "प्रमुख प्रशासकीय अधिकृत",
+        "secondParty": "पासाङ दोर्जे तामाङ (अध्यक्ष)",
+        "status": "active",
+        "terms": "पाँचपोखरी ताल परिसर तथा पदमार्गमा १० ठाउँमा डस्टबिन, २ वटा जैविक शौचालय र सूचना बोर्ड स्थापना।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-01",
+        "title": "पाँचपोखरी पदमार्ग सरसफाइ तथा जनचेतना अभियान २०८०",
+        "sector": "वातावरण तथा पर्यटन",
+        "fiscalYear": "2080/081",
+        "budget": 650000,
+        "spentBudget": 645000,
+        "targetWards": [3],
+        "beneficiariesCount": 2400,
+        "status": "completed",
+        "completionDate": "२०८०/०८/२०"
+      },
+      {
+        "id": "prg-02",
+        "title": "स्थानीय युवालाई ट्रेकिङ गाइड तथा प्राथमिक उपचार तालिम",
+        "sector": "सीप विकास तथा पर्यटन",
+        "fiscalYear": "2080/081",
+        "budget": 450000,
+        "spentBudget": 420000,
+        "targetWards": [2, 3, 4],
+        "beneficiariesCount": 35,
+        "status": "completed",
+        "completionDate": "२०८०/१०/१५"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-01",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०५/२८",
+        "auditorName": "के.पी. शर्मा एण्ड एसोसिएट्स (चार्टर्ड एकाउन्टेन्ट्स)",
+        "submissionDate": "२०८०/०६/०५",
+        "remarks": "बेरुजु शून्य, नियमित करचुक्ता प्राप्त"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-002",
+    "name": "थाङपालधाप महिला बहुउद्देश्यीय सहकारी संस्था लि.",
+    "nameEn": "Thangpaldhap Women Multipurpose Cooperative Ltd.",
+    "type": "cooperative",
+    "registrationNo": "१२८/२०६८",
+    "registrationDate": "२०६८/०९/१५",
+    "suchikritMiti": "२०७७/११/२१",
+    "registrationNikaya": "गाउँपालिका सहकारी विभाग",
+    "pan": "३००९२१३४५",
+    "chairperson": "कुमारी तामाङ",
+    "contactPerson": "सीता श्रेष्ठ (प्रबन्धक)",
+    "phone": "९८४१७८९०१२",
+    "telePhone": "०११-४९०१३०",
+    "email": "thangpal.mahila.coop@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 2,
+    "address": "याङ्ग्री-२, सिन्धुपाल्चोक",
+    "sector": "महिला सशक्तिकरण, लघुवित्त तथा स्थानीय उत्पादन",
+    "objectives": "ग्रामीण महिलाहरूको बचत तथा ऋण परिचालन, अचार, गुन्द्रुक तथा हस्तकला उत्पादन र आत्मनिर्भरता वृद्धि गर्ने।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-11", "name": "कुमारी तामाङ", "designation": "अध्यक्ष", "phone": "९८४१७८९०१२", "address": "याङ्ग्री-२", "termEnd": "२०८३/०२/०१" },
+      { "id": "m-12", "name": "माया भुजेल", "designation": "उपाध्यक्ष", "phone": "९८१२६७८९०१", "address": "याङ्ग्री-२", "termEnd": "२०८३/०२/०१" },
+      { "id": "m-13", "name": "सीता श्रेष्ठ", "designation": "सचिव", "phone": "९८०८१२३४५६", "address": "थाङपालधाप-३", "termEnd": "२०८३/०२/०१" },
+      { "id": "m-14", "name": "फुलमाया तामाङ", "designation": "कोषाध्यक्ष", "phone": "९८२३४५६७८९", "address": "याङ्ग्री-२", "termEnd": "२०८३/०२/०१" }
+    ],
+    "renewals": [
+      { "id": "r-11", "fiscalYear": "2080/081", "renewalDate": "२०८०/०४/१८", "fee": 2000, "receiptNo": "PTRM-RN-388", "validUntil": "२०८१/०३/३२", "remarks": "सम्पन्न" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-11",
+        "subject": "स्थानीय कृषि उत्पादन तथा कोसेली घर व्यवस्थापन साझेदारी कार्यक्रम",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०७/०५",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 1200000,
+        "palikaBudget": 800000,
+        "orgBudget": 400000,
+        "donorAgency": "गाउँपालिका आर्थिक विकास शाखा",
+        "firstParty": "योजना अधिकृत",
+        "secondParty": "कुमारी तामाङ (अध्यक्ष)",
+        "status": "active",
+        "terms": "स्थानीय महिला समूहद्वारा उत्पादित किवी, मह, अलैंची प्याकेजिङ तथा बिक्री कक्ष सञ्चालन।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-11",
+        "title": "महिला उद्यमी क्षमता विकास तथा खाद्य प्रशोधन तालिम",
+        "sector": "आर्थिक विकास तथा महिला सशक्तिकरण",
+        "fiscalYear": "2080/081",
+        "budget": 500000,
+        "spentBudget": 490000,
+        "targetWards": [1, 2, 3],
+        "beneficiariesCount": 65,
+        "status": "completed",
+        "completionDate": "२०८०/०९/२२"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-11",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०६/१५",
+        "auditorName": "हिमालयन अडिट एसोसिएट्स",
+        "submissionDate": "२०८०/०६/२०",
+        "remarks": "वार्षिक साधारण सभा सम्पन्न, शेयर पूँजी वृद्धि अनुमोदन"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-003",
+    "name": "सिन्धु युवा समाज तथा खेलकुद विकास समिति",
+    "nameEn": "Sindhu Youth Club & Sports Development Committee",
+    "type": "club",
+    "registrationNo": "५६/२०७४",
+    "registrationDate": "२०७४/०५/२१",
+    "suchikritMiti": "२०७९/०१/१२",
+    "registrationNikaya": "जिल्ला युवा समिति / गाउँपालिका",
+    "pan": "६०१२३८९०१",
+    "chairperson": "दावा ग्याल्जेन शेर्पा",
+    "contactPerson": "सुरेश तामाङ (सचिव)",
+    "phone": "९८६००११२२३",
+    "telePhone": "०११-४९०११५",
+    "email": "sindhuyouthclub.ptrm@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 3,
+    "address": "थाङपालधाप-३, खेलमैदान परिसर",
+    "sector": "युवा, खेलकुद तथा लागूऔषध विरुद्ध सचेतना",
+    "objectives": "युवाहरूलाई खेलकुद, नेतृत्व विकास, स्वयंसेवा र सामाजिक कार्यमा सक्रिय बनाउँदै कुलतमुक्त समाज निर्माण गर्ने।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1526676037777-05a232554f77?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-21", "name": "दावा ग्याल्जेन शेर्पा", "designation": "अध्यक्ष", "phone": "९८६००११२२३", "address": "थाङपालधाप-३", "termEnd": "२०८१/१२/३०" },
+      { "id": "m-22", "name": "रोशन श्रेष्ठ", "designation": "उपाध्यक्ष", "phone": "९८४१२२२३३३", "address": "थाङपालधाप-३", "termEnd": "२०८१/१२/३०" },
+      { "id": "m-23", "name": "सुरेश तामाङ", "designation": "सचिव", "phone": "९८०३४४५५६६", "address": "थाङपालधाप-३", "termEnd": "२०८१/१२/३०" }
+    ],
+    "renewals": [
+      { "id": "r-21", "fiscalYear": "2080/081", "renewalDate": "२०८०/०५/०१", "fee": 1000, "receiptNo": "PTRM-RN-415", "validUntil": "२०८१/०३/३२", "remarks": "सम्पन्न" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-21",
+        "subject": "अध्यक्ष कप अन्तर-वडा फुटबल तथा भलिबल प्रतियोगिता २०८० सञ्चालन",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०८/१०",
+        "endDate": "२०८०/०९/१५",
+        "totalBudget": 800000,
+        "palikaBudget": 600000,
+        "orgBudget": 200000,
+        "donorAgency": "गाउँपालिका शिक्षा, युवा तथा खेलकुद शाखा",
+        "firstParty": "शिक्षा तथा खेलकुद अधिकृत",
+        "secondParty": "दावा ग्याल्जेन शेर्पा (अध्यक्ष)",
+        "status": "completed",
+        "terms": "८ वटै वडाका १६ टिम सहभागिता, पुरस्कार तथा अनुशासित खेल सञ्चालन।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-21",
+        "title": "पाँचपोखरी अध्यक्ष कप खुला भलिबल प्रतियोगिता",
+        "sector": "खेलकुद तथा युवा सहभागिता",
+        "fiscalYear": "2080/081",
+        "budget": 800000,
+        "spentBudget": 795000,
+        "targetWards": [1, 2, 3, 4, 5, 6, 7, 8],
+        "beneficiariesCount": 1800,
+        "status": "completed",
+        "completionDate": "२०८०/०९/१२"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-21",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०४/१५",
+        "auditorName": "ए.के. जोशी एसोसिएट्स",
+        "submissionDate": "२०८०/०४/२५",
+        "remarks": "लेखापरीक्षण प्रतिवेदन स्वीकृत"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-004",
+    "name": "नेपाल रेडक्रस सोसाइटी, पाँचपोखरी उपशाखा",
+    "nameEn": "Nepal Red Cross Society, Panchpokhari Sub-Chapter",
+    "type": "community",
+    "registrationNo": "१०२/२०५८",
+    "registrationDate": "२०५८/०३/१०",
+    "suchikritMiti": "२०७६/०९/०१",
+    "registrationNikaya": "नेपाल रेडक्रस सोसाइटी, जिल्ला शाखा सिन्धुपाल्चोक",
+    "pan": "३०००२३४५१",
+    "chairperson": "बिक्रम श्रेष्ठ",
+    "contactPerson": "ज्ञान बहादुर तामाङ (सचिव)",
+    "phone": "९८५१०२३४५६",
+    "telePhone": "०११-४९०१११",
+    "email": "nrcs.panchpokhari@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 5,
+    "address": "गुन्सा-५, सिन्धुपाल्चोक",
+    "sector": "विपद् व्यवस्थापन, रक्तसञ्चार तथा प्राथमिक उपचार",
+    "objectives": "बाढी, पहिरो तथा विपद्का समयमा तत्काल खोज, उद्धार, प्राथमिक उपचार र मानवीय राहत वितरण गर्ने।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-31", "name": "बिक्रम श्रेष्ठ", "designation": "सभापति", "phone": "९८५१०२३४५६", "address": "गुन्सा-५", "termEnd": "२०८२/०३/०९" },
+      { "id": "m-32", "name": "शान्ति लामा", "designation": "उपसभापति", "phone": "९८४१५५६६७७", "address": "गुन्सा-५", "termEnd": "२०८२/०३/०९" },
+      { "id": "m-33", "name": "ज्ञान बहादुर तामाङ", "designation": "सचिव", "phone": "९८०३११२२३३", "address": "गुन्सा-५", "termEnd": "२०८२/०३/०९" }
+    ],
+    "renewals": [
+      { "id": "r-31", "fiscalYear": "2080/081", "renewalDate": "२०८०/०४/१०", "fee": 1000, "receiptNo": "PTRM-RN-395", "validUntil": "२०८१/०३/३२", "remarks": "नवीकृत" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-31",
+        "subject": "मेलम्ची तथा याङ्ग्री जलाधार बाढी पूर्वसूचना तथा खोज-उद्धार स्वयंसेवक सञ्जाल",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०३/२५",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 950000,
+        "palikaBudget": 700000,
+        "orgBudget": 250000,
+        "donorAgency": "गाउँपालिका विपद् व्यवस्थापन समिति (LEOC)",
+        "firstParty": "प्रमुख प्रशासकीय अधिकृत",
+        "secondParty": "बिक्रम श्रेष्ठ (सभापति)",
+        "status": "active",
+        "terms": "८ वटै वडामा ५/५ जना सामुदायिक खोज-उद्धार स्वयंसेवक तालिम र प्राथमिक उपचार बक्स वितरण।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-31",
+        "title": "सामुदायिक विपद् पूर्वतयारी तथा खोज-उद्धार सिमुलेशन अभ्यास",
+        "sector": "विपद् व्यवस्थापन",
+        "fiscalYear": "2080/081",
+        "budget": 450000,
+        "spentBudget": 435000,
+        "targetWards": [1, 2, 4, 6],
+        "beneficiariesCount": 520,
+        "status": "completed",
+        "completionDate": "२०८०/११/०५"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-31",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०५/१२",
+        "auditorName": "एस.आर. कन्सल्टिङ एण्ड अडिट",
+        "submissionDate": "२०८०/०५/२५",
+        "remarks": "केन्द्रीय रेडक्रसबाट अनुमोदन"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-005",
+    "name": "रैथाने जैविक कृषि तथा जडिबुटी उत्पादक संस्था",
+    "nameEn": "Raithane Organic Agriculture & Herbs Producers Org",
+    "type": "ngo",
+    "registrationNo": "७१/२०७६",
+    "registrationDate": "२०७६/११/०५",
+    "suchikritMiti": "२०७८/०८/१५",
+    "registrationNikaya": "जिल्ला प्रशासन कार्यालय / समाज कल्याण परिषद्",
+    "pan": "३०४५६१२३०",
+    "chairperson": "राम बहादुर कार्की",
+    "contactPerson": "कमला दुलाल (सचिव)",
+    "phone": "९८४१३४५६७८",
+    "telePhone": "०११-४९०१४०",
+    "email": "raithane.organic.ptrm@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 4,
+    "address": "थाङपालकोट-४, सिन्धुपाल्चोक",
+    "sector": "जैविक कृषि, जडिबुटी तथा किसान सशक्तिकरण",
+    "objectives": "रैथाने बीउबिजन संरक्षण, किटनाशक विषादी रहित अर्गानिक खेती प्रवर्द्धन र जडिबुटीको व्यावसायिक खेती विस्तार गर्ने।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-41", "name": "राम बहादुर कार्की", "designation": "अध्यक्ष", "phone": "९८४१३४५६७८", "address": "थाङपालकोट-४", "termEnd": "२०८२/११/०४" },
+      { "id": "m-42", "name": "कमला दुलाल", "designation": "सचिव", "phone": "९८१२३४५६७८", "address": "थाङपालकोट-४", "termEnd": "२०८२/११/०४" }
+    ],
+    "renewals": [
+      { "id": "r-41", "fiscalYear": "2080/081", "renewalDate": "२०८०/०५/१५", "fee": 1500, "receiptNo": "PTRM-RN-420", "validUntil": "२०८१/०३/३२", "remarks": "प्रमाणीकृत" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-41",
+        "subject": "रैथाने मकै, कोदो र आलुको बीउ संरक्षण तथा नर्सरी स्थापना",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०७/२०",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 1100000,
+        "palikaBudget": 800000,
+        "orgBudget": 300000,
+        "donorAgency": "गाउँपालिका कृषि विकास शाखा",
+        "firstParty": "कृषि विकास अधिकृत",
+        "secondParty": "राम बहादुर कार्की (अध्यक्ष)",
+        "status": "active",
+        "terms": "वडा नं ३, ४ र ७ मा तीनवटा रैथाने बीउ बैंक र जैविक मल उत्पादन केन्द्र सञ्चालन।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-41",
+        "title": "जैविक मल तथा जैविक विषादी बनाउने व्यावहारिक तालिम",
+        "sector": "कृषि तथा सीप विकास",
+        "fiscalYear": "2080/081",
+        "budget": 350000,
+        "spentBudget": 340000,
+        "targetWards": [3, 4, 7],
+        "beneficiariesCount": 85,
+        "status": "completed",
+        "completionDate": "२०८०/१०/२८"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-41",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०६/०२",
+        "auditorName": "बी.एन. घिमिरे एसोसिएट्स",
+        "submissionDate": "२०८०/०६/१२",
+        "remarks": "नियमित अडिट सम्पन्न"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-006",
+    "name": "मेलम्ची जलाधार संरक्षण तथा विपद् उत्थानशीलता मञ्च",
+    "nameEn": "Melamchi Watershed Conservation & Disaster Resilience Forum",
+    "type": "ngo",
+    "registrationNo": "८८/२०७५",
+    "registrationDate": "२०७५/०८/२४",
+    "suchikritMiti": "२०७८/०४/१६",
+    "registrationNikaya": "समाज कल्याण परिषद् / जि.प्र.का.",
+    "pan": "३०८८९०१२३",
+    "chairperson": "सोनम लामा",
+    "contactPerson": "दिनेश पाण्डे (कार्यक्रम संयोजक)",
+    "phone": "९८५१२२३३४४",
+    "telePhone": "०११-४९०१५०",
+    "email": "melamchi.resilience@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 6,
+    "address": "थाङपालधाप-६, बजार चोक",
+    "sector": "जलाधार संरक्षण, नदी नियन्त्रण तथा बायो-इन्जिनियरिङ",
+    "objectives": "मेलम्ची नदीको तटीय क्षेत्रमा बाढी नियन्त्रण, बायो-इन्जिनियरिङ वृक्षारोपण र समुदाय आधारित पूर्वसूचना प्रणाली स्थापना।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-51", "name": "सोनम लामा", "designation": "अध्यक्ष", "phone": "९८५१२२३३४४", "address": "थाङपालधाप-६", "termEnd": "२०८३/०८/२३" },
+      { "id": "m-52", "name": "दिनेश पाण्डे", "designation": "सचिव", "phone": "९८४१६६७७८८", "address": "थाङपालधाप-६", "termEnd": "२०८३/०८/२३" }
+    ],
+    "renewals": [
+      { "id": "r-51", "fiscalYear": "2080/081", "renewalDate": "२०८०/०४/३०", "fee": 1500, "receiptNo": "PTRM-RN-410", "validUntil": "२०८१/०३/३२", "remarks": "सम्पन्न" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-51",
+        "subject": "मेलम्ची नदी किनार बायो-इन्जिनियरिङ बाँस तथा अम्रिसो वृक्षारोपण",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०६/०१",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 1800000,
+        "palikaBudget": 1200000,
+        "orgBudget": 600000,
+        "donorAgency": "गाउँपालिका वन तथा वातावरण शाखा",
+        "firstParty": "वातावरण अधिकृत",
+        "secondParty": "सोनम लामा (अध्यक्ष)",
+        "status": "active",
+        "terms": "मेलम्ची किनारका ३ कि.मि. जोखिम क्षेत्रमा बायो-इन्जिनियरिङ संरक्षण।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-51",
+        "title": "नदी कटान नियन्त्रण तथा वृक्षारोपण अभियान",
+        "sector": "वातावरण तथा विपद्",
+        "fiscalYear": "2080/081",
+        "budget": 750000,
+        "spentBudget": 720000,
+        "targetWards": [6, 7, 8],
+        "beneficiariesCount": 1200,
+        "status": "ongoing"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-51",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०५/२१",
+        "auditorName": "निलकण्ठ एण्ड कम्पनी",
+        "submissionDate": "२०८०/०५/३०",
+        "remarks": "प्रमाणीकरण सम्पन्न"
+      }
+    ]
+  },
+  {
+    "id": "org-ptrm-007",
+    "name": "पाँचपोखरी अपाङ्गता तथा समावेशी विकास मञ्च",
+    "nameEn": "Panchpokhari Disability & Inclusive Development Forum",
+    "type": "ngo",
+    "registrationNo": "३२/२०७८",
+    "registrationDate": "२०७८/०२/१७",
+    "suchikritMiti": "२०७९/०३/०५",
+    "registrationNikaya": "गाउँपालिका सामाजिक विकास शाखा",
+    "pan": "६०९२३४५१२",
+    "chairperson": "निमा दावा तामाङ",
+    "contactPerson": "सरस्वती खड्का (उपाध्यक्ष)",
+    "phone": "९८१३०१२३४५",
+    "telePhone": "०११-४९०१६०",
+    "email": "disabilityforum.ptrm@gmail.com",
+    "district": "सिन्धुपाल्चोक",
+    "municipality": "पाँचपोखरी थाङपाल गाउँपालिका",
+    "wardNumber": 1,
+    "address": "बाँसखर्क-१, सिन्धुपाल्चोक",
+    "sector": "अपाङ्गता अधिकार, सामाजिक समावेशीकरण तथा पुनर्स्थापना",
+    "objectives": "अपाङ्गता भएका व्यक्तिहरूको अधिकार रक्षा, परिचयपत्र सहजीकरण, सहायक सामग्री वितरण र आत्मनिर्भर सीप विकास।",
+    "status": "active",
+    "isActive": true,
+    "logoUrl": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=150&auto=format&fit=crop&q=80",
+    "members": [
+      { "id": "m-61", "name": "निमा दावा तामाङ", "designation": "अध्यक्ष", "phone": "९८१३०१२३४५", "address": "बाँसखर्क-१", "termEnd": "२०८२/०२/१६" },
+      { "id": "m-62", "name": "सरस्वती खड्का", "designation": "उपाध्यक्ष", "phone": "९८०८३३४४५५", "address": "बाँसखर्क-१", "termEnd": "२०८२/०२/१६" }
+    ],
+    "renewals": [
+      { "id": "r-61", "fiscalYear": "2080/081", "renewalDate": "२०८०/०४/२०", "fee": 500, "receiptNo": "PTRM-RN-380", "validUntil": "२०८१/०३/३२", "remarks": "सम्पन्न" }
+    ],
+    "agreements": [
+      {
+        "id": "agr-61",
+        "subject": "अपाङ्गता भएका व्यक्तिहरूलाई आयआर्जन तथा कम्प्युटर सीप तालिम",
+        "fiscalYear": "2080/081",
+        "agreementDate": "२०८०/०७/१२",
+        "endDate": "२०८१/०३/३०",
+        "totalBudget": 600000,
+        "palikaBudget": 500000,
+        "orgBudget": 100000,
+        "donorAgency": "गाउँपालिका महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा",
+        "firstParty": "सामाजिक विकास अधिकृत",
+        "secondParty": "निमा दावा तामाङ (अध्यक्ष)",
+        "status": "active",
+        "terms": "२० जना अपाङ्गता भएका युवाहरूलाई डिजिटल साक्षरता तथा सिलाइकटाई तालिम।"
+      }
+    ],
+    "programs": [
+      {
+        "id": "prg-61",
+        "title": "अपाङ्गता परिचयपत्र वितरण घुम्ती शिविर सहजीकरण",
+        "sector": "सामाजिक समावेशीकरण",
+        "fiscalYear": "2080/081",
+        "budget": 200000,
+        "spentBudget": 195000,
+        "targetWards": [1, 2, 3, 4, 5, 6, 7, 8],
+        "beneficiariesCount": 140,
+        "status": "completed",
+        "completionDate": "२०८०/०८/२५"
+      }
+    ],
+    "audits": [
+      {
+        "id": "aud-61",
+        "fiscalYear": "2079/080",
+        "agmDate": "२०८०/०५/०५",
+        "auditorName": "सी.एम. पराजुली एसोसिएट्स",
+        "submissionDate": "२०८०/०५/१५",
+        "remarks": "सम्पन्न"
+      }
+    ]
+  }
+]

@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MunicipalGISMap.css — Gov Design System (Light Mode)
+   Matches DashboardOverview color tokens exactly
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.gis-dashboard-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  font-family: 'Noto Sans Devanagari', 'Outfit', 'Inter', sans-serif;
+  overflow: hidden;
+  background-color: var(--gov-bg, #F8FAFC);
+}
+
+/* ── Left Control Panel ──────────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--gov-surface, #FFFFFF);
+  border-right: 1.5px solid var(--gov-border, #E2E8F0);
+  color: var(--gov-text-primary, #0F172A);
+}
+
+.gis-control-panel {
+  width: 340px;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 1000;
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.06);
+  overflow-y: auto;
+}
+
+/* Header */
+.gis-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gov-border, #E2E8F0);
+}
+
+.gis-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+  color: var(--gov-text-primary, #0F172A);
+}
+
+.gis-subtitle {
+  font-size: 0.75rem;
+  color: var(--gov-text-muted, #64748B);
+  margin: 0;
+}
+
+/* Section Labels */
+.gis-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--gov-text-muted, #64748B);
+  margin: 0 0 8px 0;
+}
+
+/* ── Tool Buttons ────────────────────────────────────────────────────────── */
+.gis-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gis-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: var(--gov-surface-subtle, #F1F5F9);
+  border: 1.5px solid var(--gov-border, #E2E8F0);
+  border-radius: var(--gov-radius-md, 10px);
+  color: var(--gov-text-secondary, #475569);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.gis-btn:hover {
+  background: var(--gov-primary-light, #EBF3FA);
+  border-color: var(--gov-primary-border, #BCD5EB);
+  color: var(--gov-primary, #0F4C81);
+  transform: translateX(3px);
+}
+
+.gis-btn.active {
+  background: var(--gov-primary, #0F4C81);
+  border-color: var(--gov-primary, #0F4C81);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.3);
+  transform: translateX(3px);
+}
+
+/* ── Loading State ───────────────────────────────────────────────────────── */
+.gis-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gov-text-muted, #64748B);
+  font-size: 0.78rem;
+  padding: 10px 12px;
+  border-radius: var(--gov-radius-sm, 6px);
+  background: var(--gov-surface-subtle, #F1F5F9);
+  border: 1px solid var(--gov-border, #E2E8F0);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Info Cards ──────────────────────────────────────────────────────────── */
+.risk-info-card,
+.buffer-info-card {
+  padding: 14px 16px;
+  border-radius: var(--gov-radius-md, 10px);
+  background: var(--gov-surface-subtle, #F1F5F9);
+  border: 1px solid var(--gov-border, #E2E8F0);
+  border-left: 4px solid var(--gov-primary, #0F4C81);
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.risk-info-card h4,
+.buffer-info-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gov-text-primary, #0F172A);
+}
+
+.risk-info-card p,
+.buffer-info-card p {
+  margin: 0 0 6px 0;
+  font-size: 0.78rem;
+  color: var(--gov-text-secondary, #475569);
+  line-height: 1.5;
+}
+
+.risk-info-card strong {
+  color: var(--gov-text-primary, #0F172A);
+  font-weight: 700;
+}
+
+/* Risk Level Variants */
+.risk-high {
+  border-left-color: var(--gov-error, #EF4444);
+  background: var(--gov-error-bg, #FEF2F2);
+  border-color: var(--gov-error-border, #FECACA);
+}
+
+.risk-high h4 {
+  color: var(--gov-error-text, #991B1B);
+}
+
+.risk-medium {
+  border-left-color: var(--gov-warning, #F59E0B);
+  background: var(--gov-warning-bg, #FFFBEB);
+  border-color: var(--gov-warning-border, #FDE68A);
+}
+
+.risk-action {
+  margin-top: 10px;
+  padding: 9px 12px;
+  background: var(--gov-error-bg, #FEF2F2);
+  border-radius: var(--gov-radius-sm, 6px);
+  font-size: 0.72rem;
+  color: var(--gov-error-text, #991B1B);
+  border: 1px solid var(--gov-error-border, #FECACA);
+  font-weight: 600;
+}
+
+/* ── Map Area ────────────────────────────────────────────────────────────── */
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  background: var(--gov-surface-subtle, #F1F5F9);
+}
+
+/* Leaflet overrides — keep map neutral/clean in light mode */
+.leaflet-container {
+  background: #e8edf2 !important;
+  font-family: 'Noto Sans Devanagari', 'Inter', sans-serif !important;
+}
+
+.leaflet-tile-pane {
+  /* subtle desaturate for a clean gov look */
+  filter: saturate(0.85) brightness(1.02);
+}
+
+.leaflet-control-zoom a {
+  font-family: inherit !important;
+  color: var(--gov-text-primary, #0F172A) !important;
+  border-color: var(--gov-border, #E2E8F0) !important;
+}
+
+/* ── Map Instruction Overlay ─────────────────────────────────────────────── */
+.map-instructions {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--gov-surface, #FFFFFF);
+  border: 1.5px solid var(--gov-primary-border, #BCD5EB);
+  color: var(--gov-primary, #0F4C81);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: var(--gov-shadow-md);
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gis-dashboard-container {
+    flex-direction: column;
+  }
+  .gis-control-panel {
+    width: 100%;
+    height: auto;
+    max-height: 260px;
+  }
+}

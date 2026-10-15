@@ -1,0 +1,102 @@
+
+services:
+  db:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: p5_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-p5admin}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-local_dev_password}
+      - POSTGRES_DB=${DB_NAME:-p5digital}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U p5admin -d p5digital"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  ai_service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: p5_ai_service
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-p5admin}
+      - DB_PASSWORD=${DB_PASSWORD:-local_dev_password}
+      - DB_NAME=${DB_NAME:-p5digital}
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./fastapi-backend
+      dockerfile: Dockerfile
+    container_name: p5_fastapi_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_USER=${DB_USER:-p5admin}
+      - DB_PASSWORD=${DB_PASSWORD:-local_dev_password}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-p5digital}
+      - JWT_SECRET=${JWT_SECRET:-p5digital-jwt-secret-change-in-production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-p5digital-refresh-secret-change-in-production}
+      - JWT_ACCESS_EXPIRES_DAYS=7
+      - JWT_REFRESH_EXPIRES_DAYS=30
+      - AI_SERVICE_URL=http://ai_service:8000
+      - DEMO_ADMIN_PASSWORD=${DEMO_ADMIN_PASSWORD:-Admin@P5Digital2024!}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./fastapi-backend:/app
+      - p5_uploads:/app/uploads
+
+  redis:
+    image: redis:7-alpine
+    container_name: p5_redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: p5_mediamtx
+    ports:
+      - "8554:8554"     # RTSP
+      - "8888:8888"     # HLS
+      - "8889:8889"     # WebRTC
+      - "8189:8189/udp" # WebRTC UDP
+    environment:
+      - MTX_WEBRTCADDITIONALHOSTS=localhost
+      # Camera 1 (Ward 1 Gate) - Fetches automatically when requested (Source On Demand)
+      - MTX_PATHS_CAM1_SOURCE=rtsp://admin:${CCTV_PASSWORD:-Password123}@192.168.200.250:554/Streaming/Channels/101
+      - MTX_PATHS_CAM1_SOURCEONDEMAND=yes
+      # Add more cameras as needed (cam2, cam3, etc.)
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: p5_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  p5_uploads:

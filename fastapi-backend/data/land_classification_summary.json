@@ -1,0 +1,272 @@
+{
+  "palika_name": "पाँचपोखरी थाङपाल गाउँपालिका",
+  "total_polygons": 3743,
+  "total_area_sqm": 436348214.74150443,
+  "total_area_ha": 43634.82,
+  "total_area_ropani": "857,737 रोपनी 7 आना 3 पैसा",
+  "zones": [
+    {
+      "zone_code": "FOR",
+      "zone_name_np": "वन क्षेत्र",
+      "zone_name_en": "Forest Zone",
+      "color": "#15803d",
+      "polygon_count": 901,
+      "total_area_sqm": 225097500.38033643,
+      "total_area_ha": 22509.75,
+      "area_ropani_str": "442,478 रोपनी 2 आना 3 पैसा",
+      "percentage": 51.59,
+      "rules_np": "राष्ट्रिय निकुञ्ज, राष्ट्रिय वन, सामुदायिक तथा कबुलियती वन। वन ऐन २०७६ अनुसार रुख कटान, वन अतिक्रमण तथा अनाधिकृत उपयोग पूर्ण निषेधित।"
+    },
+    {
+      "zone_code": "PUB",
+      "zone_name_np": "सार्वजनिक उपयोग तथा खुला क्षेत्र",
+      "zone_name_en": "Public Use & Open Space",
+      "color": "#64748b",
+      "polygon_count": 360,
+      "total_area_sqm": 128376929.09176643,
+      "total_area_ha": 12837.69,
+      "area_ropani_str": "252,352 रोपनी 13 आना 3.2 दाम",
+      "percentage": 29.42,
+      "rules_np": "सरकारी तथा अर्ध-सरकारी कार्यालय, सार्वजनिक पार्क, खुला मैदान, विपद् आश्रयस्थल, स्वास्थ्य तथा शैक्षिक पूर्वाधार प्रयोजन।"
+    },
+    {
+      "zone_code": "AGR",
+      "zone_name_np": "कृषि क्षेत्र",
+      "zone_name_en": "Agricultural Zone",
+      "color": "#16a34a",
+      "polygon_count": 376,
+      "total_area_sqm": 67882641.45285887,
+      "total_area_ha": 6788.26,
+      "area_ropani_str": "133,438 रोपनी 1 आना 3 पैसा",
+      "percentage": 15.56,
+      "rules_np": "खाद्यान्न बाली, तरकारी तथा फलफूल खेती, पशुपालन, मौरीपालन, कृषि वन तथा शीतभण्डार प्रयोजन। अनुमति विना गैर-कृषि घडेरीकरण तथा प्लटिङ गर्न पूर्ण प्रतिबन्धित।"
+    },
+    {
+      "zone_code": "HYD",
+      "zone_name_np": "नदी, खोला तथा जलस्रोत क्षेत्र",
+      "zone_name_en": "River, Stream & Waterbody",
+      "color": "#06b6d4",
+      "polygon_count": 275,
+      "total_area_sqm": 7724646.523375771,
+      "total_area_ha": 772.46,
+      "area_ropani_str": "15,184 रोपनी 7 आना 2 पैसा",
+      "percentage": 1.77,
+      "rules_np": "नदी, खोला, सिमसार, ताल तथा जलाधार क्षेत्र। नदी किनारको निश्चित बहाव क्षेत्र (Right of Way / Buffer) भित्र भौतिक संरचना निर्माण निषेध।"
+    },
+    {
+      "zone_code": "RES",
+      "zone_name_np": "आवासीय क्षेत्र",
+      "zone_name_en": "Residential Zone",
+      "color": "#eab308",
+      "polygon_count": 1579,
+      "total_area_sqm": 5967814.541148721,
+      "total_area_ha": 596.78,
+      "area_ropani_str": "11,731 रोपनी 2 पैसा 2.2 दाम",
+      "percentage": 1.37,
+      "rules_np": "व्यक्तिगत तथा सामूहिक आवास, स्थानीय सेवा पसल, हरियाली पार्क तथा सामुदायिक प्रयोजन। भवन निर्माण संहिता (NBC 105:2020) पालना अनिवार्य।"
+    },
+    {
+      "zone_code": "COM",
+      "zone_name_np": "व्यावसायिक क्षेत्र",
+      "zone_name_en": "Commercial Zone",
+      "color": "#2563eb",
+      "polygon_count": 88,
+      "total_area_sqm": 532694.6654360988,
+      "total_area_ha": 53.27,
+      "area_ropani_str": "1,047 रोपनी 2 आना 0.6 दाम",
+      "percentage": 0.12,
+      "rules_np": "व्यापारिक भवन, बजार केन्द्र, होटल, रिसोर्ट, बैङ्क तथा वित्तीय संस्था, सपिङ कम्प्लेक्स तथा सेवा व्यवसाय सञ्चालन।"
+    },
+    {
+      "zone_code": "CULARCH",
+      "zone_name_np": "सांस्कृतिक तथा पुरातात्विक क्षेत्र",
+      "zone_name_en": "Cultural & Heritage Zone",
+      "color": "#9333ea",
+      "polygon_count": 144,
+      "total_area_sqm": 399742.97769161675,
+      "total_area_ha": 39.97,
+      "area_ropani_str": "785 रोपनी 12 आना 2 पैसा",
+      "percentage": 0.09,
+      "rules_np": "धार्मिक मन्दिर, गुम्बा, ऐतिहासिक गढी, जात्रा स्थल तथा पुरातात्विक सम्पदा क्षेत्र। मौलिक स्वरूपमा प्रतिकूल असर पर्ने कुनै पनि कार्य निषेध।"
+    },
+    {
+      "zone_code": "MIN",
+      "zone_name_np": "खानी तथा खनिज क्षेत्र",
+      "zone_name_en": "Mines & Minerals Zone",
+      "color": "#b45309",
+      "polygon_count": 16,
+      "total_area_sqm": 314976.7824031655,
+      "total_area_ha": 31.5,
+      "area_ropani_str": "619 रोपनी 2 आना 1 पैसा",
+      "percentage": 0.07,
+      "rules_np": "ढुङ्गा, गिट्टी, बालुवा तथा खनिज उत्खनन कार्य। भू-क्षय तथा वातावरणीय जोखिम न्यूनीकरण योजना अनिवार्य।"
+    },
+    {
+      "zone_code": "IND",
+      "zone_name_np": "औद्योगिक क्षेत्र",
+      "zone_name_en": "Industrial Zone",
+      "color": "#dc2626",
+      "polygon_count": 4,
+      "total_area_sqm": 51268.32648731881,
+      "total_area_ha": 5.13,
+      "area_ropani_str": "100 रोपनी 12 आना 1 पैसा",
+      "percentage": 0.01,
+      "rules_np": "साना तथा मझौला उद्योग, प्रशोधन केन्द्र, उत्पादन कारखाना तथा गोदाम। वातावरणीय मापदण्ड (IEE/EIA) तथा प्रदूषण नियन्त्रण अनिवार्य।"
+    }
+  ],
+  "wards": [
+    {
+      "ward_no": 1,
+      "ward_name": "वडा नं. १ (बाँसखर्क)",
+      "total_area_sqm": 14816227.708825912,
+      "total_area_ha": 1481.62,
+      "zones": {
+        "AGR": 656.18,
+        "FOR": 730.53,
+        "RES": 74.45,
+        "PUB": 2.01,
+        "IND": 0.68,
+        "CULARCH": 1.98,
+        "HYD": 4.42,
+        "COM": 0.96,
+        "MIN": 10.41
+      },
+      "area_ropani_str": "29,124 रोपनी 8 आना 1 पैसा"
+    },
+    {
+      "ward_no": 2,
+      "ward_name": "वडा नं. २ (बरुवा)",
+      "total_area_sqm": 45851562.70603187,
+      "total_area_ha": 4585.16,
+      "zones": {
+        "RES": 60.22,
+        "CULARCH": 0.79,
+        "PUB": 29.81,
+        "FOR": 3423.01,
+        "AGR": 1038.66,
+        "COM": 0.8,
+        "HYD": 28.79,
+        "MIN": 3.08
+      },
+      "area_ropani_str": "90,131 रोपनी 3 आना 3 पैसा"
+    },
+    {
+      "ward_no": 3,
+      "ward_name": "वडा नं. ३ (भोताङ)",
+      "total_area_sqm": 31571946.825646076,
+      "total_area_ha": 3157.19,
+      "zones": {
+        "RES": 59.93,
+        "PUB": 232.4,
+        "AGR": 984.15,
+        "FOR": 1670.84,
+        "HYD": 200.78,
+        "COM": 5.05,
+        "CULARCH": 0.39,
+        "MIN": 3.65
+      },
+      "area_ropani_str": "62,061 रोपनी 8 आना 2 पैसा"
+    },
+    {
+      "ward_no": 4,
+      "ward_name": "वडा नं. ४ (थाङपालकोट)",
+      "total_area_sqm": 8863829.900686856,
+      "total_area_ha": 886.38,
+      "zones": {
+        "PUB": 15.13,
+        "AGR": 694.33,
+        "FOR": 52.01,
+        "RES": 73.2,
+        "HYD": 14.16,
+        "COM": 9.55,
+        "CULARCH": 23.58,
+        "IND": 4.42
+      },
+      "area_ropani_str": "17,423 रोपनी 12 आना 2 पैसा"
+    },
+    {
+      "ward_no": 5,
+      "ward_name": "वडा नं. ५ (गुन्सा)",
+      "total_area_sqm": 36903469.61565799,
+      "total_area_ha": 3690.35,
+      "zones": {
+        "HYD": 21.59,
+        "FOR": 2926.01,
+        "AGR": 692.88,
+        "RES": 35.06,
+        "PUB": 1.79,
+        "COM": 12.33,
+        "CULARCH": 0.68
+      },
+      "area_ropani_str": "72,541 रोपनी 12 आना 3 पैसा"
+    },
+    {
+      "ward_no": 6,
+      "ward_name": "वडा नं. ६ (थाङपालधाप)",
+      "total_area_sqm": 12198427.31566778,
+      "total_area_ha": 1219.84,
+      "zones": {
+        "RES": 139.23,
+        "AGR": 872.47,
+        "FOR": 184.8,
+        "HYD": 13.63,
+        "PUB": 5.81,
+        "COM": 3.18,
+        "CULARCH": 0.19,
+        "MIN": 0.53
+      },
+      "area_ropani_str": "23,978 रोपनी 10 आना 2 पैसा"
+    },
+    {
+      "ward_no": 7,
+      "ward_name": "वडा नं. ७ (तिपेनी)",
+      "total_area_sqm": 21772724.28299472,
+      "total_area_ha": 2177.27,
+      "zones": {
+        "RES": 83.82,
+        "AGR": 916.29,
+        "FOR": 1087.22,
+        "MIN": 7.73,
+        "IND": 0.03,
+        "PUB": 59.88,
+        "CULARCH": 0.27,
+        "HYD": 16.71,
+        "COM": 5.33
+      },
+      "area_ropani_str": "42,799 रोपनी 2 पैसा 0.6 दाम"
+    },
+    {
+      "ward_no": 8,
+      "ward_name": "वडा नं. ८ (लागर्चे)",
+      "total_area_sqm": 15847008.582872031,
+      "total_area_ha": 1584.7,
+      "zones": {
+        "RES": 69.74,
+        "HYD": 12.79,
+        "PUB": 3.53,
+        "AGR": 885.91,
+        "FOR": 592.8,
+        "CULARCH": 0.6,
+        "COM": 13.22,
+        "MIN": 6.11
+      },
+      "area_ropani_str": "31,150 रोपनी 11 आना 3 पैसा"
+    },
+    {
+      "ward_no": 99,
+      "ward_name": "लाङटाङ राष्ट्रिय निकुञ्ज क्षेत्र",
+      "total_area_sqm": 248523017.80312127,
+      "total_area_ha": 24852.3,
+      "zones": {
+        "RES": 1.13,
+        "HYD": 459.59,
+        "PUB": 12487.33,
+        "COM": 2.84,
+        "CULARCH": 11.49,
+        "FOR": 11842.52,
+        "AGR": 47.39
+      },
+      "area_ropani_str": "488,526 रोपनी 2 आना 3.8 दाम"
+    }
+  ]
+}

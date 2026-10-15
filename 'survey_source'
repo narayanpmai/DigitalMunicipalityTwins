@@ -1,0 +1,1 @@
+DELETE FROM household_registries WHERE "matrixHouseNo" LIKE 'P03-D35%' OR "meta"- = 'smartptrm.com GPS Survey 2024'; 

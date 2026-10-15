@@ -1,0 +1,57 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+ * PANCHPOKHARI THANGPAL MUNICIPAL DIGITAL TWIN — DEMOGRAPHICS TABS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+ .demo-tabs-container {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  
+  .demo-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f8fafc;
+    color: #64748b;
+  }
+  
+  .demo-tab-btn:hover {
+    background: #e2e8f0;
+    color: #334155;
+    transform: translateY(-2px);
+  }
+  
+  .demo-tab-btn.active-teal {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 12px rgba(13, 148, 136, 0.3);
+  }
+  
+  .demo-tab-btn.active-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+  }
+  
+  .demo-tab-btn.active-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+  }

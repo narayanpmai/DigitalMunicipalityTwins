@@ -1,0 +1,956 @@
+/* ==========================================================================
+   HEALTH SERVICES & DHIS2 / HMIS MANAGEMENT - TABS DESIGN SYSTEM
+   Matches the attractive card tab design from Recruitment / Municipal twins
+   ========================================================================== */
+
+/* Tabs Wrapper & Container */
+.health-tabs-card-container {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Category Filter Chips */
+.health-category-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+}
+
+.health-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: #ffffff;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.health-category-chip:hover {
+  transform: translateY(-2px);
+  border-color: #94a3b8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.health-category-chip.active-all {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.3);
+}
+
+.health-category-chip.active-clinical {
+  background: #be123c;
+  color: #ffffff;
+  border-color: #be123c;
+  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.35);
+}
+
+.health-category-chip.active-store {
+  background: #c2410c;
+  color: #ffffff;
+  border-color: #c2410c;
+  box-shadow: 0 4px 14px rgba(194, 65, 12, 0.35);
+}
+
+.health-category-chip.active-public {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.health-category-chip.active-settings {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.health-category-badge {
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* Category Section Header */
+.health-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.health-group-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.health-group-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* ── TABS GRID ── */
+.health-tabs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .health-tabs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1080px) {
+  .health-tabs-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1400px) {
+  .health-tabs-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── TAB CARD BUTTON ── */
+.health-tab-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.95rem 1.15rem;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.health-tab-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+}
+
+.health-tab-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.health-tab-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.health-tab-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.health-tab-title {
+  font-size: 0.93rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.health-tab-subtitle {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.health-tab-pill-badge {
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ACTIVE TAB THEMES (Like Recruitment page in user screenshot)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. OPD (Crimson) */
+.health-tab-card.active-opd {
+  border-color: #be123c;
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+  box-shadow: 0 10px 25px -4px rgba(190, 18, 60, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-opd .health-tab-icon-box {
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.35);
+}
+.health-tab-card.active-opd .health-tab-title {
+  color: #9f1239;
+}
+.health-tab-card.active-opd .health-tab-pill-badge {
+  background: #be123c;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(190, 18, 60, 0.3);
+}
+
+/* 2. IPD (Orange) */
+.health-tab-card.active-ipd {
+  border-color: #ea580c;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  box-shadow: 0 10px 25px -4px rgba(234, 88, 12, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-ipd .health-tab-icon-box {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+}
+.health-tab-card.active-ipd .health-tab-title {
+  color: #c2410c;
+}
+.health-tab-card.active-ipd .health-tab-pill-badge {
+  background: #ea580c;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);
+}
+
+/* 3. Lab Tests (Purple) */
+.health-tab-card.active-lab {
+  border-color: #9333ea;
+  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+  box-shadow: 0 10px 25px -4px rgba(147, 51, 234, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-lab .health-tab-icon-box {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.35);
+}
+.health-tab-card.active-lab .health-tab-title {
+  color: #7e22ce;
+}
+.health-tab-card.active-lab .health-tab-pill-badge {
+  background: #9333ea;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.3);
+}
+
+/* 4. POS Counter (Pink) */
+.health-tab-card.active-pos {
+  border-color: #db2777;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf2f8 100%);
+  box-shadow: 0 10px 25px -4px rgba(219, 39, 119, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-pos .health-tab-icon-box {
+  background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(219, 39, 119, 0.35);
+}
+.health-tab-card.active-pos .health-tab-title {
+  color: #be185d;
+}
+.health-tab-card.active-pos .health-tab-pill-badge {
+  background: #db2777;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3);
+}
+
+/* 5. Purchase GRN (Slate) */
+.health-tab-card.active-purchase {
+  border-color: #334155;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  box-shadow: 0 10px 25px -4px rgba(51, 65, 85, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-purchase .health-tab-icon-box {
+  background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(51, 65, 85, 0.35);
+}
+.health-tab-card.active-purchase .health-tab-title {
+  color: #0f172a;
+}
+.health-tab-card.active-purchase .health-tab-pill-badge {
+  background: #334155;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(51, 65, 85, 0.3);
+}
+
+/* 6. Medicines Stock (Amber) */
+.health-tab-card.active-medicines {
+  border-color: #d97706;
+  background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+  box-shadow: 0 10px 25px -4px rgba(217, 119, 6, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-medicines .health-tab-icon-box {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+}
+.health-tab-card.active-medicines .health-tab-title {
+  color: #b45309;
+}
+.health-tab-card.active-medicines .health-tab-pill-badge {
+  background: #d97706;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+}
+
+/* 7. Insurance HIB (Teal) */
+.health-tab-card.active-insurance {
+  border-color: #0d9488;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
+  box-shadow: 0 10px 25px -4px rgba(13, 148, 136, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-insurance .health-tab-icon-box {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+}
+.health-tab-card.active-insurance .health-tab-title {
+  color: #0f766e;
+}
+.health-tab-card.active-insurance .health-tab-pill-badge {
+  background: #0d9488;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+}
+
+/* 7.5. Stock Transfers & Disposals (Indigo) */
+.health-tab-card.active-transfers {
+  border-color: #4f46e5;
+  background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
+  box-shadow: 0 10px 25px -4px rgba(79, 70, 229, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-transfers .health-tab-icon-box {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+.health-tab-card.active-transfers .health-tab-title {
+  color: #3730a3;
+}
+.health-tab-card.active-transfers .health-tab-pill-badge {
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+}
+
+/* 8. Facilities (Sky Blue) */
+.health-tab-card.active-facilities {
+  border-color: #0284c7;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+  box-shadow: 0 10px 25px -4px rgba(2, 132, 199, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-facilities .health-tab-icon-box {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+.health-tab-card.active-facilities .health-tab-title {
+  color: #0369a1;
+}
+.health-tab-card.active-facilities .health-tab-pill-badge {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+/* 9. DHIS2 Reports (Indigo) */
+.health-tab-card.active-dhis2 {
+  border-color: #4338ca;
+  background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
+  box-shadow: 0 10px 25px -4px rgba(67, 56, 202, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-dhis2 .health-tab-icon-box {
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.35);
+}
+.health-tab-card.active-dhis2 .health-tab-title {
+  color: #3730a3;
+}
+.health-tab-card.active-dhis2 .health-tab-pill-badge {
+  background: #4338ca;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(67, 56, 202, 0.3);
+}
+
+/* 10. Ambulances (Red) */
+.health-tab-card.active-ambulances {
+  border-color: #dc2626;
+  background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+  box-shadow: 0 10px 25px -4px rgba(220, 38, 38, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-ambulances .health-tab-icon-box {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+}
+.health-tab-card.active-ambulances .health-tab-title {
+  color: #b91c1c;
+}
+.health-tab-card.active-ambulances .health-tab-pill-badge {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+/* 11. Blood Bank (Crimson / Deep Red) */
+.health-tab-card.active-blood {
+  border-color: #b91c1c;
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+  box-shadow: 0 10px 25px -4px rgba(185, 28, 28, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-blood .health-tab-icon-box {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.35);
+}
+.health-tab-card.active-blood .health-tab-title {
+  color: #991b1b;
+}
+.health-tab-card.active-blood .health-tab-pill-badge {
+  background: #b91c1c;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(185, 28, 28, 0.3);
+}
+
+/* 12. Immunization (Green) */
+.health-tab-card.active-immunization {
+  border-color: #16a34a;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+  box-shadow: 0 10px 25px -4px rgba(22, 163, 74, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-immunization .health-tab-icon-box {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+}
+.health-tab-card.active-immunization .health-tab-title {
+  color: #15803d;
+}
+.health-tab-card.active-immunization .health-tab-pill-badge {
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+}
+
+/* 13. Settings (Violet) */
+.health-tab-card.active-settings {
+  border-color: #7c3aed;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+  box-shadow: 0 10px 25px -4px rgba(124, 58, 237, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.health-tab-card.active-settings .health-tab-icon-box {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+.health-tab-card.active-settings .health-tab-title {
+  color: #6d28d9;
+}
+.health-tab-card.active-settings .health-tab-pill-badge {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODERN EHR SEGMENTED DOCK & TAB NAVIGATION SYSTEM
+   (Linear / Apple inspired glassmorphic dock with modality theme accents)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ehr-nav-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header & Modality Switcher Section */
+.ehr-modality-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ehr-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ehr-title-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+  flex-shrink: 0;
+}
+
+.ehr-title-text h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ehr-title-text p {
+  font-size: 0.77rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+}
+
+/* Modality Quick Active Tag */
+.ehr-status-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.25s ease;
+}
+
+.ehr-status-chip.mod-clinical {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.ehr-status-chip.mod-pharmacy_store {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+.ehr-status-chip.mod-insurance {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+.ehr-status-chip.mod-public_health {
+  background: #f0fdf4;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+.ehr-status-chip.mod-settings {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.ehr-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  animation: ehrPulse 2s infinite;
+}
+
+@keyframes ehrPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* ── PRIMARY MODALITY DOCK ── */
+.ehr-pill-switcher-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ehr-pill-switcher {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 5px;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ehr-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #475569;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+  flex: 1;
+}
+
+.ehr-pill-btn:hover:not(.active) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+}
+
+/* Thematic Active Modality Gradient Buttons */
+.ehr-pill-btn.active {
+  font-weight: 700;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ehr-pill-btn.ehr-mod-clinical.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
+}
+
+.ehr-pill-btn.ehr-mod-pharmacy.active {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.32);
+}
+
+.ehr-pill-btn.ehr-mod-insurance.active {
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.32);
+}
+
+.ehr-pill-btn.ehr-mod-public.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.32);
+}
+
+.ehr-pill-btn.ehr-mod-settings.active {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.32);
+}
+
+.ehr-pill-btn.active svg {
+  color: #ffffff;
+}
+
+.ehr-pill-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.ehr-pill-btn.active .ehr-pill-badge {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+/* ── SECONDARY SUB-NAVIGATION TOOLBAR ── */
+.ehr-subpill-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.ehr-subpills-group {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ehr-subpill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 15px;
+  border-radius: 9px;
+  font-size: 0.81rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ehr-subpill-btn:hover:not(.active) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Modern Apple / Linear Elevated Active Sub-Tab */
+.ehr-subpill-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ehr-subpill-tag {
+  font-size: 0.69rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #475569;
+  transition: all 0.18s;
+}
+
+.ehr-subpill-btn.active .ehr-subpill-tag {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* Filter Controls inside Toolbar */
+.ehr-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ehr-ward-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ehr-ward-icon {
+  position: absolute;
+  left: 10px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.ehr-ward-select {
+  padding: 7px 14px 7px 30px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s;
+}
+
+.ehr-ward-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ehr-search-box {
+  position: relative;
+  min-width: 240px;
+}
+
+.ehr-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.ehr-search-input {
+  width: 100%;
+  padding: 7px 28px 7px 32px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background-color: #ffffff;
+  font-size: 0.8rem;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s;
+}
+
+.ehr-search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ehr-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ehr-search-clear:hover {
+  color: #0f172a;
+}
+
+/* ── SLEEK MINIMAL CONTEXT BREADCRUMB STRIP ── */
+.ehr-context-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.ehr-context-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.ehr-context-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #2563eb;
+}
+
+.ehr-context-modality {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.ehr-context-arrow {
+  color: #94a3b8;
+}
+
+.ehr-context-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ehr-context-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+

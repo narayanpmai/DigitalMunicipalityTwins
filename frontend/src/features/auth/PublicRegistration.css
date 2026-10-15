@@ -1,0 +1,490 @@
+/* ===================================================================
+   PUBLIC REGISTRATION PAGE STYLES
+   Municipal Digital Twins - Panchpokhari Thangpal
+   =================================================================== */
+
+.reg-page-container {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(180deg, #f0f4f8 0%, #f8fafc 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1.5rem 2rem 3.5rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Header Banner */
+.reg-header-banner {
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 2rem;
+}
+
+.reg-palika-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+}
+
+.reg-title {
+  font-size: 2.2rem;
+  font-weight: 850;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.5rem;
+  line-height: 1.25;
+}
+
+.reg-subtitle {
+  font-size: 1.02rem;
+  color: #64748b;
+  margin: 0 auto;
+  line-height: 1.55;
+  max-width: 800px;
+}
+
+/* Main Card (Full Width Fluid) */
+.reg-main-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.06), 0 5px 15px -3px rgba(15, 23, 42, 0.02);
+  padding: 2.5rem 3rem;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Stepper Track */
+.reg-stepper-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.reg-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: default;
+  z-index: 2;
+}
+
+.reg-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+
+.reg-step-circle.active {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.reg-step-circle.completed {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.reg-step-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-step-label.active {
+  color: #1e293b;
+}
+
+.reg-step-sublabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.reg-step-line {
+  height: 3px;
+  width: 120px;
+  max-width: 15vw;
+  background: #e2e8f0;
+  margin: 0 1.25rem;
+  transition: background 0.3s ease;
+}
+
+.reg-step-line.completed {
+  background: #10b981;
+}
+
+/* Role Selection 4-Column Full-Width Grid */
+.reg-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 1200px) {
+  .reg-roles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .reg-roles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.reg-role-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 1.4rem;
+  background: #ffffff;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.reg-role-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.08);
+}
+
+.reg-role-card.selected {
+  border-color: #2563eb;
+  background: #f0f7ff;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.2), 0 0 0 1px #2563eb;
+}
+
+/* Radio button check circle */
+.reg-role-radio {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.reg-role-card.selected .reg-role-radio {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.reg-role-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* Icon Box inside Card */
+.reg-role-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.reg-role-title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reg-role-card.selected .reg-role-title {
+  color: #1e40af;
+}
+
+.reg-role-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}
+
+.reg-role-card.selected .reg-role-desc {
+  color: #334155;
+}
+
+.reg-role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.reg-role-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.reg-role-card.selected .reg-role-tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+/* Form Controls */
+.reg-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.reg-input-group {
+  margin-bottom: 1.15rem;
+}
+
+.reg-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.45rem;
+}
+
+.reg-input-field {
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background-color: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.reg-input-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background-color: #ffffff;
+}
+
+/* Sub-wizard Tabs */
+.reg-subtabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.35rem;
+  border-radius: 12px;
+  margin-bottom: 1.75rem;
+}
+
+.reg-subtab-btn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.reg-subtab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Action Buttons */
+.reg-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1.5px solid #f1f5f9;
+  padding-top: 1.75rem;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.reg-btn-primary {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-weight: 750;
+  font-size: 0.98rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
+  transition: all 0.22s ease;
+}
+
+.reg-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.5);
+}
+
+.reg-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reg-btn-secondary {
+  background: #f8fafc;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.reg-btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+/* Alerts */
+.reg-alert-error {
+  margin-bottom: 1.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* Footer Links */
+.reg-footer-box {
+  margin-top: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.reg-footer-link {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.reg-footer-link a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.reg-footer-link a:hover {
+  text-decoration: underline;
+}
+
+.reg-security-note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+  .reg-roles-grid,
+  .reg-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-main-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .reg-stepper-container {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 0.5rem;
+  }
+
+  .reg-step-line {
+    width: 30px;
+    margin: 0 0.4rem;
+  }
+
+  .reg-title {
+    font-size: 1.75rem;
+  }
+}

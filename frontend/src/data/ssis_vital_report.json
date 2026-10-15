@@ -1,0 +1,259 @@
+{
+  "system": "सामाजिक सुरक्षा तथा व्यक्तिगत घटना दर्ता प्रणाली (SSIS / VERSP-MIS)",
+  "organization": "पाँचपोखरी थाङपाल गाउँपालिका (Panchpokhari Thangpal Rural Municipality)",
+  "source_file": "GenderEventAndEventRegristrationReportParam (2).xls",
+  "wards": [
+    {
+      "ward": 1,
+      "ward_label": "वडा नं. 1",
+      "birth": {
+        "male": 43,
+        "female": 45,
+        "third_gender": 0,
+        "total": 88
+      },
+      "death": {
+        "male": 15,
+        "female": 18,
+        "third_gender": 0,
+        "total": 33
+      },
+      "divorce": 9,
+      "marriage": 38,
+      "migration_in": {
+        "cases": 0,
+        "members": 0
+      },
+      "migration_out": {
+        "cases": 3,
+        "members": 13
+      },
+      "unclaimed": 0,
+      "total_events": 171
+    },
+    {
+      "ward": 2,
+      "ward_label": "वडा नं. 2",
+      "birth": {
+        "male": 40,
+        "female": 46,
+        "third_gender": 0,
+        "total": 86
+      },
+      "death": {
+        "male": 24,
+        "female": 15,
+        "third_gender": 0,
+        "total": 39
+      },
+      "divorce": 19,
+      "marriage": 66,
+      "migration_in": {
+        "cases": 0,
+        "members": 0
+      },
+      "migration_out": {
+        "cases": 4,
+        "members": 11
+      },
+      "unclaimed": 0,
+      "total_events": 214
+    },
+    {
+      "ward": 3,
+      "ward_label": "वडा नं. 3",
+      "birth": {
+        "male": 63,
+        "female": 55,
+        "third_gender": 0,
+        "total": 118
+      },
+      "death": {
+        "male": 18,
+        "female": 22,
+        "third_gender": 0,
+        "total": 40
+      },
+      "divorce": 20,
+      "marriage": 40,
+      "migration_in": {
+        "cases": 0,
+        "members": 0
+      },
+      "migration_out": {
+        "cases": 0,
+        "members": 0
+      },
+      "unclaimed": 0,
+      "total_events": 218
+    },
+    {
+      "ward": 4,
+      "ward_label": "वडा नं. 4",
+      "birth": {
+        "male": 50,
+        "female": 47,
+        "third_gender": 0,
+        "total": 97
+      },
+      "death": {
+        "male": 24,
+        "female": 21,
+        "third_gender": 0,
+        "total": 45
+      },
+      "divorce": 14,
+      "marriage": 66,
+      "migration_in": {
+        "cases": 2,
+        "members": 5
+      },
+      "migration_out": {
+        "cases": 7,
+        "members": 27
+      },
+      "unclaimed": 0,
+      "total_events": 231
+    },
+    {
+      "ward": 5,
+      "ward_label": "वडा नं. 5",
+      "birth": {
+        "male": 38,
+        "female": 42,
+        "third_gender": 0,
+        "total": 80
+      },
+      "death": {
+        "male": 13,
+        "female": 17,
+        "third_gender": 0,
+        "total": 30
+      },
+      "divorce": 16,
+      "marriage": 45,
+      "migration_in": {
+        "cases": 1,
+        "members": 1
+      },
+      "migration_out": {
+        "cases": 1,
+        "members": 3
+      },
+      "unclaimed": 0,
+      "total_events": 173
+    },
+    {
+      "ward": 6,
+      "ward_label": "वडा नं. 6",
+      "birth": {
+        "male": 52,
+        "female": 34,
+        "third_gender": 0,
+        "total": 86
+      },
+      "death": {
+        "male": 24,
+        "female": 25,
+        "third_gender": 0,
+        "total": 49
+      },
+      "divorce": 10,
+      "marriage": 50,
+      "migration_in": {
+        "cases": 1,
+        "members": 1
+      },
+      "migration_out": {
+        "cases": 8,
+        "members": 23
+      },
+      "unclaimed": 0,
+      "total_events": 204
+    },
+    {
+      "ward": 7,
+      "ward_label": "वडा नं. 7",
+      "birth": {
+        "male": 87,
+        "female": 77,
+        "third_gender": 0,
+        "total": 164
+      },
+      "death": {
+        "male": 20,
+        "female": 11,
+        "third_gender": 0,
+        "total": 31
+      },
+      "divorce": 15,
+      "marriage": 57,
+      "migration_in": {
+        "cases": 0,
+        "members": 0
+      },
+      "migration_out": {
+        "cases": 1,
+        "members": 6
+      },
+      "unclaimed": 0,
+      "total_events": 268
+    },
+    {
+      "ward": 8,
+      "ward_label": "वडा नं. 8",
+      "birth": {
+        "male": 12,
+        "female": 27,
+        "third_gender": 0,
+        "total": 39
+      },
+      "death": {
+        "male": 30,
+        "female": 15,
+        "third_gender": 0,
+        "total": 45
+      },
+      "divorce": 11,
+      "marriage": 30,
+      "migration_in": {
+        "cases": 0,
+        "members": 0
+      },
+      "migration_out": {
+        "cases": 6,
+        "members": 20
+      },
+      "unclaimed": 0,
+      "total_events": 131
+    }
+  ],
+  "summary": {
+    "ward": "total",
+    "ward_label": "कुल जम्मा",
+    "birth": {
+      "male": 385,
+      "female": 373,
+      "third_gender": 0,
+      "total": 758
+    },
+    "death": {
+      "male": 168,
+      "female": 144,
+      "third_gender": 0,
+      "total": 312
+    },
+    "divorce": 114,
+    "marriage": 392,
+    "migration_in": {
+      "cases": 4,
+      "members": 7
+    },
+    "migration_out": {
+      "cases": 30,
+      "members": 103
+    },
+    "unclaimed": 0,
+    "total_events": 1610
+  }
+}

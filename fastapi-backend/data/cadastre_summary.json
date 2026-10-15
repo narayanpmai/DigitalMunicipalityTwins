@@ -1,0 +1,52 @@
+{
+  "gdb_path": "C:\\Users\\UNepal\\OneDrive\\Panchpokhari offce\\ToPachpakhoriLocalLevel\\01Data\\Geodatabase\\SINDHUPALCHOK_PKG_09_MUTM_87.gdb",
+  "projection": "Nepal_Nagarkot_TM_87",
+  "central_meridian": 87,
+  "datum": "Nepal 1981 / Everest 1830",
+  "total_parcels": 53180,
+  "total_area_sqm": 149054182.18264273,
+  "total_area_ha": 14905.42,
+  "total_area_ropani": "292,998 रोपनी 7 आना 2 पैसा",
+  "ward_distribution": [
+    {
+      "ward_no": 1,
+      "parcel_count": 6111
+    },
+    {
+      "ward_no": 2,
+      "parcel_count": 9424
+    },
+    {
+      "ward_no": 3,
+      "parcel_count": 9172
+    },
+    {
+      "ward_no": 4,
+      "parcel_count": 7395
+    },
+    {
+      "ward_no": 5,
+      "parcel_count": 6919
+    },
+    {
+      "ward_no": 6,
+      "parcel_count": 7251
+    },
+    {
+      "ward_no": 7,
+      "parcel_count": 5989
+    },
+    {
+      "ward_no": 8,
+      "parcel_count": 327
+    },
+    {
+      "ward_no": 9,
+      "parcel_count": 1
+    },
+    {
+      "ward_no": 99,
+      "parcel_count": 591
+    }
+  ]
+}

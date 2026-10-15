@@ -1,0 +1,296 @@
+/* ═══ SUPER ADMIN SIDEBAR (MULTI-TENANT) ════════════════════════════════ */
+
+:root {
+  --sa-sidebar-bg: #0d1f3c; /* Dark Navy to match Admin */
+  --sa-card-bg: rgba(255, 255, 255, 0.03); /* Subtle bg like Admin */
+  --sa-card-hover: #1a3260; /* Match Admin hover */
+  --sa-card-active: #1e4d9b; /* Match Admin active */
+  --sa-text-main: #ffffff;
+  --sa-text-sub: #c8daf5; /* Match Admin text muted */
+  --sa-icon-bg: transparent;
+  --sa-icon-color: #3b82f6; /* Match Admin accent */
+  --sa-section-title: #7ba3d4; /* Match Admin section label */
+}
+
+.sa-sidebar {
+  width: var(--portal-sidebar-w, 320px);
+  background: var(--sa-sidebar-bg);
+  position: fixed;
+  top: var(--portal-top-h, 75px);
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1.5rem 1rem;
+}
+
+.sa-section {
+  margin-bottom: 2rem;
+}
+
+.sa-section-title {
+  color: var(--sa-section-title);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.sa-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sa-nav li {
+  margin-bottom: 1rem;
+}
+
+.sa-card-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--sa-card-bg);
+  padding: 12px 15px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.sa-card-link:hover {
+  background: var(--sa-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.sa-card-link.active {
+  background: var(--sa-card-active);
+  border-left: 4px solid var(--sa-icon-color);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.sa-icon-box {
+  width: 48px;
+  height: 48px;
+  background: var(--sa-icon-bg);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sa-icon-box i {
+  color: var(--sa-icon-color);
+  font-size: 1.5rem;
+}
+
+.sa-text-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.sa-text-title {
+  color: var(--sa-text-main);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.sa-text-subtitle {
+  color: var(--sa-text-sub);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.sa-main-content {
+  flex-grow: 1;
+  margin-left: var(--portal-sidebar-w, 320px);
+  padding: 2rem;
+  min-height: calc(100vh - var(--portal-top-h, 75px));
+  background-color: #f1f5f9;
+  transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1e293b; /* Fix faint text issue */
+}
+
+.sa-main-content .text-muted {
+  color: #64748b !important; /* Ensure muted text is readable */
+}
+
+.sa-main-content h1, 
+.sa-main-content h2, 
+.sa-main-content h3, 
+.sa-main-content h4, 
+.sa-main-content h5, 
+.sa-main-content h6 {
+  color: #0f172a; /* Darker headings for contrast */
+}
+
+@media (max-width: 991px) {
+  .sa-sidebar {
+    transform: translateX(-100%);
+    width: 300px;
+  }
+  .sa-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .sa-main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   MODERN SUPER ADMIN UI UPGRADES
+   ═════════════════════════════════════════════════════════════════ */
+.sa-header-bar {
+  background: #ffffff !important;
+  border-radius: 18px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+  padding: 1.25rem 1.75rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.sa-kpi-card {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04) !important;
+  padding: 1.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sa-kpi-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 16px 32px -4px rgba(0, 0, 0, 0.1) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.sa-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+.sa-kpi-blue::before { background: linear-gradient(90deg, #2563eb, #38bdf8) !important; }
+.sa-kpi-green::before { background: linear-gradient(90deg, #059669, #34d399) !important; }
+.sa-kpi-amber::before { background: linear-gradient(90deg, #d97706, #fbbf24) !important; }
+.sa-kpi-purple::before { background: linear-gradient(90deg, #7c3aed, #06b6d4) !important; }
+
+.sa-icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.sa-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: saPulse 1.8s infinite;
+}
+
+@keyframes saPulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.sa-service-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sa-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.sa-table thead th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 1rem !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.sa-table tbody td {
+  padding: 1.1rem 1rem !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+.sa-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+/* ── Bikram Sambat Calendar Date Picker Styles ── */
+.bs-cal-day-cell {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+.bs-cal-day-cell:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  transform: scale(1.08);
+  border-color: #60a5fa !important;
+  z-index: 2;
+}
+.bs-cal-day-cell.bs-cal-sat {
+  color: #f87171 !important;
+}
+.bs-cal-day-cell.bs-cal-today {
+  border: 2px solid #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #38bdf8 !important;
+}
+.bs-cal-day-cell.bs-cal-selected {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+  border-color: #93c5fd !important;
+}
+.bs-cal-empty-cell {
+  height: 38px;
+  background: transparent;
+}
+

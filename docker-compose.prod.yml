@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: p5_postgres_prod
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER:-p5admin}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-Panchpokhari@2024}
+      - POSTGRES_DB=${DB_NAME:-p5digital}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-p5admin} -d ${DB_NAME:-p5digital}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai_service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: p5_ai_service_prod
+    environment:
+      - DB_HOST=db
+      - DB_USER=${DB_USER:-p5admin}
+      - DB_PASSWORD=${DB_PASSWORD:-Panchpokhari@2024}
+      - DB_NAME=${DB_NAME:-p5digital}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  backend:
+    build:
+      context: ./fastapi-backend
+      dockerfile: Dockerfile
+    container_name: p5_fastapi_backend_prod
+    environment:
+      - ENV=production
+      - DB_USER=${DB_USER:-p5admin}
+      - DB_PASSWORD=${DB_PASSWORD:-Panchpokhari@2024}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-p5digital}
+      - JWT_SECRET=${JWT_SECRET:-production-jwt-secret-key-change-me}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-production-refresh-secret-key-change-me}
+      - JWT_ACCESS_EXPIRES_DAYS=7
+      - JWT_REFRESH_EXPIRES_DAYS=30
+      - AI_SERVICE_URL=http://ai_service:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - p5_uploads_prod:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api/v1
+    container_name: p5_frontend_prod
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: p5_redis_prod
+    restart: always
+
+volumes:
+  pgdata_prod:
+  p5_uploads_prod:

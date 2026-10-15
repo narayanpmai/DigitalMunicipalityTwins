@@ -1,0 +1,181 @@
+/* ═══ PORTAL LAYOUT - MODERN UI ════════════════════════════════ */
+:root {
+  --portal-sidebar-w: 280px;
+  --portal-top-h: 75px;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --portal-accent: #3b82f6;
+}
+
+/* Glassmorphism Navbar */
+.p5-navbar {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  height: var(--portal-top-h);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.portal-wrapper {
+  display: flex;
+  min-height: 100vh;
+  padding-top: var(--portal-top-h);
+  background-color: #f8fafc;
+}
+
+/* Premium Sidebar */
+.portal-sidebar {
+  width: var(--portal-sidebar-w);
+  background: #072e73 !important; /* Dark Blue */
+  border-right: none;
+  position: fixed;
+  top: var(--portal-top-h);
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.15) !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ps-header {
+  padding: 1.8rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ps-header h5 {
+  margin: 0;
+  color: #82a8e8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: var(--font-nepali);
+}
+
+.portal-sidebar .ps-nav {
+  list-style: none;
+  padding: 1.5rem 1rem;
+  margin: 0;
+}
+.portal-sidebar .ps-nav li {
+  margin-bottom: 8px;
+}
+.portal-sidebar .ps-nav a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #143f88;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-family: var(--font-nepali);
+}
+
+.portal-sidebar .ps-nav a:hover, .portal-sidebar .ps-nav a.active {
+  background: #1e4a9c;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.portal-sidebar .ps-nav a i {
+  width: 48px;
+  height: 48px;
+  background: #e6f0ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.portal-sidebar .ps-nav a:hover i {
+  transform: scale(1.1);
+}
+
+.portal-main {
+  flex-grow: 1;
+  margin-left: var(--portal-sidebar-w);
+  padding: 0;
+  min-height: calc(100vh - var(--portal-top-h));
+  transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1e293b; /* Fix white text on white bg */
+}
+
+.portal-main .text-muted {
+  color: #64748b !important;
+}
+
+.portal-main h1, .portal-main h2, .portal-main h3, .portal-main h4, .portal-main h5, .portal-main h6 {
+  color: #0f172a;
+}
+
+/* Adjust page-hero for portal */
+.page-hero {
+  height: 35vh !important;
+  border-radius: 0 0 30px 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+.page-hero::before {
+  border-radius: 0 0 30px 30px;
+}
+
+/* Mobile Toggler Button for Sidebar */
+.sidebar-toggler {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: none;
+}
+.sidebar-toggler:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+@media (max-width: 991px) {
+  .sidebar-toggler {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .portal-sidebar {
+    transform: translateX(-100%);
+    width: 280px;
+  }
+  .portal-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .portal-main {
+    margin-left: 0;
+  }
+  
+  /* Dim background overlay for mobile */
+  .sidebar-overlay {
+    position: fixed;
+    top: var(--portal-top-h);
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15,23,42,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}

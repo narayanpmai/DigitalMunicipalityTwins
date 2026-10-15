@@ -1,0 +1,452 @@
+/* ==========================================================================
+   PALIKA DIGITAL PROFILE (MUNICIPAL DIGITAL TWIN) 2026 DESIGN SYSTEM
+   पाँचपोखरी थाङपाल गाउँपालिका - एकीकृत डिजिटल प्रोफाइल तथा इन्फोग्राफिक्स प्रणाली
+   ========================================================================== */
+
+/* ── COMMAND CENTER HERO BANNER ────────────────────────────────────────── */
+.palika-hero-banner {
+  background: linear-gradient(135deg, #0f2b48 0%, #134074 45%, #0d5c63 100%);
+  border-radius: 20px;
+  padding: 2rem 2.25rem;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 36px -8px rgba(15, 43, 72, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.palika-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(2, 132, 199, 0.15) 50%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.palika-hero-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 25%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.palika-telemetry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a7f3d0;
+  letter-spacing: 0.02em;
+}
+
+.palika-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34d399;
+  animation: palikaPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes palikaPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.3);
+  }
+}
+
+/* ── LUXURY GLASS CARDS ─────────────────────────────────────────────────── */
+.palika-glass-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.palika-glass-card:hover {
+  border-color: rgba(2, 132, 199, 0.35);
+  box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08);
+}
+
+/* ── EXECUTIVE KPI GLOW CARDS ──────────────────────────────────────────── */
+.palika-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.palika-kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.palika-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.08);
+}
+
+.palika-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  background: var(--kpi-accent, #0284c7);
+}
+
+.palika-kpi-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--icon-bg, #e0f2fe);
+  color: var(--icon-color, #0284c7);
+  font-size: 1.35rem;
+  box-shadow: 0 4px 12px var(--icon-shadow, rgba(2, 132, 199, 0.2));
+}
+
+.palika-kpi-val {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* ── ULTRA-PREMIUM GLASSMORPHIC TAB SWITCHER ────────────────────────────── */
+.palika-tab-ribbon {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.8) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.palika-tab-ribbon::-webkit-scrollbar {
+  display: none;
+}
+
+.palika-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 0.6rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.palika-tab-pill:hover {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  transform: translateY(-2px);
+}
+
+.palika-tab-pill.active {
+  background: #ffffff;
+  color: #0f4c81;
+  border-color: rgba(147, 197, 253, 0.6);
+  box-shadow: 0 6px 20px rgba(15, 76, 129, 0.12);
+}
+
+.palika-tab-pill.active.primary {
+  background: linear-gradient(135deg, #0f4c81 0%, #1e40af 100%);
+  color: #ffffff;
+  border-color: #1e40af;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.35);
+}
+
+.palika-tab-pill.active.primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: shimmerTab 2.5s infinite;
+}
+
+@keyframes shimmerTab {
+  100% { left: 200%; }
+}
+
+.palika-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.06);
+  color: #475569;
+  margin-left: 6px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+}
+
+.palika-tab-pill.active .palika-tab-badge {
+  background: rgba(15, 76, 129, 0.12);
+  color: #0f4c81;
+}
+
+.palika-tab-pill.active.primary .palika-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* ── DEMOGRAPHIC AGE-SEX PYRAMID ────────────────────────────────────────── */
+.palika-pyramid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 1.25rem 0;
+}
+
+.palika-pyramid-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.palika-pyramid-label {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.palika-pyramid-bar-left {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.palika-pyramid-fill-male {
+  height: 18px;
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+  border-radius: 4px 0 0 4px;
+  transition: width 0.6s ease;
+}
+
+.palika-pyramid-bar-right {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+}
+
+.palika-pyramid-fill-female {
+  height: 18px;
+  background: linear-gradient(90deg, #ec4899, #f43f5e);
+  border-radius: 0 4px 4px 0;
+  transition: width 0.6s ease;
+}
+
+/* ── VISUAL PROGRESS METERS ────────────────────────────────────────────── */
+.palika-meter-container {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.palika-meter-track {
+  width: 100%;
+  height: 9px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.palika-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── LEADERSHIP & WARD CHIP STYLES ──────────────────────────────────────── */
+.palika-leader-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.palika-leader-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  border-color: #0284c7;
+}
+
+.palika-leader-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f4c81;
+  font-size: 1.5rem;
+  border: 2px solid #e2e8f0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.palika-ward-chip-track {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+
+.palika-ward-chip {
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.palika-ward-chip:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background: #f0f9ff;
+}
+
+.palika-ward-chip.active {
+  background: #0f4c81;
+  color: #ffffff;
+  border-color: #0f4c81;
+  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.25);
+}
+
+/* ── SECTORAL INFOGRAPHIC TILES ────────────────────────────────────────── */
+.palika-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.palika-sector-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.35rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.22s ease;
+}
+
+.palika-sector-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.palika-sector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── OFFICIAL BULLETIN / FACTSHEET PRINT SHEET ─────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .palika-print-area, .palika-print-area * {
+    visibility: visible;
+  }
+  .palika-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,0 +1,185 @@
+/* DigitalSifaris.css */
+
+.sifaris-container {
+    padding: 0.5rem 0;
+    width: 100%;
+    min-height: auto;
+    font-family: 'Outfit', 'Noto Sans Devanagari', 'Inter', sans-serif;
+    animation: fadeIn 0.8s ease-in-out;
+    box-sizing: border-box;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sifaris-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.sifaris-header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0;
+    background: -webkit-linear-gradient(#27ae60, #2ecc71);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sifaris-header p {
+    font-size: 1.05rem;
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+}
+
+.sifaris-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.sifaris-tab-btn {
+    padding: 0.75rem 1.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    background: #ffffff;
+    color: #34495e;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: all 0.25s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.sifaris-tab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.sifaris-tab-btn.active {
+    background: #27ae60;
+    color: white;
+    border-color: #27ae60;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+}
+
+.sifaris-content-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sifaris-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.sifaris-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sifaris-input-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.sifaris-input-group input,
+.sifaris-input-group select,
+.sifaris-input-group textarea {
+    padding: 0.8rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fdfdfd;
+}
+
+.sifaris-input-group input:focus,
+.sifaris-input-group select:focus,
+.sifaris-input-group textarea:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+    background: white;
+}
+
+.sifaris-submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+.sifaris-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+.sifaris-table-container {
+    margin-top: 3rem;
+    overflow-x: auto;
+}
+
+.sifaris-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.sifaris-table th,
+.sifaris-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.sifaris-table th {
+    background: #27ae60;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.sifaris-table tr:hover {
+    background: #fdf5e6;
+}
+
+.sifaris-table tr:last-child td {
+    border-bottom: none;
+}

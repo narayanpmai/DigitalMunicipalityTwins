@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "236616129415",
+    "project_id": "municipaltwins",
+    "storage_bucket": "municipaltwins.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236616129415:android:9ff9c5f97efecdabf5d122",
+        "android_client_info": {
+          "package_name": "com.panchpokharimun"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEtKFjEPM_gkHUxsbH6wl_9JzBYJGtkpE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
