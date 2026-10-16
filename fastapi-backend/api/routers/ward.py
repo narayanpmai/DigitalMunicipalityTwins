@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -16,10 +16,43 @@ router = APIRouter(
 
 @router.get("")
 @router.get("/")
-def get_wards(db: Session = Depends(get_db)):
-    wards = db.query(Ward).order_by(Ward.ward_number).all()
-    # Single Source of Truth: load current elected representatives
-    reps = db.query(Representative).filter(Representative.is_current == True).all()
+def get_wards(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    db: Session = Depends(get_db)
+):
+    eff_tenant = tenant_id or x_tenant_id
+    query = db.query(Ward)
+    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "localhost", "all", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+        wards = query.filter(Ward.tenant_id == eff_tenant).order_by(Ward.ward_number).all()
+        if not wards:
+            for w_num in range(1, 9):
+                w_id = uuid.uuid4()
+                new_w = Ward(
+                    id=w_id,
+                    tenant_id=eff_tenant,
+                    ward_number=w_num,
+                    name=f"वडा नं. {w_num}",
+                    ward_chair_name=f"वडाध्यक्ष (वडा नं. {w_num})",
+                    chairperson=f"वडाध्यक्ष (वडा नं. {w_num})",
+                    secretary="वडा सचिव",
+                    population=2800 + (w_num * 140),
+                    total_population=2800 + (w_num * 140),
+                    male_population=1380 + (w_num * 70),
+                    female_population=1420 + (w_num * 70),
+                    households=640 + (w_num * 30),
+                    schools=4,
+                    health_posts=1,
+                    is_active=True
+                )
+                db.add(new_w)
+            db.commit()
+            wards = query.filter(Ward.tenant_id == eff_tenant).order_by(Ward.ward_number).all()
+        reps = db.query(Representative).filter(Representative.tenant_id == eff_tenant, Representative.is_current == True).all()
+    else:
+        wards = query.filter((Ward.tenant_id == "panchpokhari") | (Ward.tenant_id == "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06") | (Ward.tenant_id == None)).order_by(Ward.ward_number).all()
+        reps = db.query(Representative).filter(Representative.is_current == True).all()
+
     rep_map = {}
     for r in reps:
         if r.ward_no is not None:
@@ -44,8 +77,18 @@ def get_wards(db: Session = Depends(get_db)):
 
 
 @router.get("/stats")
-def get_ward_stats(db: Session = Depends(get_db)):
-    wards = db.query(Ward).all()
+def get_ward_stats(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    db: Session = Depends(get_db)
+):
+    eff_tenant = tenant_id or x_tenant_id
+    query = db.query(Ward)
+    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "localhost", "all", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+        wards = query.filter(Ward.tenant_id == eff_tenant).all()
+    else:
+        wards = query.filter((Ward.tenant_id == "panchpokhari") | (Ward.tenant_id == "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06") | (Ward.tenant_id == None)).all()
+
     total_pop = sum(int(w.total_population or w.population or 0) for w in wards)
     total_hh = sum(int(w.households or 0) for w in wards)
     total_schools = sum(int(w.schools or 0) for w in wards)

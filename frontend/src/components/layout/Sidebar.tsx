@@ -85,17 +85,11 @@ export const adminNavSections: NavSection[] = [
     title: 'मुख्य नियन्त्रण कक्ष (Command & Intelligence)',
     items: [
       {
-        label: 'कार्यपालिका कमान्ड ड्यासवोर्ड',
-        path: '/app/executive-dashboard',
-        icon: <LayoutDashboard size={16} style={{ color: '#f59e0b' }} />,
-        badge: 'Executive BI',
-        badgeColor: '#f59e0b',
-        roles: ['super_admin', 'admin', 'cao', 'it_admin', 'planning_officer'],
-      },
-      {
-        label: 'दैनिक कार्यसञ्चालन (Overview)',
+        label: 'एकीकृत कमान्ड ड्यासवोर्ड',
         path: '/app',
-        icon: <LayoutDashboard size={16} />,
+        icon: <LayoutDashboard size={16} style={{ color: '#f59e0b' }} />,
+        badge: 'Unified BI & Ops',
+        badgeColor: '#f59e0b',
       },
       {
         label: 'एआई पालिका सहायक',
@@ -473,9 +467,11 @@ export const publicNavSections: NavSection[] = [
     title: 'मुख्य सूचना तथा कमान्ड (Overview & Profile)',
     items: [
       {
-        label: 'दैनिक कार्यसञ्चालन (Overview)',
+        label: 'एकीकृत कमान्ड ड्यासबोर्ड',
         path: '/',
-        icon: <LayoutDashboard size={16} />,
+        icon: <LayoutDashboard size={16} style={{ color: '#f59e0b' }} />,
+        badge: 'Unified BI',
+        badgeColor: '#f59e0b',
       },
       {
         label: 'पालिका डिजिटल प्रोफाइल',

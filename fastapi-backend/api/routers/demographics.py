@@ -15,123 +15,119 @@ router = APIRouter(
 
 @router.get("/summary")
 def get_summary(db: Session = Depends(get_db)):
-    """Comprehensive demographic summary for public portal."""
-    total_hh = db.query(Household).count()
-    at_risk   = db.query(Household).filter(Household.is_at_risk == True).count()
+    """Comprehensive demographic summary for public portal, synced with MunicipalityProfile Single Source of Truth."""
+    from models.municipality import MunicipalityProfile
+    from api.routers.municipality import seed_profile_if_empty, DEFAULT_DEMOGRAPHICS
 
-    # Estimate population from family_members JSON array length OR meta->>'familySize'
-    try:
-        rows = db.execute(text(
-            """
-            SELECT 
-                COALESCE(
-                    NULLIF((meta->>'familySize'), '')::int, 
-                    json_array_length("familyMembers"::json), 
-                    0
-                ) as fam_size,
-                COALESCE(NULLIF((meta->>'maleCount'), '')::int, 0) as m_count,
-                COALESCE(NULLIF((meta->>'femaleCount'), '')::int, 0) as f_count
-            FROM household_registries 
-            """
-        )).fetchall()
-        total_pop = sum(r[0] for r in rows)
-        male_sum_meta = sum(r[1] for r in rows)
-        female_sum_meta = sum(r[2] for r in rows)
-    except Exception:
-        db.rollback()
-        total_pop = 0
-        male_sum_meta = 0
-        female_sum_meta = 0
+    profile = seed_profile_if_empty(db)
+    demo = dict(DEFAULT_DEMOGRAPHICS)
+    if profile.demographics and isinstance(profile.demographics, dict):
+        demo.update(profile.demographics)
 
-    if total_pop == 0:
-        total_pop = total_hh * 4   # rough estimate
-    
-    if male_sum_meta > 0 and female_sum_meta > 0:
-        male_sum = male_sum_meta
-        female_sum = female_sum_meta
-    else:
-        male_sum = int(total_pop * 0.49)
-        female_sum = total_pop - male_sum
+    total_hh_survey = db.query(Household).count() or 5357
+    at_risk_survey = db.query(Household).filter(Household.is_at_risk == True).count() or 142
 
-    households_cnt = total_hh or 4820
-    avg_fam = round(total_pop / households_cnt, 1) if households_cnt else 3.6
-    sex_ratio = round((male_sum / female_sum * 100), 1) if female_sum else 96.4
+    total_pop = profile.total_population or demo.get("totalPopulation") or 20540
+    total_hh = profile.total_households or demo.get("households") or 5805
+    male_sum = demo.get("male") or 9950
+    female_sum = demo.get("female") or 10590
+    area = profile.area_sq_km or 187.29
+    wards_cnt = profile.ward_count or 8
+
+    avg_fam = demo.get("averageFamilySize") or (round(total_pop / total_hh, 2) if total_hh else 3.54)
+    sex_ratio = demo.get("sexRatio") or (round((male_sum / female_sum * 100), 1) if female_sum else 93.5)
+    density = demo.get("density") or (round(total_pop / area, 1) if area else 109.7)
 
     return {
         "population": {
-            "total":           total_pop or 17521,
-            "male":            int(male_sum) or 8600,
-            "female":          int(female_sum) or 8921,
-            "households":      households_cnt,
+            "total": total_pop,
+            "male": int(male_sum),
+            "female": int(female_sum),
+            "households": total_hh,
             "avgHouseholdSize": avg_fam,
-            "sexRatio":        sex_ratio,
-            "density":         28,
-            "areaSqKm":        626,
-            "wards":           9,
+            "sexRatio": sex_ratio,
+            "density": density,
+            "areaSqKm": area,
+            "wards": wards_cnt,
         },
         "ageStructure": {
-            "under15":       28,
-            "workingAge":    62,
+            "under15": 28,
+            "workingAge": 62,
             "elderly65Plus": 10,
             "dependencyRatio": 61,
         },
         "literacy": {
-            "totalRate":  72,
-            "maleRate":   81,
-            "femaleRate": 64,
-            "higherEdu":  8,
-            "slcPassed":  34,
-            "noEdu":      18,
+            "totalRate": demo.get("literacyRate") or 72.4,
+            "maleRate": demo.get("maleLiteracyRate") or 78.5,
+            "femaleRate": demo.get("femaleLiteracyRate") or 66.2,
+            "higherEdu": 8,
+            "slcPassed": 34,
+            "noEdu": 18,
         },
         "housing": {
-            "privateHouses": households_cnt,
-            "permanent":     42,
+            "privateHouses": total_hh,
+            "permanent": 42,
             "semiPermanent": 38,
-            "temporary":     20,
-            "pipedWater":    74,
-            "electricity":   89,
-            "toilet":        87,
-            "internet":      61,
+            "temporary": 20,
+            "pipedWater": 74,
+            "electricity": 89,
+            "toilet": 87,
+            "internet": 61,
         },
         "disability": {
             "total": int(db.query(func.sum(Household.disability_count)).scalar() or 0) or 312,
-            "rate":  1.8,
+            "rate": 1.8,
         },
         "economic": {
-            "active":           8200,
-            "agriculture":      74,
-            "participationRate": 68,
-            "abroad":           1840,
+            "active": demo.get("economicallyActive") or 8200,
+            "agriculture": 74,
+            "participationRate": demo.get("participationRate") or 68.0,
+            "abroad": demo.get("abroad") or 1840,
         },
         "householdRegistry": {
-            "registeredCount": total_hh,
-            "highRiskCount":   at_risk,
+            "registeredCount": total_hh_survey,
+            "highRiskCount": at_risk_survey,
+            "officialHouseholds": total_hh,
         },
     }
+
+# ─── Official NSO Nepal Census 2021 Dataset ─────────────────────────────────
+
+@router.get("/census-2021")
+def get_nso_census_2021():
+    """Returns official National Statistics Office (NSO Nepal) Census 2021 demographic dataset."""
+    import os, json
+    json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "panchpokhari_nso_census_2021.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    raise HTTPException(status_code=404, detail="Census 2021 dataset not found")
 
 # ─── Dashboard stats (legacy) ────────────────────────────────────────────────
 
 @router.get("/dashboard/stats", response_model=DashboardStats)
 def get_dashboard_stats(db: Session = Depends(get_db)):
-    from models.demographics import Household
-    
-    # Use legacy Household table to match the 5357 count in web portal
-    total_households = db.query(Household).count()
-    if total_households == 0:
-        total_households = 5357
-    
-    # Use official Census 2078 data for population to sync with web portal
-    total_population = 21536
-    male_count = 9494
-    female_count = 12042
-    
+    from models.municipality import MunicipalityProfile
+    from api.routers.municipality import seed_profile_if_empty, DEFAULT_DEMOGRAPHICS
+
+    profile = seed_profile_if_empty(db)
+    demo = dict(DEFAULT_DEMOGRAPHICS)
+    if profile.demographics and isinstance(profile.demographics, dict):
+        demo.update(profile.demographics)
+
+    total_households = profile.total_households or demo.get("households") or 5805
+    total_population = profile.total_population or demo.get("totalPopulation") or 20540
+    male_count = demo.get("male") or 9950
+    female_count = demo.get("female") or 10590
+    at_risk = demo.get("highRiskHouses") or 142
+
     return DashboardStats(
         total_households=total_households,
         total_population=total_population,
         male_count=male_count,
         female_count=female_count,
-        at_risk_households=0,
-        safe_households=total_households,
+        at_risk_households=at_risk,
+        safe_households=max(0, total_households - at_risk),
     )
 
 # ─── Household list ──────────────────────────────────────────────────────────

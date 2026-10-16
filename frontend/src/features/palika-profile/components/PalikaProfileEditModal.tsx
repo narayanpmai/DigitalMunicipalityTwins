@@ -70,9 +70,19 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
     spokespersonRole: 'प्रवक्ता तथा वडा अध्यक्ष (वडा ३)',
     spokespersonPhone: '९८४१००११०३',
     spokespersonEmail: 'spokesperson@panchpokharimun.gov.np',
-    // Stats
+    // Demographics & Households (Single Source of Truth)
     totalPopulation: 20540,
+    malePopulation: 9950,
+    femalePopulation: 10590,
     totalHouseholds: 5805,
+    totalGpsHouses: 5357,
+    highRiskHouses: 142,
+    literacyRate: 72.4,
+    maleLiteracyRate: 78.5,
+    femaleLiteracyRate: 66.2,
+    economicallyActive: 8200,
+    participationRate: 68.0,
+    abroadPopulation: 1840,
     annualBudget: 'रु. ५८.४५ करोड',
     internalRevenue: 'रु. २.८ करोड',
   });
@@ -83,6 +93,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
       const ci = initialData.culturalIdentity || [];
       const l = initialData.leadership || {} as any;
       const leaders = initialData.leaders || [];
+      const demo = initialData.demographics || {} as any;
 
       setFormData({
         nameNp: initialData.nameNp || initialData.name || 'पाँचपोखरी थाङपाल गाउँपालिका',
@@ -118,8 +129,18 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
         spokespersonRole: l.spokesperson?.designation || leaders[3]?.role || 'प्रवक्ता तथा वडा अध्यक्ष (वडा ३)',
         spokespersonPhone: l.spokesperson?.phone || leaders[3]?.phone || '९८४१००११०३',
         spokespersonEmail: l.spokesperson?.email || leaders[3]?.email || 'spokesperson@panchpokharimun.gov.np',
-        totalPopulation: initialData.demographics?.totalPopulation || 20540,
-        totalHouseholds: initialData.demographics?.households || 5805,
+        totalPopulation: initialData.totalPopulation || demo.totalPopulation || 20540,
+        malePopulation: demo.male || 9950,
+        femalePopulation: demo.female || 10590,
+        totalHouseholds: initialData.totalHouseholds || demo.households || 5805,
+        totalGpsHouses: demo.totalGpsHouses || 5357,
+        highRiskHouses: demo.highRiskHouses || 142,
+        literacyRate: demo.literacyRate || 72.4,
+        maleLiteracyRate: demo.maleLiteracyRate || 78.5,
+        femaleLiteracyRate: demo.femaleLiteracyRate || 66.2,
+        economicallyActive: demo.economicallyActive || 8200,
+        participationRate: demo.participationRate || 68.0,
+        abroadPopulation: demo.abroad || 1840,
         annualBudget: initialData.financials?.annualBudget || initialData.annualBudget || 'रु. ५८.४५ करोड',
         internalRevenue: initialData.financials?.internalRevenue || initialData.internalRevenue || 'रु. २.८ करोड',
       });
@@ -192,17 +213,35 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
         },
         totalPopulation: Number(formData.totalPopulation),
         totalHouseholds: Number(formData.totalHouseholds),
+        malePopulation: Number(formData.malePopulation),
+        femalePopulation: Number(formData.femalePopulation),
         annualBudget: formData.annualBudget,
         internalRevenue: formData.internalRevenue,
+        demographics: {
+          totalPopulation: Number(formData.totalPopulation),
+          male: Number(formData.malePopulation),
+          female: Number(formData.femalePopulation),
+          households: Number(formData.totalHouseholds),
+          totalGpsHouses: Number(formData.totalGpsHouses),
+          highRiskHouses: Number(formData.highRiskHouses),
+          literacyRate: Number(formData.literacyRate),
+          maleLiteracyRate: Number(formData.maleLiteracyRate),
+          femaleLiteracyRate: Number(formData.femaleLiteracyRate),
+          economicallyActive: Number(formData.economicallyActive),
+          participationRate: Number(formData.participationRate),
+          abroad: Number(formData.abroadPopulation),
+        },
       };
 
       return municipalityApi.updateProfile(payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['municipality-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['demographics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['representatives'] });
       queryClient.invalidateQueries({ queryKey: ['wards-profile'] });
-      alert('सफलतापूर्वक पालिका डिजिटल प्रोफाइल तथा जनप्रतिनिधि विवरण अद्यावधिक (Sync) भयो!');
+      alert('सफलतापूर्वक पालिका डिजिटल प्रोफाइल, जनसांख्यिकी र घरधुरी विवरण अद्यावधिक (Sync) भयो!');
       onClose();
     },
     onError: (err: any) => {
@@ -317,7 +356,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
             { id: 'boundaries', label: '२. चार किल्ला सिमाना', icon: <Compass size={15} /> },
             { id: 'heritage', label: '३. प्राकृतिक तथा सांस्कृतिक पहिचान', icon: <Mountain size={15} /> },
             { id: 'leadership', label: '४. कार्यपालिका नेतृत्व (Sync)', icon: <Users size={15} /> },
-            { id: 'stats', label: '५. जनसांख्यिकी र बजेट', icon: <TrendingUp size={15} /> },
+            { id: 'stats', label: '५. जनसांख्यिकी तथा घरधुरी प्रोफाइल', icon: <Users size={15} /> },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -785,64 +824,259 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
               </div>
             )}
 
-            {/* TAB 5: STATS & BUDGET */}
+            {/* TAB 5: DEMOGRAPHICS, HOUSEHOLDS & FINANCIALS (SINGLE SOURCE OF TRUTH) */}
             {activeTab === 'stats' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <TrendingUp size={16} /> एकीकृत मुख्य तथ्याङ्क तथा वार्षिक बजेट
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div
+                  style={{
+                    padding: '0.85rem 1.15rem',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    border: '1.5px solid #10b981',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.75rem',
+                    fontSize: '0.82rem',
+                    color: '#d1fae5',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <Link2 size={22} color="#34d399" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong style={{ color: '#34d399', fontSize: '0.88rem' }}>
+                      🔗 एकीकृत तथ्याङ्क सिङ्क प्रणाली (Single Source of Truth):
+                    </strong>
+                    <div style={{ marginTop: '0.2rem', color: '#e2e8f0' }}>
+                      यहाँ अद्यावधिक गरिएको जनसांख्यिकी र घरधुरी प्रोफाइल तथ्याङ्क <strong>कार्यपालिका कमान्ड ड्यासवोर्ड (Executive BI)</strong>, <strong>दैनिक कार्यसञ्चालन (Overview)</strong>, र <strong>सार्वजनिक पालिका प्रोफाइल (Public Portal)</strong> सबै ठाउँमा स्वतः एकरुपताका साथ देखिनेछ।
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-                  <div style={{ backgroundColor: '#1e293b', padding: '1rem', borderRadius: '10px', border: '1px solid #334155' }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#38bdf8', fontWeight: 700, marginBottom: '0.3rem' }}>
-                      कुल जनसंख्या (नागरिक संख्या)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.totalPopulation}
-                      onChange={(e) => setFormData({ ...formData, totalPopulation: parseInt(e.target.value) || 0 })}
-                      style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
-                    />
-                    <small style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>राष्ट्रिय जनगणना २०७८ अनुसार</small>
+                {/* 1. जनसंख्या विवरण */}
+                <div style={{ backgroundColor: '#1e293b', padding: '1.15rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 800, marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Users size={17} /> १. जनसंख्या विवरण (Census & Citizen Count)
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        कुल जनसंख्या (नागरिक संख्या) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.totalPopulation}
+                        onChange={(e) => setFormData({ ...formData, totalPopulation: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #0284c7', borderRadius: '6px', color: '#ffffff', fontWeight: 800, fontSize: '1rem' }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>राष्ट्रिय जनगणना २०७८ अनुसार</small>
+                    </div>
 
-                  <div style={{ backgroundColor: '#1e293b', padding: '1rem', borderRadius: '10px', border: '1px solid #334155' }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#34d399', fontWeight: 700, marginBottom: '0.3rem' }}>
-                      कुल घरधुरी संख्या (Households)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.totalHouseholds}
-                      onChange={(e) => setFormData({ ...formData, totalHouseholds: parseInt(e.target.value) || 0 })}
-                      style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
-                    />
-                    <small style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>डिजिटल ट्विन लगत म्याट्रिक्स अनुसार</small>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        पुरुष जनसंख्या (Male)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.malePopulation}
+                        onChange={(e) => setFormData({ ...formData, malePopulation: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ९,९५०</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        महिला जनसंख्या (Female)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.femalePopulation}
+                        onChange={(e) => setFormData({ ...formData, femalePopulation: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. १०,५९०</small>
+                    </div>
                   </div>
+                </div>
 
-                  <div style={{ backgroundColor: '#1e293b', padding: '1rem', borderRadius: '10px', border: '1px solid #334155' }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#fbbf24', fontWeight: 700, marginBottom: '0.3rem' }}>
-                      वार्षिक बजेट (चालु आ.व.)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.annualBudget}
-                      onChange={(e) => setFormData({ ...formData, annualBudget: e.target.value })}
-                      style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
-                    />
-                    <small style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>उदा. रु. ५८.४५ करोड</small>
+                {/* 2. घरधुरी लगत */}
+                <div style={{ backgroundColor: '#1e293b', padding: '1.15rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#34d399', fontWeight: 800, marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Building2 size={17} /> २. घरधुरी तथा डिजिटल लगत (Households & Survey Matrix)
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        कुल घरधुरी संख्या (Households) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.totalHouseholds}
+                        onChange={(e) => setFormData({ ...formData, totalHouseholds: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #059669', borderRadius: '6px', color: '#ffffff', fontWeight: 800, fontSize: '1rem' }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>समग्र पालिका आधिकारिक घरधुरी संख्या</small>
+                    </div>
 
-                  <div style={{ backgroundColor: '#1e293b', padding: '1rem', borderRadius: '10px', border: '1px solid #334155' }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', color: '#f87171', fontWeight: 700, marginBottom: '0.3rem' }}>
-                      आन्तरिक राजस्व लक्ष्य/संकलन
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.internalRevenue}
-                      onChange={(e) => setFormData({ ...formData, internalRevenue: e.target.value })}
-                      style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
-                    />
-                    <small style={{ color: '#94a3b8', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>उदा. रु. २.८ करोड</small>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        GPS प्रमाणित दर्ता घरधुरी
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.totalGpsHouses}
+                        onChange={(e) => setFormData({ ...formData, totalGpsHouses: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>डिजिटल जीपीएस म्यापिङ सम्पन्न घर</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        जोखिम क्षेत्र / विपद् जोखिम घर
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.highRiskHouses}
+                        onChange={(e) => setFormData({ ...formData, highRiskHouses: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>पहिरो तथा बाढी जोखिम क्षेत्र</small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. साक्षरता तथा मानव विकास */}
+                <div style={{ backgroundColor: '#1e293b', padding: '1.15rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#c084fc', fontWeight: 800, marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <TrendingUp size={17} /> ३. साक्षरता तथा मानव विकास (Literacy & Human Capital)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        समग्र साक्षरता दर (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.literacyRate}
+                        onChange={(e) => setFormData({ ...formData, literacyRate: parseFloat(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ७२.४%</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        पुरुष साक्षरता दर (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.maleLiteracyRate}
+                        onChange={(e) => setFormData({ ...formData, maleLiteracyRate: parseFloat(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ७८.५%</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        महिला साक्षरता दर (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.femaleLiteracyRate}
+                        onChange={(e) => setFormData({ ...formData, femaleLiteracyRate: parseFloat(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ६६.२%</small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. आर्थिक सक्रियता तथा रोजगारी */}
+                <div style={{ backgroundColor: '#1e293b', padding: '1.15rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 800, marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <TrendingUp size={17} /> ४. आर्थिक सक्रियता तथा रोजगारी (Employment & Economic Profile)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        आर्थिक सक्रिय जनशक्ति (जना)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.economicallyActive}
+                        onChange={(e) => setFormData({ ...formData, economicallyActive: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ८,२००</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        श्रम सहभागिता दर (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.participationRate}
+                        onChange={(e) => setFormData({ ...formData, participationRate: parseFloat(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. ६८.०%</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#94a3b8', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        वैदेशिक रोजगारीमा रहेका (जना)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.abroadPopulation}
+                        onChange={(e) => setFormData({ ...formData, abroadPopulation: parseInt(e.target.value) || 0 })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. १,८४०</small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. बजेट तथा वित्तीय अवस्था */}
+                <div style={{ backgroundColor: '#1e293b', padding: '1.15rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#fbbf24', fontWeight: 800, marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <TrendingUp size={17} /> ५. वार्षिक बजेट तथा राजस्व (Financials & Revenue)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#fbbf24', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        वार्षिक बजेट (चालु आ.व.)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.annualBudget}
+                        onChange={(e) => setFormData({ ...formData, annualBudget: e.target.value })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. रु. ५८.४५ करोड</small>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', color: '#f87171', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        आन्तरिक राजस्व लक्ष्य/संकलन
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.internalRevenue}
+                        onChange={(e) => setFormData({ ...formData, internalRevenue: e.target.value })}
+                        style={{ width: '100%', padding: '0.55rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff', fontWeight: 700 }}
+                      />
+                      <small style={{ color: '#64748b', fontSize: '0.7rem' }}>उदा. रु. २.८ करोड</small>
+                    </div>
                   </div>
                 </div>
               </div>

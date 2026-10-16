@@ -226,7 +226,7 @@ export const App: React.FC = () => {
           <Route path="/health" element={<Health />} />
           <Route path="/engineers-directory" element={<EngineersDirectoryPage />} />
           <Route path="/profile" element={<ErrorBoundary><PalikaProfileMasterPage /></ErrorBoundary>} />
-          <Route path="/demographics" element={<Navigate to="/citizen-portal" replace />} />
+          <Route path="/demographics" element={<Navigate to="/profile?tab=demographics" replace />} />
           <Route path="/geography" element={<Geography />} />
           <Route path="/citizen-services" element={<CitizenServices />} />
           <Route path="/citizen-portal" element={<CitizenPortal />} />
@@ -272,6 +272,10 @@ export const App: React.FC = () => {
           <Route path="/progress-reports" element={<ErrorBoundary><ProgressReportsPage isReadOnly={true} /></ErrorBoundary>} />
           <Route path="/ai-assistant" element={<ErrorBoundary><AiAssistantPage /></ErrorBoundary>} />
           <Route path="/open-data" element={<ErrorBoundary><OpenDataReportsPage isReadOnly={true} /></ErrorBoundary>} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/dashboard.html" element={<Navigate to="/" replace />} />
+          <Route path="/executive-dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/executive-dashboard.html" element={<Navigate to="/" replace />} />
 
           {/* Public-readable pages (no data entry) */}
           <Route path="/representatives" element={<ErrorBoundary><RepresentativesPage isReadOnly={true} /></ErrorBoundary>} />
@@ -405,7 +409,6 @@ export const App: React.FC = () => {
         >
           <Route path="/app" element={<ErrorBoundary><DashboardOverview /></ErrorBoundary>} />
           <Route path="/app/dashboard" element={<ErrorBoundary><DashboardOverview /></ErrorBoundary>} />
-          <Route path="/dashboard" element={<Navigate to="/app" replace />} />
           <Route path="/admin" element={<Navigate to="/app/admin" replace />} />
           <Route path="/admin.html" element={<Navigate to="/app" replace />} />
           <Route path="/app.html" element={<Navigate to="/app" replace />} />

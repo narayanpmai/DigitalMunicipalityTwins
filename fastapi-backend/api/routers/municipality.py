@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
 from typing import Optional, Any, List
 from core.database import get_db
@@ -74,47 +74,149 @@ DEFAULT_SECTORS = [
 
 # ─── Helper functions ────────────────────────────────────────────────────────
 
-def seed_profile_if_empty(db: Session) -> MunicipalityProfile:
-    profile = db.query(MunicipalityProfile).first()
-    if not profile:
+DEFAULT_DEMOGRAPHICS = {
+    "totalPopulation": 20540,
+    "male": 9950,
+    "female": 10590,
+    "households": 5805,
+    "totalGpsHouses": 5357,
+    "highRiskHouses": 142,
+    "literacyRate": 72.4,
+    "maleLiteracyRate": 78.5,
+    "femaleLiteracyRate": 66.2,
+    "economicallyActive": 8200,
+    "participationRate": 68.0,
+    "abroad": 1840,
+    "averageFamilySize": 3.54,
+    "sexRatio": 93.5,
+    "density": 109.7,
+}
+
+def seed_panchpokhari_profile(db: Session) -> MunicipalityProfile:
+    profile = MunicipalityProfile(
+        id=str(uuid.uuid4()),
+        tenant_id="panchpokhari",
+        name_np="पाँचपोखरी थाङपाल गाउँपालिका",
+        name_en="Panchpokhari Thangpal Rural Municipality",
+        district="सिन्धुपाल्चोक",
+        province="बागमती प्रदेश",
+        type="गाउँपालिका",
+        headquarters="थाङपालधाप",
+        area_sq_km=187.29,
+        ward_count=8,
+        elevation_meters="१,१०० - ४,१०० मी.",
+        introduction=(
+            "पाँचपोखरी थाङपाल गाउँपालिका नेपालको बागमती प्रदेश अन्तर्गत सिन्धुपाल्चोक जिल्लाको "
+            "उत्तर-पश्चिम भेगमा अवस्थित उच्च हिमाली तथा पहाडी भू-भाग ओगटेको एक प्राकृतिक, "
+            "पर्यटकीय तथा सांस्कृतिक सम्पदाले भरिपूर्ण पालिका हो।"
+        ),
+        total_population=20540,
+        total_households=5805,
+        total_schools=42,
+        total_health_posts=8,
+        geography="पहाडी तथा हिमाली भूभाग",
+        major_rivers="इन्द्रावती, मेलम्ची",
+        major_religious_sites="पाँचपोखरी, आमायाङ्ग्री, चण्डेश्वरी",
+        major_tourist_sites="पाँचपोखरी ताल, थाङपाल भञ्ज्याङ, हवेली",
+        annual_budget="रु. ५८.४५ करोड",
+        internal_revenue="रु. २.८ करोड",
+        boundaries=DEFAULT_BOUNDARIES,
+        cultural_identity=DEFAULT_CULTURAL_IDENTITY,
+        good_practices=DEFAULT_GOOD_PRACTICES,
+        demographics=DEFAULT_DEMOGRAPHICS,
+        ai_summary=(
+            "पाँचपोखरी थाङपाल गाउँपालिका पर्यटन, कृषि र जलस्रोतमा प्रचुर सम्भावना भएको पालिका हो। "
+            "यसले भौतिक पूर्वाधारसँगै शिक्षा र स्वास्थ्यलाई प्राथमिकतामा राखेर दिगो विकासको अभ्यास गरिरहेको छ।"
+        ),
+    )
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+def seed_profile_if_empty(db: Session, tenant_id: Optional[str] = None) -> MunicipalityProfile:
+    eff_tenant = (tenant_id or "").strip().lower() if tenant_id else ""
+    
+    # If looking for panchpokhari or default
+    if not eff_tenant or eff_tenant in ["panchpokhari", "default", "localhost", "all", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+        profile = db.query(MunicipalityProfile).filter(
+            (MunicipalityProfile.tenant_id == "panchpokhari") | (MunicipalityProfile.tenant_id == None)
+        ).first()
+        if not profile:
+            profile = db.query(MunicipalityProfile).first()
+        if not profile:
+            profile = seed_panchpokhari_profile(db)
+        elif profile.demographics is None:
+            profile.demographics = DEFAULT_DEMOGRAPHICS
+            db.commit()
+            db.refresh(profile)
+        return profile
+
+    # Look up specific tenant's profile
+    profile = db.query(MunicipalityProfile).filter(
+        (MunicipalityProfile.tenant_id == eff_tenant) | (MunicipalityProfile.id == eff_tenant)
+    ).first()
+
+    if profile:
+        return profile
+
+    # Check if Tenant exists in tenants table
+    from models.tenant import Tenant
+    tenant = db.query(Tenant).filter(
+        (Tenant.subdomain == eff_tenant) | (Tenant.id == eff_tenant)
+    ).first()
+
+    if tenant:
+        clean_np = tenant.name_np
+        clean_en = tenant.name_en or eff_tenant.title()
+        palika_type = "गाउँपालिका" if "गाउँपालिका" in clean_np else "नगरपालिका"
+
         profile = MunicipalityProfile(
             id=str(uuid.uuid4()),
-            name_np="पाँचपोखरी थाङपाल गाउँपालिका",
-            name_en="Panchpokhari Thangpal Rural Municipality",
+            tenant_id=tenant.subdomain,
+            name_np=clean_np,
+            name_en=clean_en,
             district="सिन्धुपाल्चोक",
             province="बागमती प्रदेश",
-            type="गाउँपालिका",
-            headquarters="थाङपालधाप",
-            area_sq_km=187.29,
+            type=palika_type,
+            headquarters=f"{clean_np} केन्द्र",
             ward_count=8,
-            elevation_meters="१,१०० - ४,१०० मी.",
+            area_sq_km=154.25,
+            elevation_meters="५५० मी. देखि २,६०० मी.",
             introduction=(
-                "पाँचपोखरी थाङपाल गाउँपालिका नेपालको बागमती प्रदेश अन्तर्गत सिन्धुपाल्चोक जिल्लाको "
-                "उत्तर-पश्चिम भेगमा अवस्थित उच्च हिमाली तथा पहाडी भू-भाग ओगटेको एक प्राकृतिक, "
-                "पर्यटकीय तथा सांस्कृतिक सम्पदाले भरिपूर्ण पालिका हो।"
+                f"{clean_np} नेपालको बागमती प्रदेश अन्तर्गत अवस्थित "
+                f"प्राकृतिक, पर्यटकीय, कृषि तथा ऐतिहासिक सम्पदाले समृद्ध स्थानीय तह हो। "
+                f"नागरिक सेवा प्रवाहलाई द्रुत, पारदर्शी तथा प्रविधिमैत्री बनाउन म्युनिसिपल डिजिटल ट्विन्स प्रणाली स्थापना गरिएको छ।"
             ),
-            total_population=20540,
-            total_households=5805,
-            total_schools=42,
+            total_population=24500,
+            total_households=5600,
+            total_schools=32,
             total_health_posts=8,
-            geography="पहाडी तथा हिमाली भूभाग",
-            major_rivers="इन्द्रावती, मेलम्ची",
-            major_religious_sites="पाँचपोखरी, आमायाङ्ग्री, चण्डेश्वरी",
-            major_tourist_sites="पाँचपोखरी ताल, थाङपाल भञ्ज्याङ, हवेली",
-            annual_budget="रु. ५८.४५ करोड",
-            internal_revenue="रु. २.८ करोड",
+            geography="पहाडी तथा नदी तटीय भूभाग",
+            major_rivers="स्थानीय नदी, खोलानाला तथा जलाधार",
+            major_religious_sites=f"{clean_np} क्षेत्रका ऐतिहासिक धार्मिक स्थलहरू",
+            major_tourist_sites=f"{clean_np} पदमार्ग तथा पर्यटकीय गन्तव्यहरू",
+            annual_budget="रु. ५२.३० करोड",
+            internal_revenue="रु. २.१५ करोड",
             boundaries=DEFAULT_BOUNDARIES,
             cultural_identity=DEFAULT_CULTURAL_IDENTITY,
             good_practices=DEFAULT_GOOD_PRACTICES,
+            demographics=DEFAULT_DEMOGRAPHICS,
             ai_summary=(
-                "पाँचपोखरी थाङपाल गाउँपालिका पर्यटन, कृषि र जलस्रोतमा प्रचुर सम्भावना भएको पालिका हो। "
-                "यसले भौतिक पूर्वाधारसँगै शिक्षा र स्वास्थ्यलाई प्राथमिकतामा राखेर दिगो विकासको अभ्यास गरिरहेको छ।"
-            ),
+                f"{clean_np}को डिजिटल ट्विन प्रोफाइल सफलतापूर्वक सिर्जना गरिएको छ।"
+            )
         )
         db.add(profile)
         db.commit()
         db.refresh(profile)
+        return profile
+
+    # Fallback
+    profile = db.query(MunicipalityProfile).first()
+    if not profile:
+        profile = seed_panchpokhari_profile(db)
     return profile
+
 
 
 def seed_sectors_if_empty(db: Session):
@@ -232,6 +334,25 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
         },
     ]
 
+    cur_demo = dict(DEFAULT_DEMOGRAPHICS)
+    if profile.demographics and isinstance(profile.demographics, dict):
+        cur_demo.update(profile.demographics)
+
+    total_pop = profile.total_population or cur_demo.get("totalPopulation") or 20540
+    total_hh = profile.total_households or cur_demo.get("households") or 5805
+    cur_demo["totalPopulation"] = total_pop
+    cur_demo["households"] = total_hh
+
+    male_val = cur_demo.get("male", 9950)
+    female_val = cur_demo.get("female", 10590)
+    if male_val and female_val:
+        cur_demo["sexRatio"] = round((male_val / female_val) * 100, 1)
+    if total_pop and total_hh:
+        cur_demo["averageFamilySize"] = round(total_pop / total_hh, 2)
+    area = profile.area_sq_km or 187.29
+    if total_pop and area:
+        cur_demo["density"] = round(total_pop / area, 1)
+
     return {
         "id": profile.id,
         "name": profile.name_np,
@@ -253,14 +374,9 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
         "internalRevenue": profile.internal_revenue or "रु. २.८ करोड",
         "aiSummary": profile.ai_summary,
         "panoramaUrl": profile.panorama_url,
-        "demographics": {
-            "totalPopulation": profile.total_population or 20540,
-            "male": 9950,
-            "female": 10590,
-            "households": profile.total_households or 5805,
-            "literacyRate": 68.4,
-            "averageFamilySize": 4.1,
-        },
+        "totalPopulation": total_pop,
+        "totalHouseholds": total_hh,
+        "demographics": cur_demo,
         "financials": {
             "annualBudget": profile.annual_budget or "रु. ५८.४५ करोड",
             "internalRevenue": profile.internal_revenue or "रु. २.८ करोड",
@@ -281,25 +397,70 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
 @router.get("/profile")
 def get_profile(
     fiscal_year: Optional[str] = Query(None, alias="fiscalYear"),
+    tenant_id: Optional[str] = Query(None, description="Tenant subdomain or UUID"),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
     db: Session = Depends(get_db)
 ):
-    """पालिका प्रोफाइल प्राप्त गर्नुहोस् (जनप्रतिनिधि तालिकाबाट लाइभ नेतृत्व सहित)"""
-    profile = seed_profile_if_empty(db)
+    """पालिका प्रोफाइल प्राप्त गर्नुहोस् (मल्टि-टेनेन्ट र जनप्रतिनिधि तालिकाबाट लाइभ नेतृत्व सहित)"""
+    eff_tenant = tenant_id or x_tenant_id
+    profile = seed_profile_if_empty(db, eff_tenant)
     return build_profile_response(profile, db)
 
 
 @router.put("/profile")
-def update_profile(data: MunicipalityProfileUpdate, db: Session = Depends(get_db)):
+def update_profile(
+    data: MunicipalityProfileUpdate,
+    tenant_id: Optional[str] = Query(None, description="Tenant subdomain or UUID"),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    db: Session = Depends(get_db)
+):
     """पालिका प्रोफाइल अद्यावधिक गर्नुहोस् र जनप्रतिनिधि तालिकामा नेतृत्व सिंक्रोनाइज गर्नुहोस्"""
-    profile = seed_profile_if_empty(db)
+    eff_tenant = tenant_id or x_tenant_id
+    profile = seed_profile_if_empty(db, eff_tenant)
 
     raw_data = data.model_dump(exclude_unset=True)
     leadership_val = raw_data.pop("leadership", None)
     leaders_val = raw_data.pop("leaders", None)
+    demographics_val = raw_data.pop("demographics", None)
+    male_pop = raw_data.pop("male_population", None)
+    female_pop = raw_data.pop("female_population", None)
+
 
     for field, value in raw_data.items():
         if value is not None and hasattr(profile, field):
             setattr(profile, field, value)
+
+    # Persist demographics to MunicipalityProfile JSONB column
+    cur_demo = dict(profile.demographics or DEFAULT_DEMOGRAPHICS)
+    if demographics_val and isinstance(demographics_val, dict):
+        cur_demo.update(demographics_val)
+        if "totalPopulation" in demographics_val and demographics_val["totalPopulation"] is not None:
+            profile.total_population = int(demographics_val["totalPopulation"])
+        if "households" in demographics_val and demographics_val["households"] is not None:
+            profile.total_households = int(demographics_val["households"])
+        if "male" in demographics_val and demographics_val["male"] is not None:
+            cur_demo["male"] = int(demographics_val["male"])
+        if "female" in demographics_val and demographics_val["female"] is not None:
+            cur_demo["female"] = int(demographics_val["female"])
+
+    if male_pop is not None:
+        cur_demo["male"] = int(male_pop)
+    if female_pop is not None:
+        cur_demo["female"] = int(female_pop)
+
+    if profile.total_population:
+        cur_demo["totalPopulation"] = profile.total_population
+    if profile.total_households:
+        cur_demo["households"] = profile.total_households
+
+    if cur_demo.get("male") and cur_demo.get("female"):
+        cur_demo["sexRatio"] = round((cur_demo["male"] / cur_demo["female"]) * 100, 1)
+    if profile.total_population and profile.total_households:
+        cur_demo["averageFamilySize"] = round(profile.total_population / profile.total_households, 2)
+    if profile.total_population and profile.area_sq_km:
+        cur_demo["density"] = round(profile.total_population / profile.area_sq_km, 1)
+
+    profile.demographics = cur_demo
 
     # Persist leadership to MunicipalityProfile JSONB column
     if leadership_val is not None:

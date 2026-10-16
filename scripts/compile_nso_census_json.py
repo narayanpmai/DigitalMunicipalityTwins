@@ -1,0 +1,87 @@
+import json
+import os
+
+census_data = {
+    "source": {
+        "agency": "राष्ट्रिय तथ्याङ्क कार्यालय (National Statistics Office - NSO Nepal)",
+        "census_year": "२०७८ (Census 2021)",
+        "url": "https://censusresults.nsonepal.gov.np/population?province=3&district=24&municipality=3",
+        "title": "National Population and Housing Census 2021 - Panchpokhari Thangpal Rural Municipality",
+        "last_verified": "2026-10-16"
+    },
+    "overview": {
+        "municipality_name_np": "पाँचपोखरी थाङपाल गाउँपालिका",
+        "municipality_name_en": "Panchpokhari Thangpal Rural Municipality",
+        "district": "सिन्धुपाल्चोक (24)",
+        "province": "बागमती प्रदेश (3)",
+        "total_population": 20997,
+        "male_population": 10614,
+        "female_population": 10383,
+        "male_percent": 50.55,
+        "female_percent": 49.45,
+        "sex_ratio": 102.22,
+        "total_households": 5914,
+        "average_household_size": 3.55,
+        "population_density": 112,
+        "annual_growth_rate": 0.06,
+        "area_sq_km": 187.29,
+        "elevation_meters": "७५० मी. देखि ४,२०० मी.",
+        "literacy_rate": 57.7,
+        "male_literacy_rate": 63.1,
+        "female_literacy_rate": 52.1
+    },
+    "wards": [
+        {"ward_no": 1, "name_np": "बाँसखर्क", "total": 2092, "male": 1063, "female": 1029, "percent": 9.96},
+        {"ward_no": 2, "name_np": "बरुवा", "total": 1696, "male": 904, "female": 792, "percent": 8.08},
+        {"ward_no": 3, "name_np": "भोताङ", "total": 3003, "male": 1561, "female": 1442, "percent": 14.30},
+        {"ward_no": 4, "name_np": "थाङपालकोट", "total": 2687, "male": 1372, "female": 1315, "percent": 12.80},
+        {"ward_no": 5, "name_np": "गुन्सा", "total": 2288, "male": 1162, "female": 1126, "percent": 10.90},
+        {"ward_no": 6, "name_np": "थाङपालधाप", "total": 3236, "male": 1622, "female": 1614, "percent": 15.41},
+        {"ward_no": 7, "name_np": "भोटेनाम्लाङ", "total": 3640, "male": 1795, "female": 1845, "percent": 17.34},
+        {"ward_no": 8, "name_np": "लागर्चे", "total": 2355, "male": 1135, "female": 1220, "percent": 11.22}
+    ],
+    "religion": [
+        {"name_np": "बौद्ध", "name_en": "Bouddha", "percentage": 70.4, "population": 14782, "color": "#f59e0b"},
+        {"name_np": "हिन्दु", "name_en": "Hindu", "percentage": 28.0, "population": 5879, "color": "#ef4444"},
+        {"name_np": "इसाई", "name_en": "Christian", "percentage": 1.5, "population": 315, "color": "#3b82f6"},
+        {"name_np": "बोन तथा अन्य", "name_en": "Bon & Others", "percentage": 0.1, "population": 21, "color": "#10b981"}
+    ],
+    "caste_ethnicity": [
+        {"name_np": "तामाङ", "name_en": "Tamang", "percentage": 65.9, "population": 13837},
+        {"name_np": "क्षेत्री", "name_en": "Kshetri", "percentage": 11.3, "population": 2373},
+        {"name_np": "नेवाः (नेवार)", "name_en": "Newar", "percentage": 4.2, "population": 882},
+        {"name_np": "ह्योल्मो / योल्मोपा", "name_en": "Hyolmo/Yholmopa", "percentage": 3.7, "population": 777},
+        {"name_np": "सन्यासी / दसनामी", "name_en": "Sanyasi/Dasnami", "percentage": 2.7, "population": 567},
+        {"name_np": "विश्वकर्मा (दलित)", "name_en": "Bishwokarma", "percentage": 2.6, "population": 546},
+        {"name_np": "पहाडी ब्राह्मण", "name_en": "Brahman - Hill", "percentage": 1.9, "population": 399},
+        {"name_np": "मिजार (दलित)", "name_en": "Mijar", "percentage": 1.8, "population": 378},
+        {"name_np": "परियार (दलित)", "name_en": "Pariyar", "percentage": 1.2, "population": 252},
+        {"name_np": "गुरुङ", "name_en": "Gurung", "percentage": 1.1, "population": 231},
+        {"name_np": "अन्य समुदाय", "name_en": "Others", "percentage": 3.6, "population": 755}
+    ],
+    "mother_tongue": [
+        {"name_np": "तामाङ भाषा", "name_en": "Tamang", "percentage": 65.0, "speakers": 13648},
+        {"name_np": "नेपाली भाषा", "name_en": "Nepali", "percentage": 25.5, "speakers": 5354},
+        {"name_np": "ह्योल्मो भाषा", "name_en": "Hyolmo", "percentage": 4.4, "speakers": 924},
+        {"name_np": "नेपालभाषा (नेवारी)", "name_en": "Nepalbhasha", "percentage": 3.6, "speakers": 756},
+        {"name_np": "शेर्पा भाषा", "name_en": "Sherpa", "percentage": 1.0, "speakers": 210},
+        {"name_np": "अन्य भाषा", "name_en": "Others", "percentage": 0.5, "speakers": 105}
+    ],
+    "housing_and_amenities": {
+        "households_with_toilet_percent": 99.4,
+        "households_without_toilet_percent": 0.6,
+        "owned_house_percent": 97.7,
+        "rented_house_percent": 1.8,
+        "birth_registration_under_5_percent": 89.4,
+        "disability_prevalence_percent": 2.4,
+        "male_household_head_percent": 67.8,
+        "female_household_head_percent": 32.2
+    }
+}
+
+os.makedirs(r"c:\inetpub\wwwroot\Municipal_Digital_Twins-main\fastapi-backend\data", exist_ok=True)
+out_path = r"c:\inetpub\wwwroot\Municipal_Digital_Twins-main\fastapi-backend\data\panchpokhari_nso_census_2021.json"
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(census_data, f, ensure_ascii=False, indent=2)
+
+print(f"Official Census 2021 data successfully compiled to {out_path}")

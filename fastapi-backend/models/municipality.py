@@ -47,6 +47,7 @@ class MunicipalityProfile(Base):
     cultural_identity = Column(JSONB, nullable=True, name='culturalIdentity')
     good_practices = Column(JSONB, nullable=True, name='goodPractices')
     leadership = Column(JSONB, nullable=True)
+    demographics = Column(JSONB, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, name='createdAt')
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, name='updatedAt')

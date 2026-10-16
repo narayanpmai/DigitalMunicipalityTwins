@@ -468,28 +468,42 @@ export const SuperAdminPage: React.FC = () => {
     const tenantPayload = {
       nameNp: newTenant.nameNp,
       nameEn: newTenant.nameEn || newTenant.subdomain,
-      subdomain: newTenant.subdomain.toLowerCase(),
+      subdomain: newTenant.subdomain.toLowerCase().trim(),
       province: newTenant.province,
       district: newTenant.district,
-      adminEmail: newTenant.adminEmail || `admin@${newTenant.subdomain.toLowerCase()}.local`,
+      adminEmail: newTenant.adminEmail || `admin@${newTenant.subdomain.toLowerCase().trim()}.local`,
       status: 'active',
     };
 
     try {
-      const response = await tenantApi.registerTenant(tenantPayload);
-      if (response.success && response.data) {
-        const updatedTenants = [response.data as Tenant, ...tenants];
+      const response: any = await tenantApi.registerTenant(tenantPayload);
+      const tenantData = response?.data || (response?.id ? response : null);
+      if (response?.success || tenantData) {
+        const tenantObj: Tenant = {
+          id: tenantData?.id || String(Date.now()),
+          nameNp: tenantData?.nameNp || tenantData?.name_np || tenantPayload.nameNp,
+          nameEn: tenantData?.nameEn || tenantData?.name_en || tenantPayload.nameEn,
+          subdomain: tenantData?.subdomain || tenantPayload.subdomain,
+          province: tenantData?.province || tenantPayload.province,
+          district: tenantData?.district || tenantPayload.district,
+          adminEmail: tenantData?.adminEmail || tenantData?.admin_email || tenantPayload.adminEmail,
+          status: 'active',
+        };
+        const updatedTenants = [tenantObj, ...tenants.filter(t => t.id !== tenantObj.id && t.subdomain !== tenantObj.subdomain)];
         setTenants(updatedTenants);
         localStorage.setItem('p5_tenants_list', JSON.stringify(updatedTenants));
         setNewTenant({ nameNp: '', nameEn: '', subdomain: '', province: 'बागमती प्रदेश', district: '', adminEmail: '' });
-        showToast(`पालिका ${tenantPayload.nameNp} सफलतापूर्वक दर्ता भयो!`);
+        showToast(response?.message || `पालिका ${tenantPayload.nameNp} र यसको डिजिटल प्रोफाइल सफलतापूर्वक दर्ता भयो!`);
       } else {
-        showToast(response.message || 'पालिका दर्ता गर्न सकिएन');
+        showToast(response?.message || 'पालिका दर्ता गर्न सकिएन');
       }
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'सर्भरमा समस्या आयो, दर्ता हुन सकेन');
+      const detail = err.response?.data?.detail;
+      const detailStr = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ') : '');
+      showToast(detailStr || err.response?.data?.message || err.message || 'सर्भरमा समस्या आयो, दर्ता हुन सकेन');
     }
   };
+
 
   const handleToggleTenantStatus = (id: string) => {
     setTenants(
@@ -1839,7 +1853,33 @@ export const SuperAdminPage: React.FC = () => {
                       <select
                         required
                         value={newTenant.nameNp}
-                        onChange={(e) => setNewTenant({ ...newTenant, nameNp: e.target.value })}
+                        onChange={(e) => {
+                          const palikaName = e.target.value;
+                          const devToEn: Record<string, string> = {
+                            'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
+                            'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'yn',
+                            'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
+                            'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+                            'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
+                            'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'w', 'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+                            'ा': 'a', 'ि': 'i', 'ी': 'i', 'ु': 'u', 'ू': 'u', 'ृ': 'ri',
+                            'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au', 'ं': 'n', 'ँ': 'n', '्': '',
+                            'अ': 'a', 'आ': 'a', 'इ': 'i', 'ई': 'i', 'उ': 'u', 'ऊ': 'u', 'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au'
+                          };
+                          let autoSub = '';
+                          for (const char of palikaName) {
+                            if (devToEn[char]) autoSub += devToEn[char];
+                            else if (/[a-z0-9]/i.test(char)) autoSub += char.toLowerCase();
+                          }
+                          autoSub = autoSub.replace(/[^a-z0-9]/g, '');
+
+                          setNewTenant({
+                            ...newTenant,
+                            nameNp: palikaName,
+                            subdomain: autoSub || newTenant.subdomain,
+                            adminEmail: autoSub ? `${autoSub}mun@gmail.com` : newTenant.adminEmail
+                          });
+                        }}
                         disabled={!newTenant.district}
                         style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.88rem', backgroundColor: !newTenant.district ? '#f1f5f9' : '#ffffff' }}
                       >
@@ -1912,26 +1952,74 @@ export const SuperAdminPage: React.FC = () => {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
+                          gap: '12px',
+                          flexWrap: 'wrap'
                         }}
                       >
-                        <div>
-                          <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>{t.nameNp}</strong>
+                        <div style={{ flex: 1, minWidth: '220px' }}>
+                          <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>
+                            {t.nameNp || (t as any).name_np || t.subdomain}
+                          </strong>
                           <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                            {t.province} • {t.district} • सबडोमेन: {t.subdomain}
+                            {t.province || 'बागमती प्रदेश'} {t.district ? `• ${t.district}` : ''} • सबडोमेन: <code style={{ backgroundColor: '#e2e8f0', padding: '2px 5px', borderRadius: '4px' }}>{t.subdomain}</code>
                           </span>
                         </div>
-                        <span
-                          style={{
-                            padding: '3px 10px',
-                            borderRadius: '9999px',
-                            backgroundColor: t.status === 'active' ? '#ecfdf5' : '#fef2f2',
-                            color: t.status === 'active' ? '#059669' : '#dc2626',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {t.status === 'active' ? 'Active' : 'Disabled'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              localStorage.setItem('tenant_id', t.subdomain);
+                              window.dispatchEvent(new Event('palika-settings-updated'));
+                              window.open(`/profile`, '_blank');
+                            }}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '8px',
+                              backgroundColor: '#eff6ff',
+                              color: '#2563eb',
+                              border: '1px solid #bfdbfe',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                            title="यस पालिकाको डिजिटल प्रोफाइल हेर्नुहोस्"
+                          >
+                            प्रोफाइल
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              localStorage.setItem('tenant_id', t.subdomain);
+                              window.dispatchEvent(new Event('palika-settings-updated'));
+                              window.location.href = '/app';
+                            }}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '8px',
+                              backgroundColor: '#2563eb',
+                              color: '#ffffff',
+                              border: 'none',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                            title="यस पालिकाको Admin कन्सोलमा स्विच गर्नुहोस्"
+                          >
+                            स्विच
+                          </button>
+                          <span
+                            style={{
+                              padding: '3px 10px',
+                              borderRadius: '9999px',
+                              backgroundColor: t.status === 'active' ? '#ecfdf5' : '#fef2f2',
+                              color: t.status === 'active' ? '#059669' : '#dc2626',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {t.status === 'active' ? 'Active' : 'Disabled'}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>

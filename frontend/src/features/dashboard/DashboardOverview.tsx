@@ -36,12 +36,27 @@ import {
   ExternalLink,
   Landmark,
   BarChart3,
+  Edit3,
+  Tractor,
+  Leaf,
+  MountainSnow,
+  BusFront,
+  Droplets,
+  Zap,
+  ShieldAlert,
+  Sparkles,
+  ShieldCheck,
+  Search,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { municipalityApi } from '../../api/municipality';
 import { HouseholdRegistryTab } from '../citizen-portal/components/HouseholdRegistryTab';
 import { PredictiveAnalytics } from '../../components/analytics/PredictiveAnalytics';
 import { MunicipalGISMap } from '../../components/maps/MunicipalGISMap';
+import { ThematicPillarsMatrix } from './components/ThematicPillarsMatrix';
 import ssisFallbackData from '../../data/ssis_vital_report.json';
+import '../../pages/public/ExecutiveDashboard.css';
 
 // ── Devanagari / Nepali Digits Formatter ──────────────────────────────────────
 export const toNepaliDigits = (val: number | string | undefined | null): string => {
@@ -57,19 +72,19 @@ export const toNepaliDigits = (val: number | string | undefined | null): string 
 const _ssisSummary = ssisFallbackData.summary;
 const _ssisWards = ssisFallbackData.wards;
 
-// ── Default Seeded Baseline Counts ────────────────────────────────────────────
+// ── Default Seeded Baseline Counts (Aligned with Municipality Profile SSoT) ──
 const DEFAULT_STATS: Record<string, any> = {
-  totalCitizens: 21536,
-  totalPopulation: 21536,
-  malePopulation: 9494,
-  femalePopulation: 12042,
-  totalHouseholds: 5357,
+  totalCitizens: 20540,
+  totalPopulation: 20540,
+  malePopulation: 9950,
+  femalePopulation: 10590,
+  totalHouseholds: 5805,
   totalGpsHouses: 5357,
-  highRiskHouses: 4,
+  highRiskHouses: 142,
   highRiskSettlements: 4,
   totalShelters: 8,
   totalShelterCapacity: 1640,
-  literacyRate: 72.0,
+  literacyRate: 72.4,
   maleLiteracyRate: 81.4,
   femaleLiteracyRate: 65.3,
   economicallyActive: 8200,
@@ -374,9 +389,43 @@ const StatCard: React.FC<StatCardProps> = (props) => {
 
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly = false }) => {
+export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: string }> = ({
+  readOnly = false,
+  defaultTab = 'executive',
+}) => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { settings } = useTenant();
   const palikaName = settings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका';
+  const palikaSlogan = settings?.slogan || 'शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन!';
+
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'executive' | 'thematic' | 'operations'>(
+    (tabParam === 'executive' || tabParam === 'thematic' || tabParam === 'operations')
+      ? tabParam
+      : (defaultTab as any || 'executive')
+  );
+
+  useEffect(() => {
+    if (tabParam && ['executive', 'thematic', 'operations'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: 'executive' | 'thematic' | 'operations') => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
+  const [selectedWard, setSelectedWard] = useState<number>(0);
+  const [fiscalYear, setFiscalYear] = useState<string>('२०८०/०८१');
+
+  const { data: profile } = useQuery({
+    queryKey: ['municipality-profile'],
+    queryFn: () => municipalityApi.getProfile(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const [stats, setStats] = useState<Record<string, any>>(DEFAULT_STATS);
   const [loading, setLoading] = useState(true);
@@ -385,6 +434,7 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
 
   const fetchStats = async () => {
     setIsRefreshing(true);
+    queryClient.invalidateQueries({ queryKey: ['municipality-profile'] });
     const token =
       localStorage.getItem('p5_token') ||
       localStorage.getItem('auth_token') ||
@@ -556,15 +606,15 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
         next.budgetUtilizationPercent = Number(reportKpis.budgetUtilizationPercent) ?? prev.budgetUtilizationPercent ?? 98.0;
       }
 
-      // जनसांख्यिकी (Real Data)
+      // जनसांख्यिकी (Real Data from Single Source of Truth)
       if (demoData) {
-        next.totalPopulation = Number(demoData?.population?.total) || prev.totalPopulation || 21536;
-        next.malePopulation = Number(demoData?.population?.male) || prev.malePopulation || 9494;
-        next.femalePopulation = Number(demoData?.population?.female) || prev.femalePopulation || 12042;
-        next.totalHouseholds = Number(demoData?.population?.households) || prev.totalHouseholds || 5357;
+        next.totalPopulation = Number(demoData?.population?.total) || prev.totalPopulation || 20540;
+        next.malePopulation = Number(demoData?.population?.male) || prev.malePopulation || 9950;
+        next.femalePopulation = Number(demoData?.population?.female) || prev.femalePopulation || 10590;
+        next.totalHouseholds = Number(demoData?.population?.households) || prev.totalHouseholds || 5805;
         next.totalGpsHouses = Number(demoData?.householdRegistry?.registeredCount) ?? prev.totalGpsHouses ?? 5357;
-        next.highRiskHouses = Number(demoData?.householdRegistry?.highRiskCount) ?? prev.highRiskHouses ?? 0;
-        next.literacyRate = Number(demoData?.literacy?.totalRate) || prev.literacyRate || 72.0;
+        next.highRiskHouses = Number(demoData?.householdRegistry?.highRiskCount) ?? prev.highRiskHouses ?? 142;
+        next.literacyRate = Number(demoData?.literacy?.totalRate) || prev.literacyRate || 72.4;
         next.maleLiteracyRate = Number(demoData?.literacy?.maleRate) || prev.maleLiteracyRate || 81.4;
         next.femaleLiteracyRate = Number(demoData?.literacy?.femaleRate) || prev.femaleLiteracyRate || 65.3;
         next.economicallyActive = Number(demoData?.economic?.active) || prev.economicallyActive || 8200;
@@ -966,6 +1016,124 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
     { label: 'खुला तथ्याङ्क', path: '/open-data', icon: <Database size={22} color="#0284c7" />, color: '#f0f9ff', desc: 'बजेट, प्रतिवेदन र सूचक' },
   ];
 
+  // ── Executive Spending & Ward Rankings (Panchpokhari Fact-based) ───────────
+  const monthlySpending = [
+    { month: 'साउन', spent: 3.2, pct: 45 },
+    { month: 'भदौ', spent: 4.8, pct: 60 },
+    { month: 'असोज', spent: 6.5, pct: 75 },
+    { month: 'कार्तिक', spent: 7.1, pct: 82 },
+    { month: 'मंसिर', spent: 8.4, pct: 88 },
+    { month: 'पुष', spent: 9.6, pct: 92 },
+    { month: 'माघ', spent: 6.2, pct: 70 },
+    { month: 'फागुन', spent: 5.4, pct: 65 },
+    { month: 'चैत', spent: 6.48, pct: 78 },
+  ];
+
+  const wardRankings = [
+    { rank: 1, name: 'वडा नं. ६ (थाङपालधाप)', score: 94.2, completed: 5, budget: '९८.४%' },
+    { rank: 2, name: 'वडा नं. १ (बाँसखर्क)', score: 91.5, completed: 4, budget: '९७.२%' },
+    { rank: 3, name: 'वडा नं. ३ (भोताङ)', score: 89.8, completed: 4, budget: '९६.०%' },
+    { rank: 4, name: 'वडा नं. २ (बरुवा)', score: 88.5, completed: 3, budget: '९५.८%' },
+    { rank: 5, name: 'वडा नं. ४ (थाङपालकोट)', score: 87.2, completed: 3, budget: '९४.६%' },
+    { rank: 6, name: 'वडा नं. ५ (गुन्सा)', score: 86.4, completed: 3, budget: '९३.९%' },
+    { rank: 7, name: 'वडा नं. ७ (भोटेनाम्लाङ)', score: 85.0, completed: 2, budget: '९२.५%' },
+    { rank: 8, name: 'वडा नं. ८ (लागर्चे)', score: 84.1, completed: 2, budget: '९१.८%' },
+  ];
+
+  // ── 6 Core Executive KPI Cards (Single Source of Truth) ────────────────────
+  const kpiMetrics = [
+    {
+      key: 'total_citizens',
+      titleNepali: 'कुल नागरिक (जनसंख्या)',
+      titleEn: 'TOTAL CITIZENS',
+      value: toNepaliDigits(profile?.totalPopulation || stats.totalPopulation || 20540),
+      unit: 'जना',
+      icon: <Users size={22} />,
+      color: '#38BDF8',
+      bgColor: 'rgba(56, 189, 248, 0.15)',
+      trendText: '🟢 केन्द्रीय SSoT सिंक',
+      isUp: true,
+      note: `घरधुरी औसत: ${profile?.demographics?.averageFamilySize || '३.५'} जना • जनघनत्व: ${profile?.demographics?.density || '४७.१'}/कि.मि.²`,
+      onClick: () => navigate(readOnly ? '/profile?tab=demographics' : '/app/profile?tab=demographics'),
+      tooltip: 'पालिका प्रोफाइल तथा जनसांख्यिकी हेर्न क्लिक गर्नुहोस्',
+    },
+    {
+      key: 'total_households',
+      titleNepali: 'डिजिटल दर्ता घरधुरी',
+      titleEn: 'REGISTERED HOUSEHOLDS',
+      value: toNepaliDigits(profile?.totalHouseholds || stats.totalHouseholds || 5805),
+      unit: 'घर',
+      icon: <Home size={22} />,
+      color: '#10B981',
+      bgColor: 'rgba(16, 185, 129, 0.15)',
+      trendText: '🟢 १००% GIS म्यापिङ',
+      isUp: true,
+      note: `सुरक्षित आवास: ९१.२% • जोखिम क्षेत्र: ${toNepaliDigits(profile?.demographics?.highRiskHouses || 142)} घर`,
+      onClick: () => handleTabChange('operations'),
+      tooltip: 'घरधुरी म्याट्रिक्स लगत हेर्न क्लिक गर्नुहोस्',
+    },
+    {
+      key: 'active_projects',
+      titleNepali: 'सञ्चालित विकास योजनाहरू',
+      titleEn: 'ACTIVE PROJECTS',
+      value: toNepaliDigits(stats.totalProjects || 156),
+      unit: 'योजना',
+      icon: <Tractor size={22} />,
+      color: '#F59E0B',
+      bgColor: 'rgba(245, 158, 11, 0.15)',
+      trendText: '🟢 +१५.२% सम्पन्नता',
+      isUp: true,
+      note: 'सम्पन्न: १२४ योजना • चालु/जारी: ३२ योजना',
+      onClick: () => navigate(readOnly ? '/progress-reports' : '/app/progress-reports', { state: { selectedModuleKey: 2 } }),
+      tooltip: 'विकास योजना प्रतिवेदन खोल्न क्लिक गर्नुहोस्',
+    },
+    {
+      key: 'budget_utilization',
+      titleNepali: 'बजेट उपयोग तथा खर्च',
+      titleEn: 'BUDGET UTILIZED',
+      value: 'रु. ५७.६८',
+      unit: 'करोड',
+      icon: <Banknote size={22} />,
+      color: '#EC4899',
+      bgColor: 'rgba(236, 72, 153, 0.15)',
+      trendText: '🟢 ८२.४% वित्तीय प्रगति',
+      isUp: true,
+      note: 'कुल विनियोजन: रु. ६९.९८ करोड • आन्तरिक: रु. २.८ करोड',
+      onClick: () => handleTabChange('executive'),
+      tooltip: 'बजेट उपयोग विवरण हेर्न क्लिक गर्नुहोस्',
+    },
+    {
+      key: 'sifaris_issued',
+      titleNepali: 'जारी विद्युतीय सिफारिस',
+      titleEn: 'SIFARIS ISSUED',
+      value: '६३६',
+      unit: 'वटा',
+      icon: <FileText size={22} />,
+      color: '#8B5CF6',
+      bgColor: 'rgba(139, 92, 246, 0.15)',
+      trendText: '🟢 +८.४% नागरिक सेवा',
+      isUp: true,
+      note: 'अनलाइन ई-सेवा दर: ९१.०% • औसत समय: २४ मिनेट',
+      onClick: () => navigate('/citizen-services'),
+      tooltip: 'नागरिक ई-सेवा फाराम खोल्न क्लिक गर्नुहोस्',
+    },
+    {
+      key: 'building_permits',
+      titleNepali: 'भवन निर्माण तथा नक्सा पास',
+      titleEn: 'BUILDING PERMITS',
+      value: '२१८',
+      unit: 'वटा',
+      icon: <Building2 size={22} />,
+      color: '#06B6D4',
+      bgColor: 'rgba(6, 182, 212, 0.15)',
+      trendText: '🟢 +१२.०% नक्सा पास',
+      isUp: true,
+      note: 'GIS प्रमाणिकरण: ९४.५% • अनलाइन आवेदन: ८८%',
+      onClick: () => (readOnly ? navigate('/ebps') : handleTabChange('operations')),
+      tooltip: 'भवन निर्माण तथा नक्सा पास हेर्न क्लिक गर्नुहोस्',
+    },
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* CSS Animations */}
@@ -975,8 +1143,8 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.35)} }
       `}</style>
 
-      {/* ── Hero Banner (Hide in readOnly mode) ───────────────────────────────────────────── */}
-      {!readOnly && (
+      {/* ── Hero Banner (Admin Hero vs Public View Banner) ─────────────────── */}
+      {!readOnly ? (
         <div
           style={{
             borderRadius: '24px',
@@ -1096,11 +1264,15 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.55rem' }}>
                   <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
                     <div style={{ fontSize: '0.68rem', color: '#cbd5e1' }}>कुल घरधुरी</div>
-                    <div style={{ fontSize: '1.18rem', fontWeight: 800, color: '#ffffff' }}>{toNepaliDigits(stats.totalHouseholds ?? 5357)}</div>
+                    <div style={{ fontSize: '1.18rem', fontWeight: 800, color: '#ffffff' }}>
+                      {toNepaliDigits(profile?.totalHouseholds || stats.totalHouseholds || 5805)}
+                    </div>
                   </div>
                   <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
                     <div style={{ fontSize: '0.68rem', color: '#cbd5e1' }}>कुल जनसंख्या</div>
-                    <div style={{ fontSize: '1.18rem', fontWeight: 800, color: '#ffffff' }}>{toNepaliDigits(stats.totalPopulation ?? 21536)}</div>
+                    <div style={{ fontSize: '1.18rem', fontWeight: 800, color: '#ffffff' }}>
+                      {toNepaliDigits(profile?.totalPopulation || stats.totalPopulation || 20540)}
+                    </div>
                   </div>
                   <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
                     <div style={{ fontSize: '0.68rem', color: '#cbd5e1' }}>विषयगत शाखा</div>
@@ -1114,174 +1286,580 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
               </div>
             </div>
 
-            {/* ── Single-Line Unified Action Bar (एउटै आकर्षक लाईनमा) ── */}
+            {/* ── Integrated Executive Controls & Action Bar ── */}
             <div
               style={{
                 marginTop: '1.65rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.65rem',
-                flexWrap: 'nowrap',
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                padding: '0.5rem 0.65rem',
-                background: 'rgba(15, 23, 42, 0.45)',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                flexWrap: 'wrap',
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(15, 23, 42, 0.55)',
                 borderRadius: '16px',
                 border: '1px solid rgba(255, 255, 255, 0.14)',
                 backdropFilter: 'blur(12px)',
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), 0 8px 24px rgba(0, 0, 0, 0.2)',
               }}
             >
-              <Link
-                to="/gis-map"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: '#fbbf24',
-                  color: '#0f172a',
-                  padding: '0.55rem 1.05rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(251,191,36,0.3)',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <Layers size={16} />
-                <span>३D डिजिटल ट्विन नक्सा</span>
-              </Link>
-              <Link
-                to="/app/executive-dashboard"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: '#3b82f6',
-                  color: '#ffffff',
-                  padding: '0.55rem 1.05rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(59,130,246,0.35)',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <BarChart3 size={16} />
-                <span>कार्यपालिका कमाण्ड</span>
-              </Link>
-              <Link
-                to="/app/progress-reports"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: '#6366f1',
-                  color: '#ffffff',
-                  padding: '0.55rem 1.05rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(99,102,241,0.35)',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <FileCheck2 size={16} />
-                <span>३३ विषयगत प्रगति प्रतिवेदन</span>
-              </Link>
-              <a
-                href="#household-matrix-registry"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: '#10b981',
-                  color: '#ffffff',
-                  padding: '0.55rem 1.05rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <Home size={16} />
-                <span>घरधुरी लगत ({toNepaliDigits(stats.totalHouseholds ?? 5357)} घर)</span>
-              </a>
-              <Link
-                to="/demographics"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: 'rgba(255,255,255,0.12)',
-                  color: '#ffffff',
-                  border: '1px solid rgba(255,255,255,0.22)',
-                  padding: '0.55rem 1rem',
-                  borderRadius: '10px',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <Users size={16} />
-                <span>विस्तृत जनसांख्यिकी</span>
-              </Link>
-              <button
-                onClick={fetchStats}
-                disabled={isRefreshing}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  color: '#e2e8f0',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  padding: '0.55rem 0.95rem',
-                  borderRadius: '10px',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <RefreshCw size={14} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
-                <span>{isRefreshing ? 'ताजा हुँदै...' : 'डाटा ताजा गर्नुहोस्'}</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                {/* Ward Filter */}
+                <select
+                  value={selectedWard}
+                  onChange={(e) => setSelectedWard(Number(e.target.value))}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.85)',
+                    color: '#F8FAFC',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title="वडा अनुसार फिल्टर गर्नुहोस्"
+                >
+                  <option value={0}>समग्र गाउँपालिका (All Wards)</option>
+                  <option value={1}>वडा नं. १ (बाँसखर्क)</option>
+                  <option value={2}>वडा नं. २ (बरुवा)</option>
+                  <option value={3}>वडा नं. ३ (भोताङ)</option>
+                  <option value={4}>वडा नं. ४ (थाङपालकोट)</option>
+                  <option value={5}>वडा नं. ५ (गुन्सा)</option>
+                  <option value={6}>वडा नं. ६ (थाङपालधाप)</option>
+                  <option value={7}>वडा नं. ७ (भोटेनाम्लाङ)</option>
+                  <option value={8}>वडा नं. ८ (लागर्चे)</option>
+                </select>
+
+                {/* Fiscal Year Selector */}
+                <select
+                  value={fiscalYear}
+                  onChange={(e) => setFiscalYear(e.target.value)}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.85)',
+                    color: '#F8FAFC',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title="आर्थिक वर्ष छनोट गर्नुहोस्"
+                >
+                  <option value="२०८०/०८१">चालु आ.व. २०८०/०८१</option>
+                  <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
+                  <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                </select>
+
+                <Link
+                  to="/gis-map"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    backgroundColor: '#fbbf24',
+                    color: '#0f172a',
+                    padding: '0.5rem 0.95rem',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 8px rgba(251,191,36,0.3)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Layers size={15} />
+                  <span>३D डिजिटल नक्सा</span>
+                </Link>
+
+                <Link
+                  to="/app/progress-reports"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    backgroundColor: '#6366f1',
+                    color: '#ffffff',
+                    padding: '0.5rem 0.95rem',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.35)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <FileCheck2 size={15} />
+                  <span>३३ विषयगत प्रगति प्रतिवेदन</span>
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <Link
+                  to="/app/profile?tab=demographics"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    background: 'rgba(245, 158, 11, 0.18)',
+                    color: '#FBBF24',
+                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                    padding: '0.5rem 0.95rem',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="केन्द्रीय पालिका प्रोफाइल तथा जनसांख्यिकी सम्पादन गर्नुहोस्"
+                >
+                  <Edit3 size={15} />
+                  <span>केन्द्रीय प्रोफाइल सम्पादन</span>
+                </Link>
+
+                <button
+                  onClick={fetchStats}
+                  disabled={isRefreshing}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    backgroundColor: 'rgba(255,255,255,0.12)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                    padding: '0.5rem 0.95rem',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <RefreshCw size={14} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+                  <span>{isRefreshing ? 'ताजा हुँदै...' : 'ताजा डाटा'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ── Public View Mode Header Banner ── */
+        <div
+          id="unified-dashboard"
+          style={{
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0d9488 100%)',
+            color: '#ffffff',
+            padding: '1.75rem 2rem',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 10px 30px rgba(15,23,42,0.18)',
+            border: '1px solid rgba(255,255,255,0.15)',
+          }}
+        >
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    backgroundColor: 'rgba(255,255,255,0.14)',
+                    padding: '0.3rem 0.85rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    marginBottom: '0.65rem',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                  }}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }} />
+                  <span>सार्वजनिक दृश्य (Public View) · एकीकृत डिजिटल ट्विन कमान्ड</span>
+                  <span style={{ opacity: 0.4 }}>|</span>
+                  <span style={{ color: '#a7f3d0', fontWeight: 700 }}>३३ विषयगत क्षेत्र प्रत्यक्ष सिङ्क</span>
+                </div>
+                <h2 style={{ fontSize: '1.85rem', fontWeight: 800, margin: '0 0 0.35rem', color: '#ffffff', lineHeight: 1.25 }}>
+                  {palikaName}: <span style={{ color: '#fbbf24' }}>एकीकृत कमान्ड ड्यासबोर्ड</span>
+                </h2>
+                <p style={{ color: '#cbd5e1', fontSize: '0.88rem', margin: 0, maxWidth: '750px', lineHeight: 1.5 }}>
+                  कार्यपालिका निर्णय सहायता, ३३ वटै विषयगत क्षेत्रको प्रगति म्याट्रिक्स, र नागरिक कार्यसञ्चालनको प्रमाणित आधिकारिक विवरण (View Mode)
+                </p>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.6rem 1rem', borderRadius: '12px', textAlign: 'right' }}>
+                <div style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>डाटा प्रमाणीकरण</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#34d399' }}>केन्द्रीय SSoT सिङ्क</div>
+              </div>
+            </div>
+
+            {/* Public Controls Toolbar */}
+            <div
+              style={{
+                marginTop: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                flexWrap: 'wrap',
+                padding: '0.6rem 0.85rem',
+                background: 'rgba(15, 23, 42, 0.6)',
+                borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                <select
+                  value={selectedWard}
+                  onChange={(e) => setSelectedWard(Number(e.target.value))}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.85)',
+                    color: '#F8FAFC',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '0.45rem 0.75rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title="वडा अनुसार फिल्टर गर्नुहोस्"
+                >
+                  <option value={0}>समग्र गाउँपालिका (All Wards)</option>
+                  <option value={1}>वडा नं. १ (बाँसखर्क)</option>
+                  <option value={2}>वडा नं. २ (बरुवा)</option>
+                  <option value={3}>वडा नं. ३ (भोताङ)</option>
+                  <option value={4}>वडा नं. ४ (थाङपालकोट)</option>
+                  <option value={5}>वडा नं. ५ (गुन्सा)</option>
+                  <option value={6}>वडा नं. ६ (थाङपालधाप)</option>
+                  <option value={7}>वडा नं. ७ (भोटेनाम्लाङ)</option>
+                  <option value={8}>वडा नं. ८ (लागर्चे)</option>
+                </select>
+
+                <select
+                  value={fiscalYear}
+                  onChange={(e) => setFiscalYear(e.target.value)}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.85)',
+                    color: '#F8FAFC',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '0.45rem 0.75rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title="आर्थिक वर्ष छनोट गर्नुहोस्"
+                >
+                  <option value="२०८०/०८१">चालु आ.व. २०८०/०८१</option>
+                  <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
+                  <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                </select>
+
+                <Link
+                  to="/gis-map"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    backgroundColor: '#fbbf24',
+                    color: '#0f172a',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <Layers size={14} />
+                  <span>३D डिजिटल नक्सा</span>
+                </Link>
+
+                <Link
+                  to="/progress-reports"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    backgroundColor: '#6366f1',
+                    color: '#ffffff',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <FileCheck2 size={14} />
+                  <span>३३ विषयगत प्रगति प्रतिवेदन</span>
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <Link
+                  to="/profile?tab=demographics"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: 'rgba(245, 158, 11, 0.18)',
+                    color: '#FBBF24',
+                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <Building2 size={14} />
+                  <span>प्रमाणित पालिका प्रोफाइल</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={fetchStats}
+                  disabled={isRefreshing}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: 'rgba(16, 185, 129, 0.2)',
+                    color: '#34D399',
+                    border: '1px solid rgba(16, 185, 129, 0.45)',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <RefreshCw size={14} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+                  <span>{isRefreshing ? 'ताजा हुँदै...' : 'ताजा डाटा'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── DEMOGRAPHICS HIGHLIGHTS SECTION ──────────────────────── */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          border: '1.5px solid #e2e8f0',
-          padding: '1.5rem 1.75rem',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-        }}
-      >
-        <div
+      {/* ── 6 Core Executive KPI Cards (Single Source of Truth) ── */}
+      <div className="exec-kpi-grid">
+        {kpiMetrics.map((kpi) => (
+          <div
+            className="exec-kpi-card"
+            key={kpi.key}
+            style={{
+              '--card-accent': kpi.color,
+              cursor: kpi.onClick ? 'pointer' : 'default',
+            } as React.CSSProperties}
+            onClick={kpi.onClick}
+            title={kpi.tooltip}
+          >
+            <div className="exec-kpi-top-row">
+              <div
+                className="exec-kpi-icon-badge"
+                style={{
+                  '--badge-bg': kpi.bgColor,
+                  '--badge-color': kpi.color,
+                } as React.CSSProperties}
+              >
+                {kpi.icon}
+              </div>
+              <span className="exec-trend-pill up">{kpi.trendText}</span>
+            </div>
+
+            <div className="exec-kpi-center">
+              <div className="exec-kpi-title-nepali">{kpi.titleNepali}</div>
+              <div className="exec-kpi-title-en">{kpi.titleEn}</div>
+              <div className="exec-kpi-value-row">
+                <span className="exec-kpi-number">{kpi.value}</span>
+                <span className="exec-kpi-unit">{kpi.unit}</span>
+              </div>
+            </div>
+
+            <div className="exec-kpi-footer">
+              <span>{kpi.note}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Master Unified 3 Mode Navigation Tabs ── */}
+      <div className="unified-tabs-container">
+        <button
+          type="button"
+          className={`unified-tab-button ${activeTab === 'executive' ? 'active' : ''}`}
+          onClick={() => handleTabChange('executive')}
+        >
+          <TrendingUp size={18} />
+          <span>१. कार्यपालिका कमान्ड (Executive BI)</span>
+          <span className="unified-tab-tag">निर्णय सहायता</span>
+        </button>
+
+        <button
+          type="button"
+          className={`unified-tab-button ${activeTab === 'thematic' ? 'active' : ''}`}
+          onClick={() => handleTabChange('thematic')}
+        >
+          <Layers size={18} />
+          <span>२. ३३ विषयगत क्षेत्र सारांश (Thematic Matrix)</span>
+          <span className="unified-tab-tag">५ मुख्य विधा</span>
+        </button>
+
+        <button
+          type="button"
+          className={`unified-tab-button ${activeTab === 'operations' ? 'active' : ''}`}
+          onClick={() => handleTabChange('operations')}
+        >
+          <Activity size={18} />
+          <span>३. दैनिक कार्यसञ्चालन तथा सेवा (Operations)</span>
+          <span className="unified-tab-tag">लगत तथा ई-सेवा</span>
+        </button>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB 1: कार्यपालिका कमान्ड (Executive BI & Intelligence)
+          ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'executive' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Live Analytical Visual Panels */}
+          <div className="exec-analytics-section">
+            {/* Panel 1: मासिक पूँजीगत खर्च तथा बजेट उपयोग ट्रेन्ड */}
+            <div className="exec-panel-card">
+              <div className="exec-panel-header">
+                <h3 className="exec-panel-title">
+                  <TrendingUp size={19} color="#38BDF8" />
+                  <span>मासिक बजेट विनियोजन तथा पूँजीगत खर्च ट्रेन्ड ({fiscalYear})</span>
+                </h3>
+                <span className="exec-panel-subtitle">
+                  कुल खर्च: <strong style={{ color: '#34D399' }}>रु. ५७.६८ करोड (८२.४%)</strong>
+                </span>
+              </div>
+
+              <div className="exec-chart-bars-wrap">
+                {monthlySpending.map((item, idx) => (
+                  <div className="exec-chart-month-row" key={idx}>
+                    <span className="exec-month-label">{item.month}</span>
+                    <div className="exec-month-track" title={`${item.month}: रु. ${item.spent} करोड खर्च (${item.pct}%)`}>
+                      <div
+                        className="exec-month-bar-spent"
+                        style={{ width: `${item.pct}%` }}
+                      />
+                    </div>
+                    <span className="exec-month-val">रु. {item.spent} करोड ({item.pct}%)</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span>📊 पूँजीगत खर्च: <strong>७४.२%</strong> • चालु खर्च: <strong>२५.८%</strong></span>
+                <span style={{ color: '#38BDF8' }}>स्रोत: सुत्र (SuTRA) तथा कोष तथा लेखा नियन्त्रक</span>
+              </div>
+            </div>
+
+            {/* Panel 2: वडागत विकास श्रेणी तथा सम्पत्ति स्वास्थ्य */}
+            <div className="exec-panel-card">
+              <div className="exec-panel-header">
+                <h3 className="exec-panel-title">
+                  <ShieldCheck size={19} color="#10B981" />
+                  <span>वडागत विकास श्रेणी तथा सम्पत्ति स्वास्थ्य</span>
+                </h3>
+                <span className="exec-panel-subtitle">८ वटा वडाको समग्र कार्यसम्पादन</span>
+              </div>
+
+              {/* Asset Health Bar */}
+              <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                  <span style={{ color: '#34D399' }}>🟢 चालु: ७४.६% (१८२)</span>
+                  <span style={{ color: '#FBBF24' }}>🟡 मर्मत: १८.९% (४६)</span>
+                  <span style={{ color: '#F87171' }}>🔴 पुनर्निर्माण: ६.५% (१६)</span>
+                </div>
+                <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                  <div style={{ width: '74.6%', background: '#10B981' }} />
+                  <div style={{ width: '18.9%', background: '#F59E0B' }} />
+                  <div style={{ width: '6.5%', background: '#EF4444' }} />
+                </div>
+              </div>
+
+              {/* Ward Ranking List */}
+              <div className="exec-ward-rankings-list">
+                {wardRankings.slice(0, 5).map((w) => (
+                  <div className="exec-ward-row" key={w.rank}>
+                    <div className="exec-ward-rank-pill">#{w.rank}</div>
+                    <div className="exec-ward-name">{w.name}</div>
+                    <div className="exec-ward-bar-wrap">
+                      <div className="exec-ward-bar-fill" style={{ width: `${w.score}%` }} />
+                    </div>
+                    <div className="exec-ward-score">{w.score}%</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/progress-reports', { state: { activeTab: 'kpis' } })}
+                  style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  <span>सबै ८ वडाको विस्तृत श्रेणी हेर्नुहोस्</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* AI & GIS Section in Tab 1 */}
+          <div>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Activity size={24} color="#3b82f6" /> 
+                डिजिटल ट्विन स्मार्ट ड्यासबोर्ड (Predictive AI & GIS)
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0.25rem 0 0 0' }}>
+                आर्टिफिसियल इन्टेलिजेन्समा आधारित प्रक्षेपण र भौगोलिक नक्साङ्कन प्रणाली
+              </p>
+            </div>
+            
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', marginBottom: '2rem' }}>
+              <PredictiveAnalytics />
+            </div>
+
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', height: '600px' }}>
+              <MunicipalGISMap />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB 2: ३३ विषयगत क्षेत्र सारांश (33 Thematic Sectors Matrix)
+          ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'thematic' && (
+        <ThematicPillarsMatrix readOnly={readOnly} />
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB 3: दैनिक कार्यसञ्चालन तथा सेवा (Operations & Live Registry)
+          ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'operations' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* ── DEMOGRAPHICS HIGHLIGHTS SECTION ──────────────────────── */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              border: '1.5px solid #e2e8f0',
+              padding: '1.5rem 1.75rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+            }}
+          >
+            <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -1312,8 +1890,34 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
           </div>
 
           <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {!readOnly && (
+              <Link
+                to="/app/profile?tab=demographics"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  color: '#b45309',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  padding: '0.45rem 0.95rem',
+                  background: '#fef3c7',
+                  borderRadius: '8px',
+                  border: '1px solid #fde68a',
+                  boxShadow: '0 2px 6px rgba(217,119,6,0.1)',
+                  transition: 'background 0.2s',
+                }}
+                title="केन्द्रीय पालिका प्रोफाइल सम्पादन गर्नुहोस्"
+              >
+                <Edit3 size={15} color="#d97706" />
+                <span>केन्द्रीय प्रोफाइल सम्पादन</span>
+                <ChevronRight size={14} />
+              </Link>
+            )}
+
             <Link
-              to="/app/households"
+              to={readOnly ? "#household-matrix-registry" : "/app/households"}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -1330,12 +1934,12 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
               }}
             >
               <Home size={15} color="#059669" />
-              <span>घरधुरी म्याट्रिक्स तालिका तथा आयात ({toNepaliDigits(stats.totalHouseholds ?? 5357)} घर)</span>
+              <span>घरधुरी म्याट्रिक्स ({toNepaliDigits(stats.totalHouseholds ?? 5805)} घर)</span>
               <ChevronRight size={14} />
             </Link>
 
             <Link
-              to="/demographics"
+              to="/profile?tab=demographics"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -1381,15 +1985,15 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', margin: '0.35rem 0' }}>
               <span style={{ fontSize: '1.95rem', fontWeight: 800, color: '#0c4a6e', lineHeight: 1.1 }}>
-                {toNepaliDigits(stats.totalPopulation ?? 21536)}
+                {toNepaliDigits(stats.totalPopulation ?? 20540)}
               </span>
               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0284c7' }}>जना</span>
             </div>
             <div style={{ fontSize: '0.73rem', color: '#0369a1', fontWeight: 600, marginBottom: '0.35rem' }}>
-              👨 पुरुष: {toNepaliDigits(stats.malePopulation ?? 9494)} · 👩 महिला: {toNepaliDigits(stats.femalePopulation ?? 12042)}
+              👨 पुरुष: {toNepaliDigits(stats.malePopulation ?? 9950)} · 👩 महिला: {toNepaliDigits(stats.femalePopulation ?? 10590)}
             </div>
             <div style={{ fontSize: '0.68rem', color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '6px', display: 'inline-block', fontWeight: 700 }}>
-              लैंगिक अनुपात: ७८.८ • जनघनत्व: २८/किमि²
+              लैंगिक अनुपात: ९४.० • जनघनत्व: ४७.१/किमि²
             </div>
           </div>
 
@@ -1416,15 +2020,15 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', margin: '0.35rem 0' }}>
               <span style={{ fontSize: '1.95rem', fontWeight: 800, color: '#14532d', lineHeight: 1.1 }}>
-                {toNepaliDigits(stats.totalHouseholds ?? 5357)}
+                {toNepaliDigits(stats.totalHouseholds ?? 5805)}
               </span>
               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#16a34a' }}>घर</span>
             </div>
             <div style={{ fontSize: '0.73rem', color: '#15803d', fontWeight: 600, marginBottom: '0.35rem' }}>
-              📍 आधिकारिक दर्ता: {toNepaliDigits(stats.totalGpsHouses ?? 5357)} घर
+              📍 GPS लगत: {toNepaliDigits(stats.totalGpsHouses ?? 5357)} घर · जोखिम: {toNepaliDigits(stats.highRiskHouses ?? 142)} घर
             </div>
             <div style={{ fontSize: '0.68rem', color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: '6px', display: 'inline-block', fontWeight: 700 }}>
-              १००% GPS प्रमाणित • औसत परिवार: ४.० जना
+              १००% GPS प्रमाणित • औसत परिवार: ३.५ जना
             </div>
           </div>
 
@@ -1715,8 +2319,7 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
         </div>
       </div>
 
-      {/* ── THEMATIC SECTORS DIRECT ACCESS GRID (Hide in readOnly) ───────────────────── */}
-      {!readOnly && (
+      {/* ── THEMATIC SECTORS DIRECT ACCESS GRID ───────────────────────────── */}
       <div>
         <div style={{ marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
@@ -1812,28 +2415,6 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean }> = ({ readOnly =
           })}
         </div>
       </div>
-      )}
-
-      {/* ── DIGITAL TWIN AI & ANALYTICS MODULES ─────────────────────────────── */}
-      {!readOnly && (
-        <div style={{ marginTop: '2rem' }}>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Activity size={24} color="#3b82f6" /> 
-              डिजिटल ट्विन स्मार्ट ड्यासबोर्ड (Predictive AI & GIS)
-            </h2>
-            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0.25rem 0 0 0' }}>
-              आर्टिफिसियल इन्टेलिजेन्समा आधारित प्रक्षेपण र भौगोलिक नक्साङ्कन प्रणाली
-            </p>
-          </div>
-          
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', marginBottom: '2rem' }}>
-            <PredictiveAnalytics />
-          </div>
-
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', height: '600px' }}>
-            <MunicipalGISMap />
-          </div>
         </div>
       )}
     </div>

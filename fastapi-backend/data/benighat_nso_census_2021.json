@@ -1,0 +1,278 @@
+{
+  "source": {
+    "agency": "राष्ट्रिय तथ्याङ्क कार्यालय (National Statistics Office - NSO Nepal)",
+    "census_year": "२०७८ (Census 2021)",
+    "url": "https://censusresults.nsonepal.gov.np/population?province=3&district=26&municipality=9",
+    "title": "National Population and Housing Census 2021 - Benighat Rorang Rural Municipality",
+    "last_verified": "2026-10-16"
+  },
+  "overview": {
+    "municipality_name_np": "बेनिघाट रोराङ्ग गाउँपालिका",
+    "municipality_name_en": "Benighat Rorang Rural Municipality",
+    "district": "धादिङ (26)",
+    "province": "बागमती प्रदेश (3)",
+    "total_population": 33854,
+    "male_population": 17116,
+    "female_population": 16738,
+    "male_percent": 50.56,
+    "female_percent": 49.44,
+    "sex_ratio": 102.26,
+    "total_households": 7601,
+    "average_household_size": 4.45,
+    "population_density": 164,
+    "annual_growth_rate": 0.7,
+    "area_sq_km": 206.52,
+    "elevation_meters": "३०० मी. देखि २,४५० मी.",
+    "literacy_rate": 74.4,
+    "male_literacy_rate": 79.2,
+    "female_literacy_rate": 69.6
+  },
+  "wards": [
+    {
+      "ward_no": 1,
+      "name_np": "सिम्ले / जरुङ",
+      "total": 1988,
+      "male": 985,
+      "female": 1003,
+      "percent": 5.87
+    },
+    {
+      "ward_no": 2,
+      "name_np": "मलेखु",
+      "total": 5303,
+      "male": 2671,
+      "female": 2632,
+      "percent": 15.66
+    },
+    {
+      "ward_no": 3,
+      "name_np": "शलाङघाट / मजुवा",
+      "total": 4693,
+      "male": 2457,
+      "female": 2236,
+      "percent": 13.86
+    },
+    {
+      "ward_no": 4,
+      "name_np": "धुषा",
+      "total": 2310,
+      "male": 1128,
+      "female": 1182,
+      "percent": 6.82
+    },
+    {
+      "ward_no": 5,
+      "name_np": "विशालटार (केन्द्र)",
+      "total": 3155,
+      "male": 1576,
+      "female": 1579,
+      "percent": 9.32
+    },
+    {
+      "ward_no": 6,
+      "name_np": "गोठीभञ्ज्याङ",
+      "total": 2586,
+      "male": 1338,
+      "female": 1248,
+      "percent": 7.64
+    },
+    {
+      "ward_no": 7,
+      "name_np": "चरौँदी",
+      "total": 2979,
+      "male": 1507,
+      "female": 1472,
+      "percent": 8.8
+    },
+    {
+      "ward_no": 8,
+      "name_np": "खटौती",
+      "total": 2430,
+      "male": 1241,
+      "female": 1189,
+      "percent": 7.18
+    },
+    {
+      "ward_no": 9,
+      "name_np": "जोगीमारा",
+      "total": 3567,
+      "male": 1771,
+      "female": 1796,
+      "percent": 10.54
+    },
+    {
+      "ward_no": 10,
+      "name_np": "जवाङखोला / हुग्दीखोला",
+      "total": 4843,
+      "male": 2442,
+      "female": 2401,
+      "percent": 14.31
+    }
+  ],
+  "religion": [
+    {
+      "name_np": "हिन्दु",
+      "name_en": "Hindu",
+      "percentage": 71.5,
+      "population": 24206,
+      "color": "#ef4444"
+    },
+    {
+      "name_np": "इसाई",
+      "name_en": "Christian",
+      "percentage": 13.5,
+      "population": 4570,
+      "color": "#3b82f6"
+    },
+    {
+      "name_np": "बौद्ध",
+      "name_en": "Bouddha",
+      "percentage": 11.1,
+      "population": 3758,
+      "color": "#f59e0b"
+    },
+    {
+      "name_np": "प्रकृति",
+      "name_en": "Prakriti",
+      "percentage": 1.8,
+      "population": 610,
+      "color": "#10b981"
+    },
+    {
+      "name_np": "बोन",
+      "name_en": "Bon",
+      "percentage": 1.1,
+      "population": 372,
+      "color": "#8b5cf6"
+    },
+    {
+      "name_np": "इस्लाम तथा अन्य",
+      "name_en": "Islam & Others",
+      "percentage": 1.0,
+      "population": 338,
+      "color": "#64748b"
+    }
+  ],
+  "caste_ethnicity": [
+    {
+      "name_np": "चेपाङ / प्रजा",
+      "name_en": "Chepang/Praja",
+      "percentage": 34.9,
+      "population": 11815
+    },
+    {
+      "name_np": "पहाडी ब्राह्मण",
+      "name_en": "Brahman - Hill",
+      "percentage": 10.0,
+      "population": 3385
+    },
+    {
+      "name_np": "क्षेत्री",
+      "name_en": "Kshetri",
+      "percentage": 9.4,
+      "population": 3182
+    },
+    {
+      "name_np": "तामाङ",
+      "name_en": "Tamang",
+      "percentage": 8.9,
+      "population": 3013
+    },
+    {
+      "name_np": "मगर",
+      "name_en": "Magar",
+      "percentage": 8.2,
+      "population": 2776
+    },
+    {
+      "name_np": "नेवाः (नेवार)",
+      "name_en": "Newar",
+      "percentage": 6.7,
+      "population": 2268
+    },
+    {
+      "name_np": "विश्वकर्मा (दलित)",
+      "name_en": "Bishwokarma",
+      "percentage": 4.5,
+      "population": 1523
+    },
+    {
+      "name_np": "गुरुङ",
+      "name_en": "Gurung",
+      "percentage": 4.1,
+      "population": 1388
+    },
+    {
+      "name_np": "परियार (दलित)",
+      "name_en": "Pariyar",
+      "percentage": 2.8,
+      "population": 948
+    },
+    {
+      "name_np": "मिजार (दलित)",
+      "name_en": "Mijar",
+      "percentage": 2.5,
+      "population": 846
+    },
+    {
+      "name_np": "अन्य समुदाय",
+      "name_en": "Others",
+      "percentage": 3.0,
+      "population": 1010
+    }
+  ],
+  "mother_tongue": [
+    {
+      "name_np": "नेपाली भाषा",
+      "name_en": "Nepali",
+      "percentage": 60.4,
+      "speakers": 20448
+    },
+    {
+      "name_np": "चेपाङ भाषा",
+      "name_en": "Chepang",
+      "percentage": 26.0,
+      "speakers": 8802
+    },
+    {
+      "name_np": "तामाङ भाषा",
+      "name_en": "Tamang",
+      "percentage": 7.3,
+      "speakers": 2471
+    },
+    {
+      "name_np": "मगर ढुट भाषा",
+      "name_en": "Magar Dhut",
+      "percentage": 2.6,
+      "speakers": 880
+    },
+    {
+      "name_np": "गुरुङ भाषा",
+      "name_en": "Gurung",
+      "percentage": 1.4,
+      "speakers": 474
+    },
+    {
+      "name_np": "नेपालभाषा (नेवारी)",
+      "name_en": "Nepalbhasha",
+      "percentage": 0.7,
+      "speakers": 237
+    },
+    {
+      "name_np": "अन्य भाषा",
+      "name_en": "Others",
+      "percentage": 1.6,
+      "speakers": 542
+    }
+  ],
+  "housing_and_amenities": {
+    "households_with_toilet_percent": 98.2,
+    "households_without_toilet_percent": 1.8,
+    "owned_house_percent": 90.3,
+    "rented_house_percent": 8.8,
+    "birth_registration_under_5_percent": 55.9,
+    "disability_prevalence_percent": 2.4,
+    "male_household_head_percent": 71.2,
+    "female_household_head_percent": 28.8
+  }
+}

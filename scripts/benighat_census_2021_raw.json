@@ -1,0 +1,3277 @@
+{
+  "/population/distribution/ward": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "countSeries": [
+        {
+          "data": [
+            985,
+            2671,
+            2457,
+            1128,
+            1576,
+            1338,
+            1507,
+            1241,
+            1771,
+            2442
+          ],
+          "name": "male",
+          "total": 17116
+        },
+        {
+          "data": [
+            1003,
+            2632,
+            2236,
+            1182,
+            1579,
+            1248,
+            1472,
+            1189,
+            1796,
+            2401
+          ],
+          "name": "female",
+          "total": 16738
+        }
+      ],
+      "series": [
+        {
+          "data": [
+            985,
+            2671,
+            2457,
+            1128,
+            1576,
+            1338,
+            1507,
+            1241,
+            1771,
+            2442
+          ],
+          "name": "male",
+          "total": 17116
+        },
+        {
+          "data": [
+            1003,
+            2632,
+            2236,
+            1182,
+            1579,
+            1248,
+            1472,
+            1189,
+            1796,
+            2401
+          ],
+          "name": "female",
+          "total": 16738
+        }
+      ]
+    },
+    "message": "Data for population municipality listed successfully"
+  },
+  "/population/age-group": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "95+ Yrs.",
+        "90-94 Yrs.",
+        "85-89 Yrs.",
+        "80-84 Yrs.",
+        "75-79 Yrs.",
+        "70-74 Yrs.",
+        "65-69 Yrs.",
+        "60-64 Yrs.",
+        "55-59 Yrs.",
+        "50-54 Yrs.",
+        "45-49 Yrs.",
+        "40-44 Yrs.",
+        "35-39 Yrs.",
+        "30-34 Yrs.",
+        "25-29 Yrs.",
+        "20-24 Yrs.",
+        "15-19 Yrs.",
+        "10-14 Yrs.",
+        "05-09 Yrs.",
+        "00-04 Yrs."
+      ],
+      "countSeries": [
+        {
+          "category": "95+ Yrs.",
+          "sex": "M",
+          "value": 12
+        },
+        {
+          "category": "95+ Yrs.",
+          "sex": "F",
+          "value": 7
+        },
+        {
+          "category": "90-94 Yrs.",
+          "sex": "M",
+          "value": 25
+        },
+        {
+          "category": "90-94 Yrs.",
+          "sex": "F",
+          "value": 22
+        },
+        {
+          "category": "85-89 Yrs.",
+          "sex": "M",
+          "value": 67
+        },
+        {
+          "category": "85-89 Yrs.",
+          "sex": "F",
+          "value": 49
+        },
+        {
+          "category": "80-84 Yrs.",
+          "sex": "M",
+          "value": 107
+        },
+        {
+          "category": "80-84 Yrs.",
+          "sex": "F",
+          "value": 112
+        },
+        {
+          "category": "75-79 Yrs.",
+          "sex": "M",
+          "value": 256
+        },
+        {
+          "category": "75-79 Yrs.",
+          "sex": "F",
+          "value": 208
+        },
+        {
+          "category": "70-74 Yrs.",
+          "sex": "M",
+          "value": 336
+        },
+        {
+          "category": "70-74 Yrs.",
+          "sex": "F",
+          "value": 336
+        },
+        {
+          "category": "65-69 Yrs.",
+          "sex": "M",
+          "value": 437
+        },
+        {
+          "category": "65-69 Yrs.",
+          "sex": "F",
+          "value": 387
+        },
+        {
+          "category": "60-64 Yrs.",
+          "sex": "M",
+          "value": 525
+        },
+        {
+          "category": "60-64 Yrs.",
+          "sex": "F",
+          "value": 464
+        },
+        {
+          "category": "55-59 Yrs.",
+          "sex": "M",
+          "value": 609
+        },
+        {
+          "category": "55-59 Yrs.",
+          "sex": "F",
+          "value": 514
+        },
+        {
+          "category": "50-54 Yrs.",
+          "sex": "M",
+          "value": 720
+        },
+        {
+          "category": "50-54 Yrs.",
+          "sex": "F",
+          "value": 690
+        },
+        {
+          "category": "45-49 Yrs.",
+          "sex": "M",
+          "value": 702
+        },
+        {
+          "category": "45-49 Yrs.",
+          "sex": "F",
+          "value": 735
+        },
+        {
+          "category": "40-44 Yrs.",
+          "sex": "M",
+          "value": 915
+        },
+        {
+          "category": "40-44 Yrs.",
+          "sex": "F",
+          "value": 891
+        },
+        {
+          "category": "35-39 Yrs.",
+          "sex": "M",
+          "value": 1004
+        },
+        {
+          "category": "35-39 Yrs.",
+          "sex": "F",
+          "value": 1123
+        },
+        {
+          "category": "30-34 Yrs.",
+          "sex": "M",
+          "value": 1175
+        },
+        {
+          "category": "30-34 Yrs.",
+          "sex": "F",
+          "value": 1188
+        },
+        {
+          "category": "25-29 Yrs.",
+          "sex": "M",
+          "value": 1464
+        },
+        {
+          "category": "25-29 Yrs.",
+          "sex": "F",
+          "value": 1427
+        },
+        {
+          "category": "20-24 Yrs.",
+          "sex": "M",
+          "value": 1690
+        },
+        {
+          "category": "20-24 Yrs.",
+          "sex": "F",
+          "value": 1753
+        },
+        {
+          "category": "15-19 Yrs.",
+          "sex": "M",
+          "value": 1863
+        },
+        {
+          "category": "15-19 Yrs.",
+          "sex": "F",
+          "value": 1800
+        },
+        {
+          "category": "10-14 Yrs.",
+          "sex": "M",
+          "value": 1877
+        },
+        {
+          "category": "10-14 Yrs.",
+          "sex": "F",
+          "value": 1808
+        },
+        {
+          "category": "05-09 Yrs.",
+          "sex": "M",
+          "value": 1718
+        },
+        {
+          "category": "05-09 Yrs.",
+          "sex": "F",
+          "value": 1690
+        },
+        {
+          "category": "00-04 Yrs.",
+          "sex": "M",
+          "value": 1614
+        },
+        {
+          "category": "00-04 Yrs.",
+          "sex": "F",
+          "value": 1534
+        }
+      ],
+      "series": [
+        {
+          "category": "95+ Yrs.",
+          "sex": "M",
+          "value": "0.04",
+          "totalVal": 12,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "95+ Yrs.",
+          "sex": "F",
+          "value": "0.02",
+          "totalVal": 7,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "90-94 Yrs.",
+          "sex": "M",
+          "value": "0.1",
+          "totalVal": 25,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "90-94 Yrs.",
+          "sex": "F",
+          "value": "0.1",
+          "totalVal": 22,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "85-89 Yrs.",
+          "sex": "M",
+          "value": "0.2",
+          "totalVal": 67,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "85-89 Yrs.",
+          "sex": "F",
+          "value": "0.1",
+          "totalVal": 49,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "80-84 Yrs.",
+          "sex": "M",
+          "value": "0.3",
+          "totalVal": 107,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "80-84 Yrs.",
+          "sex": "F",
+          "value": "0.3",
+          "totalVal": 112,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "75-79 Yrs.",
+          "sex": "M",
+          "value": "0.8",
+          "totalVal": 256,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "75-79 Yrs.",
+          "sex": "F",
+          "value": "0.6",
+          "totalVal": 208,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "70-74 Yrs.",
+          "sex": "M",
+          "value": "1.0",
+          "totalVal": 336,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "70-74 Yrs.",
+          "sex": "F",
+          "value": "1.0",
+          "totalVal": 336,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "65-69 Yrs.",
+          "sex": "M",
+          "value": "1.3",
+          "totalVal": 437,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "65-69 Yrs.",
+          "sex": "F",
+          "value": "1.1",
+          "totalVal": 387,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "60-64 Yrs.",
+          "sex": "M",
+          "value": "1.6",
+          "totalVal": 525,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "60-64 Yrs.",
+          "sex": "F",
+          "value": "1.4",
+          "totalVal": 464,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "55-59 Yrs.",
+          "sex": "M",
+          "value": "1.8",
+          "totalVal": 609,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "55-59 Yrs.",
+          "sex": "F",
+          "value": "1.5",
+          "totalVal": 514,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "50-54 Yrs.",
+          "sex": "M",
+          "value": "2.1",
+          "totalVal": 720,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "50-54 Yrs.",
+          "sex": "F",
+          "value": "2.0",
+          "totalVal": 690,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "45-49 Yrs.",
+          "sex": "M",
+          "value": "2.1",
+          "totalVal": 702,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "45-49 Yrs.",
+          "sex": "F",
+          "value": "2.2",
+          "totalVal": 735,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "40-44 Yrs.",
+          "sex": "M",
+          "value": "2.7",
+          "totalVal": 915,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "40-44 Yrs.",
+          "sex": "F",
+          "value": "2.6",
+          "totalVal": 891,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "35-39 Yrs.",
+          "sex": "M",
+          "value": "3.0",
+          "totalVal": 1004,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "35-39 Yrs.",
+          "sex": "F",
+          "value": "3.3",
+          "totalVal": 1123,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "30-34 Yrs.",
+          "sex": "M",
+          "value": "3.5",
+          "totalVal": 1175,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "30-34 Yrs.",
+          "sex": "F",
+          "value": "3.5",
+          "totalVal": 1188,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "25-29 Yrs.",
+          "sex": "M",
+          "value": "4.3",
+          "totalVal": 1464,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "25-29 Yrs.",
+          "sex": "F",
+          "value": "4.2",
+          "totalVal": 1427,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "20-24 Yrs.",
+          "sex": "M",
+          "value": "5.0",
+          "totalVal": 1690,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "20-24 Yrs.",
+          "sex": "F",
+          "value": "5.2",
+          "totalVal": 1753,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "15-19 Yrs.",
+          "sex": "M",
+          "value": "5.5",
+          "totalVal": 1863,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "15-19 Yrs.",
+          "sex": "F",
+          "value": "5.3",
+          "totalVal": 1800,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "10-14 Yrs.",
+          "sex": "M",
+          "value": "5.5",
+          "totalVal": 1877,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "10-14 Yrs.",
+          "sex": "F",
+          "value": "5.3",
+          "totalVal": 1808,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "05-09 Yrs.",
+          "sex": "M",
+          "value": "5.1",
+          "totalVal": 1718,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "05-09 Yrs.",
+          "sex": "F",
+          "value": "5.0",
+          "totalVal": 1690,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "00-04 Yrs.",
+          "sex": "M",
+          "value": "4.8",
+          "totalVal": 1614,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        },
+        {
+          "category": "00-04 Yrs.",
+          "sex": "F",
+          "value": "4.5",
+          "totalVal": 1534,
+          "totalMale": 33854,
+          "totalFemale": 33854
+        }
+      ]
+    },
+    "message": "Data for population listed successfully"
+  },
+  "/population/marital-status": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "never_married",
+        "married",
+        "widow",
+        "divorced",
+        "separated"
+      ],
+      "series": [
+        {
+          "data": [
+            "32.9",
+            "62.8",
+            "3.5",
+            "0.2",
+            "0.6"
+          ],
+          "name": "Total"
+        },
+        {
+          "data": [
+            "36.3",
+            "60.5",
+            "2.4",
+            "0.3",
+            "0.6"
+          ],
+          "name": "Male"
+        },
+        {
+          "data": [
+            "29.3",
+            "65.2",
+            "4.7",
+            "0.1",
+            "0.7"
+          ],
+          "name": "Female"
+        }
+      ],
+      "countSeries": [
+        {
+          "data": [
+            8974,
+            17143,
+            956,
+            51,
+            174
+          ],
+          "name": "Total",
+          "total": 27298
+        },
+        {
+          "data": [
+            5010,
+            8334,
+            324,
+            37,
+            79
+          ],
+          "name": "Male",
+          "total": 13784
+        },
+        {
+          "data": [
+            3964,
+            8809,
+            632,
+            14,
+            95
+          ],
+          "name": "Female",
+          "total": 13514
+        }
+      ]
+    },
+    "message": "Data for population marital status listed successfully"
+  },
+  "/population/caste": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "Chepang/Praja",
+        "Brahman - Hill",
+        "Kshetri",
+        "Tamang",
+        "Magar",
+        "Newa: (Newar)",
+        "Bishwokarma",
+        "Gurung",
+        "Pariyar",
+        "Mijar"
+      ],
+      "series": [
+        {
+          "data": [
+            34.9,
+            10,
+            9.4,
+            8.9,
+            8.2,
+            6.7,
+            4.5,
+            4.1,
+            2.8,
+            2.5
+          ],
+          "name": "Both sexes",
+          "total": 33854
+        },
+        {
+          "data": [
+            35,
+            10.2,
+            9.2,
+            9,
+            8.2,
+            6.6,
+            4.4,
+            4,
+            2.7,
+            2.3
+          ],
+          "name": "Male",
+          "total": 17116
+        },
+        {
+          "data": [
+            34.8,
+            9.8,
+            9.6,
+            8.8,
+            8.2,
+            6.8,
+            4.6,
+            4.1,
+            3,
+            2.8
+          ],
+          "name": "Female",
+          "total": 16738
+        }
+      ],
+      "countSeries": [
+        {
+          "data": [
+            11815,
+            3386,
+            3176,
+            3011,
+            2777,
+            2281,
+            1534,
+            1383,
+            955,
+            855
+          ],
+          "name": "Both sexes",
+          "total": 33854
+        },
+        {
+          "data": [
+            5995,
+            1748,
+            1576,
+            1545,
+            1401,
+            1135,
+            758,
+            693,
+            458,
+            392
+          ],
+          "name": "Male",
+          "total": 17116
+        },
+        {
+          "data": [
+            5820,
+            1638,
+            1600,
+            1466,
+            1376,
+            1146,
+            776,
+            690,
+            497,
+            463
+          ],
+          "name": "Female",
+          "total": 16738
+        }
+      ]
+    },
+    "message": "Data for caste data listed successfully"
+  },
+  "/population/religion": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "hindu",
+        "bouddha",
+        "islam",
+        "kirat",
+        "christian",
+        "prakriti",
+        "bon",
+        "jain",
+        "bahai",
+        "sikha"
+      ],
+      "series": [
+        {
+          "data": [
+            "71.5",
+            "11.1",
+            "1.0",
+            "0.02",
+            "13.5",
+            "1.8",
+            "1.1",
+            "0.00",
+            "0.00",
+            "0.00"
+          ],
+          "name": "Total"
+        },
+        {
+          "data": [
+            "71.7",
+            "11.1",
+            "1.1",
+            "0.02",
+            "13.0",
+            "1.8",
+            "1.1",
+            "0.00",
+            "0.00",
+            "0.00"
+          ],
+          "name": "Male"
+        },
+        {
+          "data": [
+            "71.3",
+            "11.1",
+            "0.8",
+            "0.01",
+            "13.9",
+            "1.8",
+            "1.1",
+            "0.00",
+            "0.00",
+            "0.00"
+          ],
+          "name": "Female"
+        }
+      ],
+      "countSeries": [
+        {
+          "data": [
+            24204,
+            3758,
+            335,
+            6,
+            4555,
+            617,
+            379,
+            0,
+            0,
+            0
+          ],
+          "name": "Total",
+          "total": 33854
+        },
+        {
+          "data": [
+            12269,
+            1907,
+            195,
+            4,
+            2231,
+            315,
+            195,
+            0,
+            0,
+            0
+          ],
+          "name": "Male",
+          "total": 17116
+        },
+        {
+          "data": [
+            11935,
+            1851,
+            140,
+            2,
+            2324,
+            302,
+            184,
+            0,
+            0,
+            0
+          ],
+          "name": "Female",
+          "total": 16738
+        }
+      ]
+    },
+    "message": "Data for religion data listed successfully"
+  },
+  "/population/mother-tongue": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "Nepali",
+        "Chepang",
+        "Tamang",
+        "Magar Dhut",
+        "Gurung",
+        "Nepalbhasha (Newari)",
+        "Bhojpuri",
+        "Ghale",
+        "Hindi"
+      ],
+      "series": [
+        {
+          "data": [
+            60.4,
+            26,
+            7.3,
+            2.6,
+            1.4,
+            0.7,
+            0.5,
+            0.5,
+            0.3
+          ],
+          "name": "Both sexes",
+          "total": 33854
+        },
+        {
+          "data": [
+            59.8,
+            26.1,
+            7.4,
+            2.6,
+            1.4,
+            0.8,
+            0.7,
+            0.5,
+            0.3
+          ],
+          "name": "Male",
+          "total": 17116
+        },
+        {
+          "data": [
+            60.9,
+            25.9,
+            7.2,
+            2.6,
+            1.4,
+            0.6,
+            0.5,
+            0.3,
+            0.2
+          ],
+          "name": "Female",
+          "total": 16738
+        }
+      ],
+      "countSeries": [
+        {
+          "data": [
+            20432,
+            8805,
+            2482,
+            886,
+            466,
+            236,
+            171,
+            161,
+            93
+          ],
+          "name": "Both sexes",
+          "total": 33854
+        },
+        {
+          "data": [
+            10234,
+            4472,
+            1270,
+            444,
+            239,
+            129,
+            127,
+            78,
+            52
+          ],
+          "name": "Male",
+          "total": 17116
+        },
+        {
+          "data": [
+            10198,
+            4333,
+            1212,
+            442,
+            227,
+            107,
+            83,
+            44,
+            41
+          ],
+          "name": "Female",
+          "total": 16738
+        }
+      ]
+    },
+    "message": "Data for mother tongue data listed successfully"
+  },
+  "/population/disability-summary": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "total": {
+        "percentage": "2.4"
+      },
+      "male": {
+        "percentage": "2.5"
+      },
+      "female": {
+        "percentage": "2.3"
+      },
+      "sex_chart": {
+        "categories": [
+          "Male",
+          "Female"
+        ],
+        "series": [
+          "53.0",
+          "47.0"
+        ],
+        "countSeries": [
+          428,
+          380
+        ],
+        "total": 808
+      }
+    },
+    "message": "Data for population disability listed successfully"
+  },
+  "/population/birth-registration": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "registered",
+        "not_registered"
+      ],
+      "series": [
+        2131,
+        1683
+      ],
+      "total": 3814
+    },
+    "message": "Data for population disability listed successfully"
+  },
+  "/population/household-head": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "seventy_plus",
+        "sixty_sixtynine",
+        "fifty_fiftynine",
+        "forty_fortynine",
+        "thirty_thirtynine",
+        "twenty_twentynine",
+        "fifteen_nineteen",
+        "below_fourteen"
+      ],
+      "series": [
+        {
+          "category": "seventy_plus",
+          "sex": "M",
+          "value": 6.9,
+          "totalVal": 522,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "sixty_sixtynine",
+          "sex": "M",
+          "value": 10.7,
+          "totalVal": 813,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "fifty_fiftynine",
+          "sex": "M",
+          "value": 14.5,
+          "totalVal": 1105,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "forty_fortynine",
+          "sex": "M",
+          "value": 16.9,
+          "totalVal": 1284,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "thirty_thirtynine",
+          "sex": "M",
+          "value": 18.3,
+          "totalVal": 1390,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "twenty_twentynine",
+          "sex": "M",
+          "value": 11.3,
+          "totalVal": 859,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "fifteen_nineteen",
+          "sex": "M",
+          "value": 0.5,
+          "totalVal": 38,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "below_fourteen",
+          "sex": "M",
+          "value": 0.1,
+          "totalVal": 5,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "seventy_plus",
+          "sex": "F",
+          "value": 1.8,
+          "totalVal": 140,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "sixty_sixtynine",
+          "sex": "F",
+          "value": 2.1,
+          "totalVal": 158,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "fifty_fiftynine",
+          "sex": "F",
+          "value": 2.6,
+          "totalVal": 198,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "forty_fortynine",
+          "sex": "F",
+          "value": 3.7,
+          "totalVal": 283,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "thirty_thirtynine",
+          "sex": "F",
+          "value": 5.6,
+          "totalVal": 424,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "twenty_twentynine",
+          "sex": "F",
+          "value": 4.4,
+          "totalVal": 338,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "fifteen_nineteen",
+          "sex": "F",
+          "value": 0.6,
+          "totalVal": 43,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        },
+        {
+          "category": "below_fourteen",
+          "sex": "F",
+          "value": 0.01,
+          "totalVal": 1,
+          "totalMale": 7601,
+          "totalFemale": 7601
+        }
+      ],
+      "countSeries": [
+        {
+          "category": "seventy_plus",
+          "sex": "M",
+          "value": 522,
+          "total": 6016
+        },
+        {
+          "category": "sixty_sixtynine",
+          "sex": "M",
+          "value": 813,
+          "total": 6016
+        },
+        {
+          "category": "fifty_fiftynine",
+          "sex": "M",
+          "value": 1105,
+          "total": 6016
+        },
+        {
+          "category": "forty_fortynine",
+          "sex": "M",
+          "value": 1284,
+          "total": 6016
+        },
+        {
+          "category": "thirty_thirtynine",
+          "sex": "M",
+          "value": 1390,
+          "total": 6016
+        },
+        {
+          "category": "twenty_twentynine",
+          "sex": "M",
+          "value": 859,
+          "total": 6016
+        },
+        {
+          "category": "fifteen_nineteen",
+          "sex": "M",
+          "value": 38,
+          "total": 6016
+        },
+        {
+          "category": "below_fourteen",
+          "sex": "M",
+          "value": 5,
+          "total": 6016
+        },
+        {
+          "category": "seventy_plus",
+          "sex": "F",
+          "value": 140,
+          "total": 1585
+        },
+        {
+          "category": "sixty_sixtynine",
+          "sex": "F",
+          "value": 158,
+          "total": 1585
+        },
+        {
+          "category": "fifty_fiftynine",
+          "sex": "F",
+          "value": 198,
+          "total": 1585
+        },
+        {
+          "category": "forty_fortynine",
+          "sex": "F",
+          "value": 283,
+          "total": 1585
+        },
+        {
+          "category": "thirty_thirtynine",
+          "sex": "F",
+          "value": 424,
+          "total": 1585
+        },
+        {
+          "category": "twenty_twentynine",
+          "sex": "F",
+          "value": 338,
+          "total": 1585
+        },
+        {
+          "category": "fifteen_nineteen",
+          "sex": "F",
+          "value": 43,
+          "total": 1585
+        },
+        {
+          "category": "below_fourteen",
+          "sex": "F",
+          "value": 1,
+          "total": 1585
+        }
+      ]
+    },
+    "message": "Data for population listed successfully"
+  },
+  "/population/first-marriage": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "below_ten",
+        "ten_fourteen",
+        "fifteen_seventeen",
+        "eighteen_twenty",
+        "twenty_twentyfour",
+        "twentyfive_twentynine",
+        "thirty_thirtyfour",
+        "thirtyfive_thirtynine",
+        "forty_fortyfour",
+        "fortyfive_fortynine",
+        "plus_fifty"
+      ],
+      "series": [
+        {
+          "name": "below_ten",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.2",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.1",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "0.00",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "0.1",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "0.1",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "0.1",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "0.00",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "0.1",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "0.4",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "1.1",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "1.7",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "2.9",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "ten_fourteen",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "100.0",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "9.5",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "5.9",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "4.9",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "6.5",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "7.1",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "6.5",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "6.3",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "7.6",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "8.4",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "12.1",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "14.5",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "14.0",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "20.4",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "fifteen_seventeen",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "66.2",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "28.9",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "23.9",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "23.0",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "25.3",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "20.8",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "23.4",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "23.0",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "20.6",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "22.4",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "24.2",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "30.9",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "28.4",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "eighteen_twenty",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "24.0",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "46.0",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "32.7",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "32.1",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "31.1",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "35.6",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "31.5",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "32.6",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "31.4",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "30.5",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "27.1",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "27.0",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "24.7",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "twenty_twentyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "19.0",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "28.5",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "25.5",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "21.3",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "22.1",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "23.5",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "20.3",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "21.9",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "18.6",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "18.7",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "14.6",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "13.1",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "twentyfive_twentynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "9.9",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "11.1",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "12.0",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "11.0",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "11.2",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "11.8",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "12.5",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "10.8",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "9.6",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "7.1",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "7.5",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "thirty_thirtyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "1.8",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "2.6",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "3.2",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "3.1",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "3.4",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "3.3",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "3.3",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "3.2",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "3.5",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "1.2",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "thirtyfive_thirtynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "0.00",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "0.3",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "0.6",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "0.8",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "0.7",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "1.5",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "1.2",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "1.0",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "0.8",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "0.9",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "forty_fortyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "0.00",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "0.00",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "0.2",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "0.2",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "0.2",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "0.3",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "0.5",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "0.5",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "0.5",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "0.3",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "fortyfive_fortynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "0.00",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "0.00",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "0.00",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "0.00",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "0.1",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "0.00",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "0.1",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "0.00",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "0.00",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "0.1",
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "plus_fifty",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": "0.00",
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": "0.00",
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": "0.00",
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": "0.00",
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": "0.00",
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": "0.00",
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": "0.00",
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": "0.00",
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": "0.1",
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": "0.1",
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": "0.00",
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": "0.00",
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": "0.2",
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": "0.2",
+              "total": 858
+            }
+          ],
+          "total": 858
+        }
+      ],
+      "countSeries": [
+        {
+          "name": "below_ten",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 1,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 2,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 0,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 3,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 1,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 1,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 0,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 1,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 4,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 9,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 11,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 25,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "ten_fourteen",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 9,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 55,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 119,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 118,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 146,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 148,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 116,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 89,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 105,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 92,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 118,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 118,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 93,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 175,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "fifteen_seventeen",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 384,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 586,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 575,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 516,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 524,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 368,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 333,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 318,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 226,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 219,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 197,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 206,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 244,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "eighteen_twenty",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 139,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 932,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 786,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 719,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 645,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 631,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 448,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 450,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 345,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 298,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 221,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 180,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 212,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "twenty_twentyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 385,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 686,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 571,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 442,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 391,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 334,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 281,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 240,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 182,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 152,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 97,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 112,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "twentyfive_twentynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 238,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 250,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 249,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 194,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 160,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 163,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 137,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 106,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 78,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 47,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 64,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "thirty_thirtyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 41,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 54,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 56,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 44,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 47,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 36,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 32,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 26,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 23,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 10,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "thirtyfive_thirtynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 0,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 6,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 11,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 11,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 10,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 16,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 12,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 8,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 5,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 8,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "forty_fortyfour",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 0,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 0,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 3,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 3,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 3,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 3,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 5,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 4,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 3,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 3,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "fortyfive_fortynine",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 0,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 0,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 0,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 0,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 2,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 0,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 1,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 0,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 0,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 1,
+              "total": 858
+            }
+          ],
+          "total": 858
+        },
+        {
+          "name": "plus_fifty",
+          "data": [
+            {
+              "x": "10 - 14 Years",
+              "y": 0,
+              "total": 9
+            },
+            {
+              "x": "15 - 19 Years",
+              "y": 0,
+              "total": 580
+            },
+            {
+              "x": "20 - 24 Years",
+              "y": 0,
+              "total": 2026
+            },
+            {
+              "x": "25 - 29 Years",
+              "y": 0,
+              "total": 2403
+            },
+            {
+              "x": "30 - 34 Years",
+              "y": 0,
+              "total": 2243
+            },
+            {
+              "x": "35 - 39 Years",
+              "y": 0,
+              "total": 2074
+            },
+            {
+              "x": "40 - 44 Years",
+              "y": 0,
+              "total": 1771
+            },
+            {
+              "x": "45 - 49 Years",
+              "y": 0,
+              "total": 1423
+            },
+            {
+              "x": "50 - 54 Years",
+              "y": 1,
+              "total": 1382
+            },
+            {
+              "x": "55 - 59 Years",
+              "y": 1,
+              "total": 1097
+            },
+            {
+              "x": "60 - 64 Years",
+              "y": 0,
+              "total": 978
+            },
+            {
+              "x": "65 - 69 Years",
+              "y": 0,
+              "total": 814
+            },
+            {
+              "x": "70 - 74 Years",
+              "y": 1,
+              "total": 666
+            },
+            {
+              "x": "75+ Years",
+              "y": 2,
+              "total": 858
+            }
+          ],
+          "total": 858
+        }
+      ],
+      "totalSeries": [
+        9,
+        580,
+        2026,
+        2403,
+        2243,
+        2074,
+        1771,
+        1423,
+        1382,
+        1097,
+        978,
+        814,
+        666,
+        858
+      ]
+    },
+    "message": "Data for population listed successfully"
+  },
+  "/population/living-arrangement": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "categories": [
+        "mother_father",
+        "mother_only",
+        "father_only",
+        "father_step_mother",
+        "mother_step_father",
+        "other_relative",
+        "employer",
+        "other",
+        "not_std"
+      ],
+      "series": [
+        {
+          "data": [
+            "86.3",
+            "8.0",
+            "1.4",
+            "0.7",
+            "0.1",
+            "3.2",
+            "0.1",
+            "0.1",
+            "0.02"
+          ],
+          "name": "Total"
+        },
+        {
+          "data": [
+            "86.8",
+            "8.0",
+            "1.6",
+            "0.6",
+            "0.1",
+            "2.5",
+            "0.1",
+            "0.1",
+            "0.03"
+          ],
+          "name": "Male"
+        },
+        {
+          "data": [
+            "85.8",
+            "8.0",
+            "1.2",
+            "0.7",
+            "0.1",
+            "3.9",
+            "0.1",
+            "0.1",
+            "0.00"
+          ],
+          "name": "Female"
+        }
+      ],
+      "countSeries": [
+        {
+          "data": [
+            10715,
+            998,
+            178,
+            83,
+            15,
+            398,
+            10,
+            16,
+            2
+          ],
+          "name": "Total",
+          "total": 12415
+        },
+        {
+          "data": [
+            5489,
+            508,
+            102,
+            40,
+            7,
+            160,
+            5,
+            8,
+            2
+          ],
+          "name": "Male",
+          "total": 6321
+        },
+        {
+          "data": [
+            5226,
+            490,
+            76,
+            43,
+            8,
+            238,
+            5,
+            8,
+            0
+          ],
+          "name": "Female",
+          "total": 6094
+        }
+      ]
+    },
+    "message": "Data for population livingArrangement listed successfully"
+  },
+  "/population/highlight/ward": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "total_male": 17116,
+      "total_female": 16738,
+      "sex_ratio": "102.26",
+      "total": 33854,
+      "growth_rate": 0.699266611,
+      "hh_total": 7601,
+      "pop_density": 164,
+      "literacy_total": "74.4",
+      "literacy_male": "79.2",
+      "literacy_female": "69.6",
+      "sex_chart": {
+        "categories": [
+          "Male",
+          "Female"
+        ],
+        "series": [
+          "50.6",
+          "49.4"
+        ],
+        "countSeries": [
+          17116,
+          16738
+        ],
+        "total": 33854
+      }
+    },
+    "message": "Data for Municipality Population overview listed successfully"
+  },
+  "/household/highlight": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "totalHouseholds": 7601,
+      "rateTotalHouseholds": {
+        "series": {
+          "data": [
+            6666937,
+            5427302
+          ]
+        },
+        "difference": 1239635
+      },
+      "averageHouseholdSize": "4.45",
+      "rateAverageHouseholdSize": {
+        "series": {
+          "data": [
+            4.37,
+            4.88
+          ]
+        },
+        "difference": -0.51
+      },
+      "rented": "8.8",
+      "owned": "90.3",
+      "rateOwned": {
+        "series": {
+          "data": [
+            86,
+            85.26
+          ]
+        },
+        "difference": 0.74
+      },
+      "housingWithoutToilet": "5.5",
+      "rateHouseholdWithoutToilet": {
+        "series": {
+          "data": [
+            4.5,
+            38.17
+          ]
+        },
+        "difference": -33.67
+      },
+      "housingWithToilet": "94.5"
+    },
+    "message": "Data for household highlight listed successfully"
+  }
+}

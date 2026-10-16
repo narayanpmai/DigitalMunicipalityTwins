@@ -85,12 +85,44 @@ def resolve_subdomain(tenant_id: Optional[str]) -> str:
 
 def get_tenant_merged_settings(tenant_id: Optional[str], db: Session) -> Dict[str, str]:
     subdomain = resolve_subdomain(tenant_id)
-    defaults = TENANT_SETTING_DEFAULTS.get(subdomain, TENANT_SETTING_DEFAULTS["panchpokhari"])
+    defaults = TENANT_SETTING_DEFAULTS.get(subdomain)
+    if not defaults:
+        from models.municipality import MunicipalityProfile
+        from models.tenant import Tenant
+        prof = db.query(MunicipalityProfile).filter(
+            (MunicipalityProfile.tenant_id == subdomain) | (MunicipalityProfile.tenant_id == tenant_id)
+        ).first()
+        t = db.query(Tenant).filter(
+            (Tenant.subdomain == subdomain) | (Tenant.id == tenant_id)
+        ).first()
+
+        palika_np = prof.name_np if prof else (t.name_np if t else "गाउँपालिका")
+        palika_en = prof.name_en if prof else (t.name_en if t else "Rural Municipality")
+        dist = prof.district if prof else "जिल्ला"
+        prov = prof.province if prof else "बागमती प्रदेश"
+        hq = prof.headquarters if prof else f"{palika_np} केन्द्र"
+
+        defaults = {
+            "palika_name": palika_np,
+            "palika_name_en": palika_en,
+            "slogan": "आधुनिक, सुशासनयुक्त र समृद्ध पालिका",
+            "province": prov,
+            "district": dist,
+            "headquarters": hq,
+            "email": f"info@{subdomain}.gov.np",
+            "phone": "",
+            "website": f"https://{subdomain}.gov.np",
+            "address": f"गाउँ कार्यपालिकाको कार्यालय, {palika_np}, {dist}",
+            "total_wards": str(prof.ward_count if prof else 8),
+            "logo_url": (t.logo_url if t else "") or "/images/p5-logo.png",
+        }
+
     result = dict(defaults)
 
     query = db.query(SystemSetting)
-    if tenant_id:
-        query = query.filter((SystemSetting.tenant_id == tenant_id) | (SystemSetting.tenant_id == None))
+    if tenant_id or subdomain:
+        eff = tenant_id or subdomain
+        query = query.filter((SystemSetting.tenant_id == eff) | (SystemSetting.tenant_id == subdomain) | (SystemSetting.tenant_id == None))
     else:
         query = query.filter(SystemSetting.tenant_id == None)
 
@@ -98,6 +130,7 @@ def get_tenant_merged_settings(tenant_id: Optional[str], db: Session) -> Dict[st
         if item.value is not None:
             result[item.key] = item.value
     return result
+
 
 @router.get("", response_model=Dict[str, str])
 @router.get("", response_model=Dict[str, str])

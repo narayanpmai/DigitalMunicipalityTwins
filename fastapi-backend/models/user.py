@@ -28,6 +28,9 @@ class UserRole(str, enum.Enum):
     TOURIST = "tourist"
     ACCOUNTANT = "accountant"
     ENGINEER = "engineer"
+    MEDICAL_OFFICER = "medical_officer"
+    LAB_TECHNICIAN = "lab_technician"
+    PHARMACIST = "pharmacist"
 
 
 class User(Base):

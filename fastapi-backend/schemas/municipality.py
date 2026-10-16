@@ -54,6 +54,9 @@ class MunicipalityProfileUpdate(BaseModel):
     good_practices: Optional[Any] = Field(None, alias="goodPractices")
     leadership: Optional[Any] = None
     leaders: Optional[Any] = None
+    demographics: Optional[Any] = None
+    male_population: Optional[int] = Field(None, alias="malePopulation")
+    female_population: Optional[int] = Field(None, alias="femalePopulation")
 
 
 class MunicipalityProfileSchema(BaseModel):
@@ -87,6 +90,7 @@ class MunicipalityProfileSchema(BaseModel):
     cultural_identity: Optional[Any] = Field(None, alias="culturalIdentity")
     good_practices: Optional[Any] = Field(None, alias="goodPractices")
     leadership: Optional[Any] = None
+    demographics: Optional[Any] = None
     created_at: Optional[datetime] = Field(None, alias="createdAt")
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 

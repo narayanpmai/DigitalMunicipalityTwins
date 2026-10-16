@@ -1,0 +1,52 @@
+{
+  "/household/highlight": {
+    "status": "OK",
+    "code": 200,
+    "success": true,
+    "data": {
+      "totalHouseholds": 5914,
+      "rateTotalHouseholds": {
+        "series": {
+          "data": [
+            6666937,
+            5427302
+          ]
+        },
+        "difference": 1239635
+      },
+      "averageHouseholdSize": "3.55",
+      "rateAverageHouseholdSize": {
+        "series": {
+          "data": [
+            4.37,
+            4.88
+          ]
+        },
+        "difference": -0.51
+      },
+      "rented": "1.8",
+      "owned": "97.7",
+      "rateOwned": {
+        "series": {
+          "data": [
+            86,
+            85.26
+          ]
+        },
+        "difference": 0.74
+      },
+      "housingWithoutToilet": "0.6",
+      "rateHouseholdWithoutToilet": {
+        "series": {
+          "data": [
+            4.5,
+            38.17
+          ]
+        },
+        "difference": -33.67
+      },
+      "housingWithToilet": "99.4"
+    },
+    "message": "Data for household highlight listed successfully"
+  }
+}

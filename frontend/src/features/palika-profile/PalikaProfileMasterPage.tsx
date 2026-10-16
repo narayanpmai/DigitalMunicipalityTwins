@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
 import { municipalityApi } from '../../api/municipality';
+import { toNepaliDigits } from '../../utils/nepaliCalendar';
 import { PalikaOverviewTab } from './components/PalikaOverviewTab';
 import { WardsManagementTab } from './components/WardsManagementTab';
 import { DemographicsInfographicsTab } from './components/DemographicsInfographicsTab';
@@ -58,14 +59,14 @@ export const PalikaProfileMasterPage: React.FC = () => {
   const totalWards = profile?.totalWards || 8;
   const areaSqKm = profile?.totalAreaSqKm || 187.29;
   const headquarters = profile?.headquarters || 'थाङपालधाप';
-  const totalPopVal = profile?.totalPopulation || profile?.demographics?.totalPopulation;
-  const malePopVal = profile?.malePopulation || profile?.demographics?.male;
-  const femalePopVal = profile?.femalePopulation || profile?.demographics?.female;
-  const totalHhVal = profile?.totalHouseholds || profile?.demographics?.households;
-  const totalPopulation = totalPopVal ? totalPopVal.toLocaleString('ne-NP') : '२०,५४०';
-  const malePopulation = malePopVal ? malePopVal.toLocaleString('ne-NP') : '९,९५०';
-  const femalePopulation = femalePopVal ? femalePopVal.toLocaleString('ne-NP') : '१०,५९०';
-  const totalHouseholds = totalHhVal ? totalHhVal.toLocaleString('ne-NP') : '५,८०५';
+  const totalPopVal = profile?.totalPopulation || profile?.demographics?.totalPopulation || 20540;
+  const malePopVal = profile?.demographics?.male || profile?.malePopulation || 9950;
+  const femalePopVal = profile?.demographics?.female || profile?.femalePopulation || 10590;
+  const totalHhVal = profile?.totalHouseholds || profile?.demographics?.households || 5805;
+  const totalPopulation = toNepaliDigits(totalPopVal);
+  const malePopulation = toNepaliDigits(malePopVal);
+  const femalePopulation = toNepaliDigits(femalePopVal);
+  const totalHouseholds = toNepaliDigits(totalHhVal);
   const annualBudget = profile?.annualBudget || 'रु. ५८.४५ करोड';
   const internalRevenue = profile?.internalRevenue || 'रु. २.८ करोड';
 
@@ -335,7 +336,7 @@ export const PalikaProfileMasterPage: React.FC = () => {
       {/* ── ACTIVE TAB CONTENT ──────────────────────────────────────────────── */}
       {activeTab === 'overview' && <PalikaOverviewTab />}
       {activeTab === 'wards' && <WardsManagementTab />}
-      {activeTab === 'demographics' && <DemographicsInfographicsTab />}
+      {activeTab === 'demographics' && <DemographicsInfographicsTab profile={profile} />}
       {activeTab === 'sectoral' && <SectoralInfographicsTab />}
 
       {/* ── FACTSHEET PRINT MODAL ──────────────────────────────────────────── */}

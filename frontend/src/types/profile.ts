@@ -51,8 +51,17 @@ export interface MunicipalityProfile {
     male: number;
     female: number;
     households: number;
+    totalGpsHouses?: number;
+    highRiskHouses?: number;
     literacyRate: number;
+    maleLiteracyRate?: number;
+    femaleLiteracyRate?: number;
+    economicallyActive?: number;
+    participationRate?: number;
+    abroad?: number;
     averageFamilySize: number;
+    sexRatio?: number;
+    density?: number;
   };
   financials?: {
     annualBudget: string;

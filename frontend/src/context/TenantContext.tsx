@@ -117,8 +117,8 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const fetchSettings = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Tenant-specific defaults (fallback when backend has no settings for this tenant)
-      const tenantDefaults = TENANT_DEFAULTS[tenantId] || TENANT_DEFAULTS['panchpokhari'];
+      // Tenant-specific defaults (fallback only for panchpokhari or configured tenants)
+      const tenantDefaults = TENANT_DEFAULTS[tenantId] || (tenantId === 'panchpokhari' || !tenantId ? TENANT_DEFAULTS['panchpokhari'] : {});
 
       // Check localStorage override for this specific tenant
       const savedOverride = localStorage.getItem(`palika_settings_${tenantId}`);
@@ -139,8 +139,9 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       } as PublicSettings;
 
       setSettings(merged);
-      const palika = merged.palika_name || tenantDefaults?.palika_name || 'Municipal Digital Twins';
+      const palika = merged.palika_name || remoteData?.palika_name || tenantDefaults?.palika_name || 'Municipal Digital Twins';
       document.title = `${palika} — Municipal Digital Twins`;
+
     } catch (err) {
       console.error('Failed to load municipal settings:', err);
     } finally {

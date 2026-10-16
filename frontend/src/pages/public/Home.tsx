@@ -53,6 +53,11 @@ export const Home: React.FC = () => {
     refetchInterval: 15000,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ['municipality-profile'],
+    queryFn: () => municipalityApi.getProfile(),
+  });
+
   const melamchiSensor = sensors.find(s => s.sensorId === 'SEN-MEL-01') || {
     name: 'मेलम्ची खोला जलसतह',
     lastValue: 3.2,
@@ -570,195 +575,9 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 2. LIVE PALIKA KEY METRICS (PREMIUM CARDS) ──────────────────────────────── */}
-      <section style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '1.5rem 1.25rem', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '1280px',
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-          }}
-        >
-          {/* Card 1: Wards */}
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '1rem 0.95rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(2, 132, 199, 0.08)';
-              e.currentTarget.style.borderColor = '#bae6fd';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #0284c7, #38bdf8)' }} />
-            <div style={{ display: 'inline-flex', padding: '0.35rem', borderRadius: '8px', background: '#e0f2fe', color: '#0284c7', marginBottom: '0.35rem' }}>
-              <MapPin size={16} />
-            </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>८</div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.03em' }}>वडाहरू (Wards)</div>
-            <div style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600, marginTop: '0.25rem', background: '#ecfdf5', padding: '1px 7px', borderRadius: '20px', display: 'inline-block' }}>
-              ● १००% डिजिटल अभिलेखीकरण
-            </div>
-          </div>
-
-          {/* Card 2: Population */}
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '1rem 0.95rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.08)';
-              e.currentTarget.style.borderColor = '#a7f3d0';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
-            <div style={{ display: 'inline-flex', padding: '0.35rem', borderRadius: '8px', background: '#dcfce7', color: '#16a34a', marginBottom: '0.35rem' }}>
-              <Users size={16} />
-            </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>१७,५२१</div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.03em' }}>कुल जनसंख्या</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginTop: '0.25rem', background: '#f1f5f9', padding: '1px 7px', borderRadius: '20px', display: 'inline-block' }}>
-              ५,२३४ घरधुरी प्रोफाइल
-            </div>
-          </div>
-
-          {/* Card 3: Projects */}
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '1rem 0.95rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(217, 119, 6, 0.08)';
-              e.currentTarget.style.borderColor = '#fde68a';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #d97706, #fbbf24)' }} />
-            <div style={{ display: 'inline-flex', padding: '0.35rem', borderRadius: '8px', background: '#fef3c7', color: '#d97706', marginBottom: '0.35rem' }}>
-              <FolderGit2 size={16} />
-            </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>२४७</div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.03em' }}>विकास योजनाहरू</div>
-            <div style={{ fontSize: '0.7rem', color: '#b45309', fontWeight: 600, marginTop: '0.25rem', background: '#fffbeb', padding: '1px 7px', borderRadius: '20px', display: 'inline-block' }}>
-              १३२ सम्पन्न · ११५ चालु
-            </div>
-          </div>
-
-          {/* Card 4: GPS Households */}
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '1rem 0.95rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(124, 58, 237, 0.08)';
-              e.currentTarget.style.borderColor = '#ddd6fe';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
-            <div style={{ display: 'inline-flex', padding: '0.35rem', borderRadius: '8px', background: '#ede9fe', color: '#7c3aed', marginBottom: '0.35rem' }}>
-              <Building2 size={16} />
-            </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>५,८०५</div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.03em' }}>GPS नक्साङ्कन घरहरू</div>
-            <div style={{ fontSize: '0.7rem', color: '#6d28d9', fontWeight: 600, marginTop: '0.25rem', background: '#f5f3ff', padding: '1px 7px', borderRadius: '20px', display: 'inline-block' }}>
-              QR कोड डिजिटल ठेगाना
-            </div>
-          </div>
-
-          {/* Card 5: IoT and CCTV */}
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '1rem 0.95rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.08)';
-              e.currentTarget.style.borderColor = '#fecaca';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #ef4444, #f87171)' }} />
-            <div style={{ display: 'inline-flex', padding: '0.35rem', borderRadius: '8px', background: '#fee2e2', color: '#ef4444', marginBottom: '0.35rem' }}>
-              <Activity size={16} />
-            </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
-              {toNepaliDigits(sensors.length || 5)} + {toNepaliDigits(cameras.length || 4)}
-            </div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.03em' }}>IoT सेन्सर र CCTV</div>
-            <div style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 600, marginTop: '0.25rem', background: '#fef2f2', padding: '1px 7px', borderRadius: '20px', display: 'inline-block' }}>
-              ● २४/७ लाइभ टेलिमेट्री
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2.5 LIVE SECTORAL DATA OVERVIEW (Dashboard Widget) ────────────────────── */}
-      <section style={{ padding: '2.5rem 1.5rem', backgroundColor: '#f8fafc' }}>
-        <DashboardOverview readOnly={true} />
+      {/* ── 2. UNIFIED COMMAND DASHBOARD (एकीकृत कमान्ड ड्यासबोर्ड - Public View Mode) ── */}
+      <section id="unified-dashboard" style={{ padding: '2rem 1rem 3rem', backgroundColor: '#f8fafc' }}>
+        <DashboardOverview readOnly={true} defaultTab="executive" />
       </section>
 
       {/* ── 3. REAL-TIME HYDROMET & RIVER LEVEL BANNER ────────────────────────────── */}
