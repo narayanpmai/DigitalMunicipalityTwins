@@ -162,15 +162,16 @@ export const DURATION_REPORT_CONFIGS: Record<
 
 export const OnePagerPublicReportPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
-  const { settings: tenantSettings } = useTenant();
-  const palikaName = tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका';
+  const { settings: tenantSettings, tenantId } = useTenant();
+  const isGaushala = tenantId === 'gaushala' || tenantId === 'gaushalamun' || (tenantSettings?.palika_name || '').includes('गौशाला');
+  const palikaName = tenantSettings?.palika_name || (isGaushala ? 'गौशाला नगरपालिका' : 'पाँचपोखरी थाङपाल गाउँपालिका');
   const logoUrl = tenantSettings?.logo_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
-  const province = tenantSettings?.province || 'बागमती प्रदेश';
-  const district = tenantSettings?.district || 'सिन्धुपाल्चोक';
-  const address = tenantSettings?.address || 'गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक, बागमती प्रदेश';
-  const phone = tenantSettings?.phone || '०११-३०१२७';
-  const email = tenantSettings?.email || 'info@municipality.gov.np';
-  const website = tenantSettings?.website || 'www.municipality.gov.np';
+  const province = tenantSettings?.province || (isGaushala ? 'मधेश प्रदेश' : 'बागमती प्रदेश');
+  const district = tenantSettings?.district || (isGaushala ? 'महोत्तरी' : 'सिन्धुपाल्चोक');
+  const address = tenantSettings?.address || (isGaushala ? 'नगर कार्यपालिकाको कार्यालय, गौशाला, महोत्तरी, मधेश प्रदेश' : 'गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक, बागमती प्रदेश');
+  const phone = tenantSettings?.phone || (isGaushala ? '०४४-५८०१११' : '०११-३०१२७');
+  const email = tenantSettings?.email || (isGaushala ? 'gaushalamun@gmail.com' : 'info@municipality.gov.np');
+  const website = tenantSettings?.website || (isGaushala ? 'https://gaushalamun.gov.np' : 'www.municipality.gov.np');
   const [reportDuration, setReportDuration] = useState<ReportDurationType>(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get('type') as ReportDurationType;

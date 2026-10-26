@@ -41,11 +41,15 @@ export const LoginPage: React.FC = () => {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             setTenantList(prev => {
-              const seen = new Set();
+              const seenSub = new Set();
+              const seenName = new Set();
               const merged = [...data, ...prev].filter(t => {
-                const sub = (t.subdomain || t.id || '').toLowerCase();
-                if (!sub || seen.has(sub)) return false;
-                seen.add(sub);
+                const sub = (t.subdomain || t.id || '').toLowerCase().trim();
+                const name = (t.nameNp || t.nameEn || '').trim();
+                if (!sub || seenSub.has(sub)) return false;
+                if (name && seenName.has(name)) return false;
+                seenSub.add(sub);
+                if (name) seenName.add(name);
                 return true;
               });
               return merged;
@@ -84,8 +88,9 @@ export const LoginPage: React.FC = () => {
          navigate(from, { replace: true });
       }
     } catch (err: any) {
-      if (err?.response?.data?.message && err.response.data.message.includes('प्रमाणीकरणको क्रममा छ')) {
-        setError(err.response.data.message);
+      const serverMsg = err?.response?.data?.detail || err?.response?.data?.message;
+      if (serverMsg) {
+        setError(serverMsg);
       } else {
         setError('इमेल वा पासवर्ड मिलेन। कृपया पुन: जाँच गर्नुहोस्।');
       }

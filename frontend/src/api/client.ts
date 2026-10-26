@@ -7,26 +7,32 @@ export const getAuthToken = (): string | null => {
   return localStorage.getItem('p5_token');
 };
 
+const SYSTEM_SUBDOMAINS = ['www', 'digitaltwin', 'app', 'portal', 'admin', 'dashboard', 'api', 'dev', 'stage', 'smartptrm', 'localhost'];
+
 export const getTenantId = (): string => {
   // 1. Try from stored user object (set at login from JWT)
   try {
     const storedUser = localStorage.getItem('p5_user');
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      // tenantId in user is the UUID — but we need subdomain for header
-      // The selected subdomain is stored as tenant_id separately
+      const userTenant = parsed?.tenantSubdomain || parsed?.tenant_subdomain || parsed?.tenantId || parsed?.tenant_id || parsed?.subdomain;
+      if (userTenant && userTenant !== 'all' && !SYSTEM_SUBDOMAINS.includes(userTenant.toLowerCase())) {
+        return userTenant;
+      }
     }
   } catch {}
 
-  // 2. Use the explicitly selected tenant subdomain (set at login)
+  // 2. Use the explicitly selected tenant subdomain (set at login or palika switcher)
   const stored = localStorage.getItem('tenant_id');
-  if (stored && stored !== 'all' && stored !== '') return stored;
+  if (stored && stored !== 'all' && stored !== '' && !SYSTEM_SUBDOMAINS.includes(stored.toLowerCase())) {
+    return stored;
+  }
 
-  // 3. Dynamic extraction from subdomain (for multi-subdomain deployments)
+  // 3. Dynamic extraction from subdomain (for multi-subdomain deployments, e.g. gaushala.smartptrm.com)
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     const parts = hostname.split('.');
-    if (parts.length > 2 && parts[0] !== 'www') {
+    if (parts.length > 2 && !SYSTEM_SUBDOMAINS.includes(parts[0].toLowerCase())) {
       return parts[0];
     }
   }

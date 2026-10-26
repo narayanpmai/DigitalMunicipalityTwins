@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any, Dict
 from core.database import get_db
@@ -58,7 +58,7 @@ def enrich_tenant_dict(t: Tenant, db: Session) -> Dict[str, Any]:
     if not district:
         if t.subdomain in ["panchpokhari", "helambu", "melamchi", "indrawati"]:
             district = "सिन्धुपाल्चोक"
-        elif "धादिङ" in (t.name_np or ""):
+        elif "धादिङ" in (t.name_np or "") or t.subdomain in ["benighatrorang", "benighat", "benighat_rorang"]:
             district = "धादिङ"
         else:
             district = ""
@@ -83,16 +83,38 @@ def enrich_tenant_dict(t: Tenant, db: Session) -> Dict[str, Any]:
 def get_tenants(db: Session = Depends(get_db)):
     seed_tenants_if_empty(db)
     all_tenants = db.query(Tenant).order_by(Tenant.created_at.desc()).all()
-    return [enrich_tenant_dict(t, db) for t in all_tenants]
+    result = []
+    seen_names = set()
+    for t in all_tenants:
+        name_key = (t.name_np or "").strip()
+        if name_key and name_key in seen_names:
+            continue
+        if name_key:
+            seen_names.add(name_key)
+        result.append(enrich_tenant_dict(t, db))
+    return result
 
 @router.get("/current", response_model=TenantSchema)
 def get_current_tenant(
-    subdomain: Optional[str] = Query("panchpokhari", description="Tenant subdomain identifier"),
+    request: Request,
+    subdomain: Optional[str] = Query(None, description="Tenant subdomain identifier"),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
     db: Session = Depends(get_db)
 ):
     seed_tenants_if_empty(db)
-    eff_subdomain = subdomain or x_tenant_id or "panchpokhari"
+    eff_subdomain = (subdomain or x_tenant_id or "").strip()
+
+    if not eff_subdomain:
+        from api.routers.auth import _get_token_payload
+        payload = _get_token_payload(request)
+        if payload and payload.get("sub"):
+            u = db.query(User).filter(User.id == payload.get("sub"), User.deleted_at == None).first()
+            if u and u.tenant_id and u.tenant_id not in ("all", "*"):
+                eff_subdomain = u.tenant_id
+
+    if not eff_subdomain:
+        eff_subdomain = "panchpokhari"
+
     tenant = db.query(Tenant).filter(
         (Tenant.subdomain == eff_subdomain) | (Tenant.id == eff_subdomain)
     ).first()

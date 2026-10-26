@@ -29,29 +29,29 @@ import { representativesApi, Representative } from '../../../api/representatives
 import { PalikaProfileEditModal } from './PalikaProfileEditModal';
 
 export const PalikaOverviewTab: React.FC = () => {
-  const { settings } = useTenant();
+  const { settings, tenantId } = useTenant();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Fetch central profile from database
   const { data: profile, isLoading, refetch } = useQuery({
-    queryKey: ['municipality-profile'],
+    queryKey: ['municipality-profile', tenantId],
     queryFn: () => municipalityApi.getProfile(),
   });
 
   // Single Source of Truth: Fetch representatives from central database
   const { data: representatives = [] } = useQuery({
-    queryKey: ['representatives'],
+    queryKey: ['representatives', tenantId],
     queryFn: () => representativesApi.getAll(),
   });
 
-  const palikaName = profile?.nameNp || profile?.name || settings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका';
-  const district = profile?.district || settings?.district || 'सिन्धुपाल्चोक';
-  const province = profile?.province || settings?.province || 'बागमती प्रदेश';
-  const headquarters = profile?.headquarters || 'थाङपालधाप';
-  const areaSqKm = profile?.totalAreaSqKm || 187.29;
-  const wardCount = profile?.totalWards || 8;
-  const elevationMeters = profile?.elevationMeters || '१,१०० - ४,१०० मी.';
-  const introduction = profile?.introduction || `${palikaName} नेपालको बागमती प्रदेश अन्तर्गत सिन्धुपाल्चोक जिल्लाको उत्तर-पश्चिम भेगमा अवस्थित उच्च हिमाली तथा पहाडी भू-भाग ओगटेको एक प्राकृतिक, पर्यटकीय तथा सांस्कृतिक सम्पदाले भरिपूर्ण पालिका हो। यसको केन्द्र थाङपालधापमा अवस्थित छ।`;
+  const palikaName = profile?.nameNp || profile?.name || settings?.palika_name || 'स्थानीय तह';
+  const district = profile?.district || settings?.district || '';
+  const province = profile?.province || settings?.province || '';
+  const headquarters = profile?.headquarters || settings?.headquarters || '';
+  const areaSqKm = profile?.totalAreaSqKm || 144.73;
+  const wardCount = profile?.totalWards || 12;
+  const elevationMeters = profile?.elevationMeters || '';
+  const introduction = profile?.introduction || `${palikaName} नेपालको ${province} अन्तर्गत ${district} जिल्लामा अवस्थित स्थानीय तह हो।`;
 
   const boundaries = profile?.boundaries || {
     east: 'जुगल गाउँपालिका',

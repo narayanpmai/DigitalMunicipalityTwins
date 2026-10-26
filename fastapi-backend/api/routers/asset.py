@@ -7,11 +7,25 @@ import uuid
 
 from core.database import get_db
 from models.asset import PublicAsset
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/assets",
     tags=["Assets (सार्वजनिक सम्पत्ति)"]
 )
+
+def find_asset(id_str: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[PublicAsset]:
+    q = db.query(PublicAsset).filter(PublicAsset.deleted_at.is_(None))
+    if ctx:
+        q = ctx.filter_query(q, PublicAsset)
+    try:
+        aid = uuid.UUID(id_str)
+        a = q.filter(PublicAsset.id == aid).first()
+        if a: return a
+    except ValueError:
+        pass
+    return q.filter(PublicAsset.asset_code == id_str).first()
+
 
 @router.get("")
 @router.get("/")
@@ -19,9 +33,10 @@ def get_assets(
     category: Optional[str] = None,
     ward: Optional[int] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(PublicAsset).filter(PublicAsset.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(PublicAsset).filter(PublicAsset.deleted_at.is_(None)), PublicAsset)
     if ward and ward > 0:
         query = query.filter(PublicAsset.ward_number == ward)
     if category and category.strip() and category != "all":
@@ -40,8 +55,11 @@ def get_assets(
 
 
 @router.get("/stats/summary")
-def get_assets_summary(db: Session = Depends(get_db)):
-    assets = db.query(PublicAsset).filter(PublicAsset.deleted_at.is_(None)).all()
+def get_assets_summary(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    assets = ctx.filter_query(db.query(PublicAsset).filter(PublicAsset.deleted_at.is_(None)), PublicAsset).all()
     total_cost = sum(float(a.purchase_cost or 0) for a in assets)
     total_book_value = sum(float(a.current_book_value or a.purchase_cost or 0) for a in assets)
 
@@ -64,7 +82,11 @@ def get_assets_summary(db: Session = Depends(get_db)):
 
 @router.post("")
 @router.post("/")
-def create_asset(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_asset(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     aid = uuid.uuid4()
     code = payload.get("assetCode")
     if not code:
@@ -80,9 +102,11 @@ def create_asset(payload: Dict[str, Any], db: Session = Depends(get_db)):
     cost = float(payload.get("purchaseCost") or 0)
     dep_rate = float(payload.get("depreciationRatePercent") or 10.0)
     book_val = float(payload.get("currentBookValue") or (cost * (1 - dep_rate / 100.0)))
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
 
     new_asset = PublicAsset(
         id=aid,
+        tenant_id=eff_tenant,
         asset_code=code,
         asset_name=payload.get("assetName", "नयाँ सम्पत्ति"),
         category=payload.get("category", "अन्य पुँजीगत सम्पत्ति"),
@@ -110,30 +134,25 @@ def create_asset(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/{id}")
-def get_asset(id: str, db: Session = Depends(get_db)):
-    asset = None
-    try:
-        aid = uuid.UUID(id)
-        asset = db.query(PublicAsset).filter(PublicAsset.id == aid).first()
-    except ValueError:
-        pass
-    if not asset:
-        asset = db.query(PublicAsset).filter(PublicAsset.asset_code == id).first()
+def get_asset(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    asset = find_asset(id, db, ctx)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     return asset.to_dict()
 
 
 @router.put("/{id}")
-def update_asset(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    asset = None
-    try:
-        aid = uuid.UUID(id)
-        asset = db.query(PublicAsset).filter(PublicAsset.id == aid).first()
-    except ValueError:
-        pass
-    if not asset:
-        asset = db.query(PublicAsset).filter(PublicAsset.asset_code == id).first()
+def update_asset(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    asset = find_asset(id, db, ctx)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -161,15 +180,12 @@ def update_asset(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)
 
 
 @router.delete("/{id}")
-def delete_asset(id: str, db: Session = Depends(get_db)):
-    asset = None
-    try:
-        aid = uuid.UUID(id)
-        asset = db.query(PublicAsset).filter(PublicAsset.id == aid).first()
-    except ValueError:
-        pass
-    if not asset:
-        asset = db.query(PublicAsset).filter(PublicAsset.asset_code == id).first()
+def delete_asset(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    asset = find_asset(id, db, ctx)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -179,15 +195,13 @@ def delete_asset(id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{id}/inspect")
-def inspect_asset(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    asset = None
-    try:
-        aid = uuid.UUID(id)
-        asset = db.query(PublicAsset).filter(PublicAsset.id == aid).first()
-    except ValueError:
-        pass
-    if not asset:
-        asset = db.query(PublicAsset).filter(PublicAsset.asset_code == id).first()
+def inspect_asset(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    asset = find_asset(id, db, ctx)
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -212,4 +226,5 @@ def inspect_asset(id: str, payload: Dict[str, Any], db: Session = Depends(get_db
     db.commit()
     db.refresh(asset)
     return asset.to_dict()
+
 

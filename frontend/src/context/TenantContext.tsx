@@ -75,7 +75,92 @@ const TENANT_DEFAULTS: Record<string, Partial<PublicSettings>> = {
     total_wards: 6,
     logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
   },
+  benighatrorang: {
+    palika_name: 'बेनिघाट रोराङ्ग गाउँपालिका',
+    palika_name_en: 'Benighat Rorang Rural Municipality',
+    slogan: 'कृषि, पर्यटन र पूर्वाधार: समृद्ध बेनीघाट रोराङ्गको आधार',
+    province: 'बागमती प्रदेश',
+    district: 'धादिङ',
+    headquarters: 'विशालटार, धादिङ',
+    email: 'benighatrorangmun@gmail.com',
+    phone: '०१०-५२९००१',
+    website: 'https://benighatrorangmun.gov.np',
+    address: 'गाउँ कार्यपालिकाको कार्यालय, विशालटार, धादिङ',
+    total_wards: 10,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
+  khadadevi: {
+    palika_name: 'खाँडादेवी गाउँपालिका',
+    palika_name_en: 'Khandadevi Rural Municipality',
+    slogan: 'सुन्दर, सभ्य र समृद्ध खाँडादेवी !!!',
+    province: 'बागमती प्रदेश',
+    district: 'रामेछाप',
+    headquarters: 'माकादुम, रामेछाप',
+    email: 'khandadevimunicipality@gmail.com',
+    phone: '०६०-४२०१०६',
+    website: 'https://khandadevimun.gov.np',
+    address: 'गाउँ कार्यपालिकाको कार्यालय, माकादुम, रामेछाप',
+    total_wards: 9,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
+  khandadevi: {
+    palika_name: 'खाँडादेवी गाउँपालिका',
+    palika_name_en: 'Khandadevi Rural Municipality',
+    slogan: 'सुन्दर, सभ्य र समृद्ध खाँडादेवी !!!',
+    province: 'बागमती प्रदेश',
+    district: 'रामेछाप',
+    headquarters: 'माकादुम, रामेछाप',
+    email: 'khandadevimunicipality@gmail.com',
+    phone: '०६०-४२०१०६',
+    website: 'https://khandadevimun.gov.np',
+    address: 'गाउँ कार्यपालिकाको कार्यालय, माकादुम, रामेछाप',
+    total_wards: 9,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
+  gaushala: {
+    palika_name: 'गौशाला नगरपालिका',
+    palika_name_en: 'Gaushala Municipality',
+    slogan: 'कृषि, उद्योग र समृद्धिको सहर: हाम्रो गौशाला नगर',
+    province: 'मधेश प्रदेश',
+    district: 'महोत्तरी',
+    headquarters: 'गौशाला बजार, महोत्तरी',
+    email: 'gaushalamun@gmail.com',
+    phone: '०४४-५८०१११',
+    website: 'https://gaushalamun.gov.np',
+    address: 'नगर कार्यपालिकाको कार्यालय, गौशाला, महोत्तरी, मधेश प्रदेश',
+    total_wards: 12,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
+  gaushalamun: {
+    palika_name: 'गौशाला नगरपालिका',
+    palika_name_en: 'Gaushala Municipality',
+    slogan: 'कृषि, उद्योग र समृद्धिको सहर: हाम्रो गौशाला नगर',
+    province: 'मधेश प्रदेश',
+    district: 'महोत्तरी',
+    headquarters: 'गौशाला बजार, महोत्तरी',
+    email: 'gaushalamun@gmail.com',
+    phone: '०४४-५८०१११',
+    website: 'https://gaushalamun.gov.np',
+    address: 'नगर कार्यपालिकाको कार्यालय, गौशाला, महोत्तरी, मधेश प्रदेश',
+    total_wards: 12,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
+  galchhi: {
+    palika_name: 'गल्छी गाउँपालिका',
+    palika_name_en: 'Galchhi Rural Municipality',
+    slogan: 'कृषि, पर्यटन र पूर्वाधार: समृद्ध गल्छीको आधार',
+    province: 'बागमती प्रदेश',
+    district: 'धादिङ',
+    headquarters: 'बैरेनी, धादिङ',
+    email: 'galchhimun@gmail.com',
+    phone: '०१०-४०००११',
+    website: 'https://galchhimun.gov.np',
+    address: 'गाउँ कार्यपालिकाको कार्यालय, बैरेनी, धादिङ',
+    total_wards: 8,
+    logo_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+  },
 };
+
 
 const COMMON_DEFAULTS: Partial<PublicSettings> = {
   active_fiscal_year: '२०८१/०८२',
@@ -90,18 +175,22 @@ const COMMON_DEFAULTS: Partial<PublicSettings> = {
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
-// Helper: extract tenant subdomain from stored user, or fall back to explicit tenant_id
 const getEffectiveTenantId = (): string => {
   try {
     const storedUser = localStorage.getItem('p5_user');
     if (storedUser) {
       const user = JSON.parse(storedUser);
-      if (user?.tenantSubdomain) return user.tenantSubdomain;
+      const userTenant = user?.tenantSubdomain || user?.tenant_subdomain || user?.tenantId || user?.tenant_id || user?.subdomain;
+      if (userTenant && userTenant !== 'all' && !['www', 'digitaltwin', 'app', 'localhost'].includes(userTenant.toLowerCase())) {
+        return userTenant;
+      }
     }
   } catch {}
   const stored = localStorage.getItem('tenant_id');
-  if (stored && stored !== 'all' && stored !== '') return stored;
-  return getTenantId(); // falls back to subdomain extraction or 'panchpokhari'
+  if (stored && stored !== 'all' && stored !== '' && !['www', 'digitaltwin', 'app', 'localhost'].includes(stored.toLowerCase())) {
+    return stored;
+  }
+  return getTenantId(); // falls back to getTenantId
 };
 
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

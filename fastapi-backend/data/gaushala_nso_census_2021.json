@@ -1,0 +1,336 @@
+{
+  "source": {
+    "agency": "राष्ट्रिय तथ्याङ्क कार्यालय (National Statistics Office - NSO Nepal)",
+    "census_year": "२०७८ (Census 2021)",
+    "url": "https://censusresults.nsonepal.gov.np/population?province=2&district=18&municipality=2",
+    "title": "National Population and Housing Census 2021 - Gaushala Municipality, Mahottari",
+    "last_verified": "2026-10-17"
+  },
+  "overview": {
+    "municipality_name_np": "गौशाला नगरपालिका",
+    "municipality_name_en": "Gaushala Municipality",
+    "district": "महोत्तरी (18)",
+    "province": "मधेश प्रदेश (2)",
+    "total_population": 72481,
+    "male_population": 36250,
+    "female_population": 36231,
+    "male_percent": 50.01,
+    "female_percent": 49.99,
+    "sex_ratio": 100.05,
+    "total_households": 14446,
+    "average_household_size": 5.02,
+    "population_density": 501,
+    "annual_growth_rate": 1.63,
+    "area_sq_km": 144.73,
+    "elevation_meters": "६१ मी. देखि १५० मी.",
+    "literacy_rate": 60.97,
+    "male_literacy_rate": 68.8,
+    "female_literacy_rate": 53.1
+  },
+  "wards": [
+    {
+      "ward_no": 1,
+      "name_np": "रामनगर (उत्तरी क्षेत्र)",
+      "chairperson": "नविन कुमार साह",
+      "phone": "९८५४०३४५८१",
+      "email": "wd1.gaushalamun@gmail.com",
+      "total": 7638,
+      "male": 3845,
+      "female": 3793,
+      "percent": 10.54
+    },
+    {
+      "ward_no": 2,
+      "name_np": "निगौल (बजार क्षेत्र)",
+      "chairperson": "श्याम सुन्दर मण्डल",
+      "phone": "९८५४०३४५८२",
+      "email": "wd2.gaushalamun@gmail.com",
+      "total": 8613,
+      "male": 4166,
+      "female": 4447,
+      "percent": 11.88
+    },
+    {
+      "ward_no": 3,
+      "name_np": "बेलगाछी (उत्तरी बस्ती)",
+      "chairperson": "बिरेन्द्र चौधरी",
+      "phone": "९८५४०३४५८३",
+      "email": "wd3.gaushalamun@gmail.com",
+      "total": 4234,
+      "male": 2148,
+      "female": 2086,
+      "percent": 5.84
+    },
+    {
+      "ward_no": 4,
+      "name_np": "रजखोर / भरतपुर",
+      "chairperson": "राम नारायण महासेठ",
+      "phone": "९८५४०३४५८४",
+      "email": "wd4.gaushalamun@gmail.com",
+      "total": 8194,
+      "male": 4138,
+      "female": 4056,
+      "percent": 11.31
+    },
+    {
+      "ward_no": 5,
+      "name_np": "गौशाला बजार (केन्द्र)",
+      "chairperson": "ओम प्रकाश गुप्ता",
+      "phone": "९८५४०३४५८५",
+      "email": "wd5.gaushalamun@gmail.com",
+      "total": 7702,
+      "male": 3916,
+      "female": 3786,
+      "percent": 10.63
+    },
+    {
+      "ward_no": 6,
+      "name_np": "फुलकाहा",
+      "chairperson": "राम स्वार्थ यादव",
+      "phone": "९८५४०३४५८६",
+      "email": "wd6.gaushalamun@gmail.com",
+      "total": 3180,
+      "male": 1615,
+      "female": 1565,
+      "percent": 4.39
+    },
+    {
+      "ward_no": 7,
+      "name_np": "मनहर्वा",
+      "chairperson": "मनोज चौधरी",
+      "phone": "९८५४०३४५८७",
+      "email": "wd7.gaushalamun@gmail.com",
+      "total": 4446,
+      "male": 2243,
+      "female": 2203,
+      "percent": 6.13
+    },
+    {
+      "ward_no": 8,
+      "name_np": "कुसमारी / रामनगर",
+      "chairperson": "भोज बहादुर दर्लामी",
+      "phone": "९८५४०३४५८८",
+      "email": "wd8.gaushalamun@gmail.com",
+      "total": 5827,
+      "male": 2916,
+      "female": 2911,
+      "percent": 8.04
+    },
+    {
+      "ward_no": 9,
+      "name_np": "डुमरिया",
+      "chairperson": "बद्रि प्रसाद दनुवार",
+      "phone": "९८५४०३४५८९",
+      "email": "wd9.gaushalamun@gmail.com",
+      "total": 5822,
+      "male": 2885,
+      "female": 2937,
+      "percent": 8.03
+    },
+    {
+      "ward_no": 10,
+      "name_np": "भरतपुर / बटौवा",
+      "chairperson": "बिष्णु कुमार महतो",
+      "phone": "९८५४०३४५९०",
+      "email": "wd10.gaushalamun@gmail.com",
+      "total": 6236,
+      "male": 3085,
+      "female": 3151,
+      "percent": 8.60
+    },
+    {
+      "ward_no": 11,
+      "name_np": "लक्ष्मीनिया",
+      "chairperson": "राम पृत महतो कोईरी",
+      "phone": "९८५४०३४५९१",
+      "email": "wd11.gaushalamun@gmail.com",
+      "total": 5833,
+      "male": 2901,
+      "female": 2932,
+      "percent": 8.05
+    },
+    {
+      "ward_no": 12,
+      "name_np": "कान्तिबजार",
+      "chairperson": "कुशेश्वर सिंह",
+      "phone": "९८५४०३४५९२",
+      "email": "wd12.gaushalamun@gmail.com",
+      "total": 4756,
+      "male": 2392,
+      "female": 2364,
+      "percent": 6.56
+    }
+  ],
+  "religion": [
+    {
+      "name_np": "हिन्दु",
+      "name_en": "Hindu",
+      "percentage": 89.5,
+      "population": 64905,
+      "color": "#ef4444"
+    },
+    {
+      "name_np": "इस्लाम",
+      "name_en": "Islam",
+      "percentage": 7.0,
+      "population": 5072,
+      "color": "#10b981"
+    },
+    {
+      "name_np": "बौद्ध",
+      "name_en": "Bouddha",
+      "percentage": 3.2,
+      "population": 2339,
+      "color": "#f59e0b"
+    },
+    {
+      "name_np": "इसाई",
+      "name_en": "Christian",
+      "percentage": 0.2,
+      "population": 109,
+      "color": "#3b82f6"
+    },
+    {
+      "name_np": "प्रकृति",
+      "name_en": "Prakriti",
+      "percentage": 0.1,
+      "population": 56,
+      "color": "#8b5cf6"
+    }
+  ],
+  "caste_ethnicity": [
+    {
+      "name_np": "कोइरी / कुशवाहा",
+      "name_en": "Koiri / Kushwaha",
+      "percentage": 21.4,
+      "population": 15530
+    },
+    {
+      "name_np": "यादव",
+      "name_en": "Yadav",
+      "percentage": 9.4,
+      "population": 6829
+    },
+    {
+      "name_np": "मुसलमान",
+      "name_en": "Musalman",
+      "percentage": 6.9,
+      "population": 5031
+    },
+    {
+      "name_np": "मगर",
+      "name_en": "Magar",
+      "percentage": 6.4,
+      "population": 4655
+    },
+    {
+      "name_np": "तेली",
+      "name_en": "Teli",
+      "percentage": 6.2,
+      "population": 4506
+    },
+    {
+      "name_np": "चमार / हरिजन / राम",
+      "name_en": "Chamar / Harijan / Ram",
+      "percentage": 4.2,
+      "population": 3076
+    },
+    {
+      "name_np": "मुसहर",
+      "name_en": "Musahar",
+      "percentage": 3.8,
+      "population": 2780
+    },
+    {
+      "name_np": "थारु",
+      "name_en": "Tharu",
+      "percentage": 2.9,
+      "population": 2076
+    },
+    {
+      "name_np": "धानुक",
+      "name_en": "Dhanuk",
+      "percentage": 2.5,
+      "population": 1825
+    },
+    {
+      "name_np": "सुँडी",
+      "name_en": "Sundi",
+      "percentage": 2.4,
+      "population": 1749
+    },
+    {
+      "name_np": "अन्य (ब्राह्मण, खत्वे, पासवान आदि)",
+      "name_en": "Others",
+      "percentage": 18.9,
+      "population": 13696
+    }
+  ],
+  "mother_tongue": [
+    {
+      "name_np": "मैथिली",
+      "name_en": "Maithili",
+      "percentage": 42.4,
+      "population": 30699
+    },
+    {
+      "name_np": "मगही",
+      "name_en": "Magahi",
+      "percentage": 39.9,
+      "population": 28946
+    },
+    {
+      "name_np": "नेपाली",
+      "name_en": "Nepali",
+      "percentage": 7.0,
+      "population": 5056
+    },
+    {
+      "name_np": "मगर ढुट",
+      "name_en": "Magar Dhut",
+      "percentage": 5.6,
+      "population": 4027
+    },
+    {
+      "name_np": "उर्दू",
+      "name_en": "Urdu",
+      "percentage": 2.4,
+      "population": 1758
+    },
+    {
+      "name_np": "थारु",
+      "name_en": "Tharu",
+      "percentage": 0.9,
+      "population": 686
+    },
+    {
+      "name_np": "तामाङ",
+      "name_en": "Tamang",
+      "percentage": 0.7,
+      "population": 493
+    },
+    {
+      "name_np": "बज्जिका",
+      "name_en": "Bajjika",
+      "percentage": 0.4,
+      "population": 307
+    },
+    {
+      "name_np": "नेपालभाषा (नेवारी)",
+      "name_en": "Nepal Bhasha (Newari)",
+      "percentage": 0.2,
+      "population": 158
+    }
+  ],
+  "housing_and_amenities": {
+    "total_households": 14446,
+    "owned_house_pct": 96.7,
+    "rented_house_pct": 1.4,
+    "toilet_facility_pct": 90.8,
+    "no_toilet_pct": 9.2,
+    "disability_population": 1308,
+    "disability_rate": 1.8,
+    "male_disability": 775,
+    "female_disability": 533
+  }
+}

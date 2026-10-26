@@ -19,7 +19,7 @@ def require_tenant_access(
         return current_user
         
     # 2. For local users, check if their tenant_id matches the requested tenant
-    if current_user.tenant_id != current_tenant.id:
+    if current_user.tenant_id not in (str(current_tenant.id), current_tenant.subdomain):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to access data for this municipality."

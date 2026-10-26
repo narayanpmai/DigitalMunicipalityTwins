@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { aiApi, type AiChatMessage } from '../../api/ai';
+import { useTenant } from '../../context/TenantContext';
+import { getTenantId } from '../../api/client';
 import {
   Bot,
   User,
@@ -16,28 +18,68 @@ import {
 
 export const AiAssistantPage: React.FC = () => {
   const navigate = useNavigate();
+  const { settings, currentTenant } = useTenant();
+  const effTenant = (currentTenant?.subdomain || getTenantId() || '').toLowerCase();
+  const isKhadadevi = effTenant.includes('khadadevi') || effTenant.includes('khandadevi') || (settings?.palika_name || '').includes('खाँडादेवी') || (settings?.palika_name || '').includes('खाडादेवी');
+  const isBenighat = !isKhadadevi && (effTenant.includes('benighat') || (settings?.palika_name || '').includes('बेनिघाट'));
+
+  const palikaName = isKhadadevi 
+    ? (settings?.palika_name || 'खाँडादेवी गाउँपालिका')
+    : isBenighat
+      ? (settings?.palika_name || 'बेनिघाट रोराङ्ग गाउँपालिका')
+      : (settings?.palika_name || currentTenant?.name_np || 'पाँचपोखरी थाङपाल गाउँपालिका');
+
   const [inputQuery, setInputQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<AiChatMessage[]>([
-    {
-      id: 'welcome',
-      sender: 'ai',
-      text: 'नमस्ते! म पाँचपोखरी थाङपाल डिजिटल ट्विन एआई सहायक हुँ। म तपाईंलाई पालिकाका आयोजनाहरू, बजेट, नागरिक सेवा, दस्तुर, आकस्मिक एम्बुलेन्स, विद्यालय, वा पर्यटकीय स्थल सम्बन्धी आधिकारिक जानकारी दिन तयार छु। के जान्न चाहनुहुन्छ?',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      source: 'पाँचपोखरी थाङपाल गाउँपालिका एकीकृत डिजिटल ट्विन डाटाबेस',
-      confidence: 'high',
-      suggestedActions: ['नागरिक बडापत्र हेर्नुहोस्', 'आकस्मिक एम्बुलेन्स सेवा', 'पाँचपोखरी पदयात्रा मौसम', 'विकास योजना तथा बजेट'],
-      navigationUrl: '/badapatra',
-    },
-  ]);
+  const [messages, setMessages] = useState<AiChatMessage[]>([]);
 
-  const quickPrompts = [
-    'नागरिकता सिफारिसका लागि के के कागजात चाहिन्छ?',
-    'आकस्मिक एम्बुलेन्स र अस्पताल सेवा कहाँ उपलब्ध छ?',
-    'पाँचपोखरी ताल पदयात्राका लागि उपयुक्त मौसम कुन हो?',
-    'यस आर्थिक वर्षमा वडा ३ मा कस्ता सडक योजना छन्?',
-    'अपाङ्गता परिचयपत्र वर्गीकरण र भत्ता कति छ?',
-  ];
+  useEffect(() => {
+    setMessages([
+      {
+        id: 'welcome',
+        sender: 'ai',
+        text: isKhadadevi
+          ? `नमस्ते! म **खाँडादेवी गाउँपालिका** को डिजिटल ट्विन एआई सहायक हुँ। म तपाईंलाई पालिकाका ९ वटै वडा, बजेट, नागरिक सेवा, दस्तुर, आकस्मिक एम्बुलेन्स सेवा, खाँडादेवी मन्दिर तथा धार्मिक पर्यटन सम्बन्धी आधिकारिक जानकारी दिन तयार छु। के जान्न चाहनुहुन्छ?`
+          : isBenighat
+          ? `नमस्ते! म **बेनिघाट रोराङ्ग गाउँपालिका** को डिजिटल ट्विन एआई सहायक हुँ। म तपाईंलाई पालिकाका १० वटै वडा, बजेट, नागरिक सेवा, दस्तुर, राजमार्ग आकस्मिक एम्बुलेन्स, त्रिशूली जलपर्यटन सम्बन्धी आधिकारिक जानकारी दिन तयार छु। के जान्न चाहनुहुन्छ?`
+          : `नमस्ते! म **पाँचपोखरी थाङपाल गाउँपालिका** डिजिटल ट्विन एआई सहायक हुँ। म तपाईंलाई पालिकाका आयोजनाहरू, बजेट, नागरिक सेवा, दस्तुर, आकस्मिक एम्बुलेन्स, विद्यालय, वा पर्यटकीय स्थल सम्बन्धी आधिकारिक जानकारी दिन तयार छु। के जान्न चाहनुहुन्छ?`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        source: `${palikaName} एकीकृत डिजिटल ट्विन डाटाबेस`,
+        confidence: 'high',
+        suggestedActions: isKhadadevi
+          ? ['९ वटै वडा विवरण', 'नागरिक बडापत्र हेर्नुहोस्', 'आकस्मिक एम्बुलेन्स सेवा', 'खाँडादेवी मन्दिर पर्यटन']
+          : isBenighat
+          ? ['१० वटै वडा विवरण', 'नागरिक बडापत्र हेर्नुहोस्', 'आकस्मिक एम्बुलेन्स सेवा', 'त्रिशूली र्‍याफ्टिङ']
+          : ['नागरिक बडापत्र हेर्नुहोस्', 'आकस्मिक एम्बुलेन्स सेवा', 'पाँचपोखरी पदयात्रा मौसम', 'विकास योजना तथा बजेट'],
+        navigationUrl: '/badapatra',
+      },
+    ]);
+  }, [palikaName, isKhadadevi, isBenighat]);
+
+  const quickPrompts = isKhadadevi
+    ? [
+        'खाँडादेवीका ९ वटै वडा अध्यक्ष र सम्पर्क नम्बर के हुन्?',
+        'खाँडादेवी गाउँपालिकाको राष्ट्रिय जनगणना २०७८ को विवरण कस्तो छ?',
+        'गाउँपालिका अध्यक्ष र उपाध्यक्ष को हुनुहुन्छ?',
+        'नागरिकता सिफारिसका लागि के के कागजात चाहिन्छ?',
+        'आकस्मिक एम्बुलेन्स र स्वास्थ्य सेवा कसरी पाउने?',
+        'खाँडादेवी मन्दिर र पर्यटकीय स्थलहरू बारे बताउनुहोस्',
+      ]
+    : isBenighat
+    ? [
+        'बेनीघाट रोराङका १० वटै वडा अध्यक्षहरूको नाम र फोन नम्बर दिनुहोस्',
+        'बेनिघाट रोराङ्ग गाउँपालिकाको राष्ट्रिय जनगणना २०७८ को विवरण दिनुहोस्',
+        'गाउँपालिका अध्यक्ष र उपाध्यक्षको सम्पर्क विवरण के छ?',
+        'नागरिकता सिफारिसका लागि के के कागजात चाहिन्छ?',
+        'आकस्मिक एम्बुलेन्स सेवा र अस्पताल कहाँ उपलब्ध छ?',
+      ]
+    : [
+        'नागरिकता सिफारिसका लागि के के कागजात चाहिन्छ?',
+        'आकस्मिक एम्बुलेन्स र अस्पताल सेवा कहाँ उपलब्ध छ?',
+        'पाँचपोखरी ताल पदयात्राका लागि उपयुक्त मौसम कुन हो?',
+        'यस आर्थिक वर्षमा वडा ३ मा कस्ता सडक योजना छन्?',
+        'अपाङ्गता परिचयपत्र वर्गीकरण र भत्ता कति छ?',
+      ];
 
   const handleSpeak = (text: string) => {
     if (!('speechSynthesis' in window)) {

@@ -52,7 +52,25 @@ export const Navbar: React.FC<NavbarProps> = ({ isPublic = false }) => {
     } catch (e) {}
   }
   const palikaName = tenantPalikaName || 'पाँचपोखरी थाङपाल गाउँपालिका';
-  const slogan = settings?.slogan || 'आधुनिक, सुशासनयुक्त र समृद्ध पालिका';
+  const isGaushalaTenant = tenantId === 'gaushala' || tenantId === 'gaushalamun' || palikaName.includes('गौशाला');
+  const isKhadadeviTenant = tenantId === 'khadadevi' || tenantId === 'khandadevi' || palikaName.includes('खाँडादेवी');
+  const isBenighatTenant = tenantId === 'benighatrorang' || palikaName.includes('बेनिघाट');
+  const isGalchhiTenant = tenantId === 'galchhi' || palikaName.includes('गल्छी');
+  const isMelamchiTenant = tenantId === 'melamchi' || palikaName.includes('मेलम्ची');
+  const slogan = (settings?.slogan && settings.slogan !== 'आधुनिक, सुशासनयुक्त र समृद्ध पालिका') 
+    ? settings.slogan 
+    : (isGaushalaTenant 
+        ? 'कृषि, उद्योग र समृद्धिको सहर: हाम्रो गौशाला नगर' 
+        : (isKhadadeviTenant 
+            ? 'सुन्दर, सभ्य र समृद्ध खाँडादेवी !!!' 
+            : (isBenighatTenant 
+                ? 'कृषि, पर्यटन र पूर्वाधार: समृद्ध बेनीघाट रोराङ्गको आधार' 
+                : (isGalchhiTenant
+                    ? 'कृषि, पर्यटन र पूर्वाधार: समृद्ध गल्छीको आधार'
+                    : (isMelamchiTenant
+                        ? 'मेलम्ची नगर समृद्धिको आधार – कृषि, पर्यटन, उद्योग र जलाधार'
+                        : (settings?.slogan || 'आधुनिक, सुशासनयुक्त र समृद्ध पालिका'))))));
+
 
   // Today's Nepali date
   const todayAD = new Date();

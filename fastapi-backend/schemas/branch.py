@@ -35,7 +35,7 @@ class BranchBase(BaseModel):
         return v
 
 class BranchCreate(BranchBase):
-    pass
+    tenant_id: Optional[str] = None
 
 class BranchUpdate(BaseModel):
     name: Optional[str] = None

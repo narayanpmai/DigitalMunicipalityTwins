@@ -16,6 +16,7 @@ import {
 import { aiApi } from '../../api/ai';
 import { complaintsApi } from '../../api/complaints';
 import type { Complaint } from '../../types/complaint';
+import { useTenant } from '../../context/TenantContext';
 
 interface ChatMessage {
   id: string;
@@ -27,6 +28,20 @@ interface ChatMessage {
 }
 
 export const CitizenLiveChatWidget: React.FC = () => {
+  const { settings, currentTenant } = useTenant();
+  const effTenant = (currentTenant?.subdomain || '').toLowerCase();
+  const isGaushala = effTenant.includes('gaushala') || (settings?.palika_name || '').includes('गौशाला');
+  const isKhadadevi = !isGaushala && (effTenant.includes('khadadevi') || effTenant.includes('khandadevi') || (settings?.palika_name || '').includes('खाँडादेवी') || (settings?.palika_name || '').includes('खाडादेवी'));
+  const isBenighat = !isGaushala && !isKhadadevi && (effTenant.includes('benighat') || (settings?.palika_name || '').includes('बेनिघाट'));
+
+  const palikaName = isGaushala
+    ? (settings?.palika_name || 'गौशाला नगरपालिका')
+    : isKhadadevi 
+      ? (settings?.palika_name || 'खाँडादेवी गाउँपालिका')
+      : isBenighat
+        ? (settings?.palika_name || 'बेनिघाट रोराङ्ग गाउँपालिका')
+        : (settings?.palika_name || currentTenant?.name_np || 'पाँचपोखरी थाङपाल गाउँपालिका');
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'register' | 'track' | 'whatsapp'>('chat');
   const [inputQuery, setInputQuery] = useState('');
@@ -50,20 +65,45 @@ export const CitizenLiveChatWidget: React.FC = () => {
   const [trackResult, setTrackResult] = useState<Complaint | null>(null);
   const [trackError, setTrackError] = useState('');
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      sender: 'ai',
-      text: 'नमस्ते! 🙏 म पाँचपोखरी थाङपाल गाउँपालिकाको २४/७ नागरिक डिजिटल सहायक हुँ। म तपाईंलाई नागरिक बडापत्र, दस्तुर, आकस्मिक सेवा वा गुनासो दर्ता तथा सुनुवाइमा तत्काल सहयोग गर्न तयार छु।',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      options: [
-        'सूचना अधिकारी (कुमार बस्नेत) वा विपद् फोकल (नारायण क्षेत्री) सम्पर्क',
-        'नागरिकता सिफारिस दस्तुर र कागजात के के चाहिन्छ?',
-        'खानेपानी वा सडक बिग्रेको गुनासो दर्ता गर्न चाहन्छु',
-        'दर्ता भएको गुनासोको स्थिति कसरी ट्र्याक गर्ने?',
-      ],
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  useEffect(() => {
+    setMessages([
+      {
+        id: 'welcome',
+        sender: 'ai',
+        text: `नमस्ते! 🙏 म ${palikaName}को २४/७ नागरिक डिजिटल सहायक हुँ। म तपाईंलाई नागरिक बडापत्र, दस्तुर, आकस्मिक सेवा वा गुनासो दर्ता तथा सुनुवाइमा तत्काल सहयोग गर्न तयार छु।`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        options: isGaushala
+          ? [
+              'नगर प्रमुख (डा. दिपेन्द्र महतो) र उपप्रमुख सम्पर्क (९८५४०२९१५८)',
+              'गौशालाका १२ वटै वडा अध्यक्ष र आधिकारिक इमेल',
+              'नागरिकता तथा वडा सिफारिसका लागि के कागजात चाहिन्छ?',
+              'एभरेष्ट सुगर मिल तथा उखु किसान अनुदान बारे जानकारी',
+            ]
+          : isKhadadevi
+          ? [
+              'प्रवक्ता (नारायण कार्की) वा गाउँपालिका सम्पर्क (०६०-४२०१०६)',
+              'नागरिकता सिफारिस दस्तुर र कागजात के के चाहिन्छ?',
+              'खाँडादेवीका ९ वटै वडा अध्यक्ष र सम्पर्क नम्बरहरू',
+              'दर्ता भएको गुनासोको स्थिति कसरी ट्र्याक गर्ने?',
+            ]
+          : isBenighat
+          ? [
+              'गाउँपालिका अध्यक्ष (विवेक थपलिया) वा कार्यालय सम्पर्क (०१०-४१६०००)',
+              'नागरिकता सिफारिस दस्तुर र कागजात के के चाहिन्छ?',
+              'बेनीघाट रोराङका १० वटै वडा अध्यक्ष र सम्पर्क नम्बर',
+              'दर्ता भएको गुनासोको स्थिति कसरी ट्र्याक गर्ने?',
+            ]
+          : [
+              'सूचना अधिकारी (कुमार बस्नेत) वा विपद् फोकल (नारायण क्षेत्री) सम्पर्क',
+              'नागरिकता सिफारिस दस्तुर र कागजात के के चाहिन्छ?',
+              'खानेपानी वा सडक बिग्रेको गुनासो दर्ता गर्न चाहन्छु',
+              'दर्ता भएको गुनासोको स्थिति कसरी ट्र्याक गर्ने?',
+            ],
+      },
+    ]);
+  }, [palikaName, isKhadadevi, isBenighat]);
 
   useEffect(() => {
     if (isOpen) {
@@ -293,7 +333,7 @@ export const CitizenLiveChatWidget: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>पाँचपोखरी नागरिक सहायता</span>
+                  <span>{palikaName} नागरिक सहायता</span>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
                 </div>
                 <div style={{ fontSize: '0.7rem', color: '#d1fae5' }}>एआई डिजिटल सहायक • Live Chat • WhatsApp</div>
@@ -1146,7 +1186,7 @@ export const CitizenLiveChatWidget: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            <span>पाँचपोखरी थाङपाल डिजिटल ट्विन</span>
+            <span>{palikaName}</span>
             <span style={{ fontWeight: 600, color: '#059669' }}>सुशासन ऐन, २०६४</span>
           </div>
         </div>

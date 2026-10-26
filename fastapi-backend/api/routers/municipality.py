@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, Request
 from sqlalchemy.orm import Session
 from typing import Optional, Any, List
 from core.database import get_db
@@ -138,7 +138,7 @@ def seed_profile_if_empty(db: Session, tenant_id: Optional[str] = None) -> Munic
     eff_tenant = (tenant_id or "").strip().lower() if tenant_id else ""
     
     # If looking for panchpokhari or default
-    if not eff_tenant or eff_tenant in ["panchpokhari", "default", "localhost", "all", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+    if not eff_tenant or eff_tenant in ["panchpokhari", "default", "localhost", "all", "digitaltwin", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
         profile = db.query(MunicipalityProfile).filter(
             (MunicipalityProfile.tenant_id == "panchpokhari") | (MunicipalityProfile.tenant_id == None)
         ).first()
@@ -152,56 +152,164 @@ def seed_profile_if_empty(db: Session, tenant_id: Optional[str] = None) -> Munic
             db.refresh(profile)
         return profile
 
-    # Look up specific tenant's profile
-    profile = db.query(MunicipalityProfile).filter(
-        (MunicipalityProfile.tenant_id == eff_tenant) | (MunicipalityProfile.id == eff_tenant)
-    ).first()
-
-    if profile:
-        return profile
-
-    # Check if Tenant exists in tenants table
+    # Look up Tenant first
     from models.tenant import Tenant
     tenant = db.query(Tenant).filter(
         (Tenant.subdomain == eff_tenant) | (Tenant.id == eff_tenant)
     ).first()
+
+    tenant_keys = [eff_tenant]
+    if tenant:
+        tenant_keys.extend([str(tenant.id), tenant.subdomain.lower()])
+
+    profile = db.query(MunicipalityProfile).filter(
+        (MunicipalityProfile.tenant_id.in_(tenant_keys)) | (MunicipalityProfile.id == eff_tenant)
+    ).first()
+
+    if profile:
+        return profile
 
     if tenant:
         clean_np = tenant.name_np
         clean_en = tenant.name_en or eff_tenant.title()
         palika_type = "गाउँपालिका" if "गाउँपालिका" in clean_np else "नगरपालिका"
 
+        if eff_tenant in ["gaushala", "gaushalamun", "gaushala_municipality"]:
+            clean_np = "गौशाला नगरपालिका"
+            clean_en = "Gaushala Municipality"
+            dist_val = "महोत्तरी"
+            prov_val = "मधेश प्रदेश"
+            palika_type = "नगरपालिका"
+            hq_val = "गौशाला बजार, महोत्तरी"
+            wards_val = 12
+            area_val = 144.73
+            elev_val = "६१ मी. देखि १५० मी."
+            pop_val = 72481
+            hh_val = 14446
+            schools_val = 58
+            hp_val = 14
+            geog_val = "महोत्तरी जिल्लाको मध्य-पश्चिम उर्वर तराई-मधेश भूभाग, मरहा र रातो नदी जलाधार"
+            rivers_val = "मरहा नदी, रातो नदी, बडहरी खोला"
+            relig_val = "गौशाला शिव मन्दिर, दुर्गा मन्दिर, रामजानकी मन्दिर, मदिना मस्जिद, विभिन्न वडाका ऐतिहासिक धार्मिक स्थलहरू"
+            tourist_val = "गौशाला बजार, एभरेष्ट सुगर एण्ड केमिकल इन्डस्ट्रिज (चिनी मिल), निगौल गाई फार्म, रामनगर, कान्तिबजार, त्रिभुवन"
+            bound_val = {
+                "east": "औरही नगरपालिका तथा भंगाहा नगरपालिका",
+                "west": "सर्लाही जिल्ला (ईश्वरपुर नगरपालिका)",
+                "north": "बर्दिबास नगरपालिका",
+                "south": "सम्सी गाउँपालिका तथा सोनमा गाउँपालिका"
+            }
+            demo_val = {
+                "totalPopulation": 72481,
+                "male": 36250,
+                "female": 36231,
+                "households": 14446,
+                "totalGpsHouses": 13950,
+                "highRiskHouses": 120,
+                "literacyRate": 60.97,
+                "maleLiteracyRate": 68.8,
+                "femaleLiteracyRate": 53.1,
+                "averageFamilySize": 5.02,
+                "sexRatio": 100.05,
+                "density": 500.8,
+                "growthRate": 1.63,
+                "economicallyActive": 28450,
+                "participationRate": 62.4,
+                "abroad": 4820
+            }
+            budget_val = "रु. ७४.५० करोड"
+            rev_val = "रु. ४.२० करोड"
+        elif eff_tenant in ["khadadevi", "khandadevi"]:
+            dist_val = "रामेछाप"
+            prov_val = "बागमती प्रदेश"
+            hq_val = "माकादुम, रामेछाप"
+            wards_val = 9
+            area_val = 150.07
+            elev_val = "४६५ मी. देखि १,९८५ मी."
+            pop_val = 19312
+            hh_val = 5501
+            schools_val = 42
+            hp_val = 9
+            geog_val = "रामेछाप जिल्लाको दक्षिण-पश्चिमी पहाडी तथा सुनकोशी र तामाकोशी नदी तटीय भूभाग"
+            rivers_val = "सुनकोशी नदी, तामाकोशी नदी, दुर्गा नदी, स्थानीय खोलाहरू"
+            relig_val = "ऐतिहासिक खाँडादेवी मन्दिर (शक्तिपीठ), विश्वामित्र गुफा, अग्लेश्वर महादेव, कुशेश्वर महादेव, मुकुटेश्वरी, सहस्रधारा"
+            tourist_val = "खाँडादेवी कोट/मन्दिर (१९८५ मी.), सित्खा झोलुङ्गे पुल, सुनकोशी रिभर बीच, अग्लेश्वर डाँडा, गागल भ्यु-पोइन्ट"
+            bound_val = {
+                "east": "मन्थली नगरपालिका (सदरमुकाम)",
+                "west": "सुनापति गाउँपालिका र काभ्रेपलाञ्चोक जिल्ला",
+                "north": "दोरम्बा गाउँपालिका र सुनापति गाउँपालिका",
+                "south": "सिन्धुली जिल्ला (सुनकोशी नदी सिमाना)"
+            }
+            demo_val = {
+                "totalPopulation": 19312,
+                "male": 8995,
+                "female": 10317,
+                "households": 5501,
+                "totalGpsHouses": 5420,
+                "highRiskHouses": 68,
+                "literacyRate": 62.2,
+                "maleLiteracyRate": 72.2,
+                "femaleLiteracyRate": 53.5,
+                "averageFamilySize": 3.51,
+                "sexRatio": 87.19,
+                "density": 128.0,
+                "growthRate": -2.77,
+                "economicallyActive": 8450,
+                "participationRate": 65.5,
+                "abroad": 1280
+            }
+            budget_val = "रु. ४८.६० करोड"
+            rev_val = "रु. १.९५ करोड"
+        else:
+            dist_val = "सिन्धुपाल्चोक"
+            prov_val = "बागमती प्रदेश"
+            hq_val = f"{clean_np} केन्द्र"
+            wards_val = 8
+            area_val = 154.25
+            elev_val = "५५० मी. देखि २,६०० मी."
+            pop_val = 24500
+            hh_val = 5600
+            schools_val = 32
+            hp_val = 8
+            geog_val = "पहाडी तथा नदी तटीय भूभाग"
+            rivers_val = "स्थानीय नदी, खोलानाला तथा जलाधार"
+            relig_val = f"{clean_np} क्षेत्रका ऐतिहासिक धार्मिक स्थलहरू"
+            tourist_val = f"{clean_np} पदमार्ग तथा पर्यटकीय गन्तव्यहरू"
+            bound_val = DEFAULT_BOUNDARIES
+            demo_val = DEFAULT_DEMOGRAPHICS
+            budget_val = "रु. ५२.३० करोड"
+            rev_val = "रु. २.१५ करोड"
+
         profile = MunicipalityProfile(
             id=str(uuid.uuid4()),
             tenant_id=tenant.subdomain,
             name_np=clean_np,
             name_en=clean_en,
-            district="सिन्धुपाल्चोक",
-            province="बागमती प्रदेश",
+            district=dist_val,
+            province=prov_val,
             type=palika_type,
-            headquarters=f"{clean_np} केन्द्र",
-            ward_count=8,
-            area_sq_km=154.25,
-            elevation_meters="५५० मी. देखि २,६०० मी.",
+            headquarters=hq_val,
+            ward_count=wards_val,
+            area_sq_km=area_val,
+            elevation_meters=elev_val,
             introduction=(
-                f"{clean_np} नेपालको बागमती प्रदेश अन्तर्गत अवस्थित "
+                f"{clean_np} नेपालको {prov_val} अन्तर्गत {dist_val} जिल्लामा अवस्थित "
                 f"प्राकृतिक, पर्यटकीय, कृषि तथा ऐतिहासिक सम्पदाले समृद्ध स्थानीय तह हो। "
                 f"नागरिक सेवा प्रवाहलाई द्रुत, पारदर्शी तथा प्रविधिमैत्री बनाउन म्युनिसिपल डिजिटल ट्विन्स प्रणाली स्थापना गरिएको छ।"
             ),
-            total_population=24500,
-            total_households=5600,
-            total_schools=32,
-            total_health_posts=8,
-            geography="पहाडी तथा नदी तटीय भूभाग",
-            major_rivers="स्थानीय नदी, खोलानाला तथा जलाधार",
-            major_religious_sites=f"{clean_np} क्षेत्रका ऐतिहासिक धार्मिक स्थलहरू",
-            major_tourist_sites=f"{clean_np} पदमार्ग तथा पर्यटकीय गन्तव्यहरू",
-            annual_budget="रु. ५२.३० करोड",
-            internal_revenue="रु. २.१५ करोड",
-            boundaries=DEFAULT_BOUNDARIES,
+            total_population=pop_val,
+            total_households=hh_val,
+            total_schools=schools_val,
+            total_health_posts=hp_val,
+            geography=geog_val,
+            major_rivers=rivers_val,
+            major_religious_sites=relig_val,
+            major_tourist_sites=tourist_val,
+            annual_budget=budget_val,
+            internal_revenue=rev_val,
+            boundaries=bound_val,
             cultural_identity=DEFAULT_CULTURAL_IDENTITY,
             good_practices=DEFAULT_GOOD_PRACTICES,
-            demographics=DEFAULT_DEMOGRAPHICS,
+            demographics=demo_val,
             ai_summary=(
                 f"{clean_np}को डिजिटल ट्विन प्रोफाइल सफलतापूर्वक सिर्जना गरिएको छ।"
             )
@@ -236,7 +344,15 @@ def seed_sectors_if_empty(db: Session):
 
 def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
     """Build the enriched profile response including live leadership from representatives table and saved leadership."""
-    reps = db.query(Representative).order_by(Representative.ward_no).all()
+    is_gaushala = profile.tenant_id in ["gaushala", "gaushalamun", "gaushala_municipality"] or "गौशाला" in (profile.name_np or "")
+    is_benighat = profile.tenant_id in ["benighatrorang", "benighat"] or "बेनिघाट" in (profile.name_np or "")
+    is_khadadevi = profile.tenant_id in ["khadadevi", "khandadevi"] or "खाँडादेवी" in (profile.name_np or "")
+    reps_query = db.query(Representative)
+    if profile.tenant_id and profile.tenant_id not in ["panchpokhari", "default", "all", "digitaltwin", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+        reps_query = reps_query.filter(Representative.tenant_id == profile.tenant_id)
+    else:
+        reps_query = reps_query.filter((Representative.tenant_id == "panchpokhari") | (Representative.tenant_id == None))
+    reps = reps_query.order_by(Representative.ward_no).all()
 
     def find_rep(condition):
         return next((r for r in reps if condition(r)), None)
@@ -244,12 +360,13 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
     mayor_rep = find_rep(
         lambda r: not r.ward_no and (
             (r.designation and "अध्यक्ष" in r.designation and "उपाध्यक्ष" not in r.designation) or
-            (r.designation and "Mayor" in r.designation and "Deputy" not in r.designation)
+            (r.designation and "Mayor" in r.designation and "Deputy" not in r.designation) or
+            (r.designation and "प्रमुख" in r.designation and "उपप्रमुख" not in r.designation)
         )
     )
     deputy_rep = find_rep(
         lambda r: not r.ward_no and r.designation and (
-            "उपाध्यक्ष" in r.designation or "Deputy" in r.designation
+            "उपाध्यक्ष" in r.designation or "उपप्रमुख" in r.designation or "Deputy" in r.designation
         )
     )
     cao_rep = find_rep(
@@ -258,7 +375,7 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
         )
     )
     spokesperson_rep = find_rep(
-        lambda r: (r.designation and "प्रवक्ता" in r.designation) or (r.ward_no == 3)
+        lambda r: (r.designation and "प्रवक्ता" in r.designation) or (r.ward_no == (5 if is_gaushala else (6 if is_khadadevi else (2 if is_benighat else 3))))
     )
 
     saved_ld = profile.leadership if isinstance(profile.leadership, dict) else {}
@@ -275,25 +392,106 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
             return f"{parts[0][0]}{parts[1][0]}"
         return name[:2]
 
-    mayor_name = saved_mayor.get("name") or (mayor_rep.name if mayor_rep else "टासी लामा ह्योल्मो")
-    mayor_role = saved_mayor.get("designation") or (mayor_rep.designation if mayor_rep else "गाउँपालिका अध्यक्ष")
-    mayor_phone = saved_mayor.get("phone") or (mayor_rep.phone if mayor_rep else None) or "९८५११०२८३७"
-    mayor_email = saved_mayor.get("email") or (mayor_rep.email if mayor_rep else None) or "chairperson@panchpokharimun.gov.np"
+    if is_gaushala:
+        def_mayor_name = "डा. दिपेन्द्र महतो"
+        def_mayor_role = "नगर प्रमुख"
+        def_mayor_phone = "९८५४०२९१५८"
+        def_mayor_email = "mayor@gaushalamun.gov.np"
 
-    deputy_name = saved_deputy.get("name") or (deputy_rep.name if deputy_rep else "सुनिता अधिकारी")
-    deputy_role = saved_deputy.get("designation") or (deputy_rep.designation if deputy_rep else "गाउँपालिका उपाध्यक्ष")
-    deputy_phone = saved_deputy.get("phone") or (deputy_rep.phone if deputy_rep else None) or "९७४९३२६६२७"
-    deputy_email = saved_deputy.get("email") or (deputy_rep.email if deputy_rep else None) or "vicechair@panchpokharimun.gov.np"
+        def_deputy_name = "रेनु कुमारी महतो"
+        def_deputy_role = "नगर उपप्रमुख"
+        def_deputy_phone = "९८५४०२९१५९"
+        def_deputy_email = "deputymayor@gaushalamun.gov.np"
 
-    cao_name = saved_cao.get("name") or (cao_rep.name if cao_rep else "लक्ष्मण कुईकेल")
-    cao_role = saved_cao.get("designation") or (cao_rep.designation if cao_rep else "प्रमुख प्रशासकीय अधिकृत")
-    cao_phone = saved_cao.get("phone") or (cao_rep.phone if cao_rep else None) or "९७४९३२६६१९"
-    cao_email = saved_cao.get("email") or (cao_rep.email if cao_rep else None) or "cao@panchpokharimun.gov.np"
+        def_cao_name = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_role = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_phone = "०४४-५८०१११"
+        def_cao_email = "cao@gaushalamun.gov.np"
 
-    spokesperson_name = saved_spokesperson.get("name") or (spokesperson_rep.name if spokesperson_rep else "निमा दोर्जे तामाङ")
-    spokesperson_role = saved_spokesperson.get("designation") or (spokesperson_rep.designation if spokesperson_rep else "प्रवक्ता तथा वडा अध्यक्ष (वडा ३)")
-    spokesperson_phone = saved_spokesperson.get("phone") or (spokesperson_rep.phone if spokesperson_rep else None) or "९८४१००११०३"
-    spokesperson_email = saved_spokesperson.get("email") or (spokesperson_rep.email if spokesperson_rep else None) or "spokesperson@panchpokharimun.gov.np"
+        def_spokesperson_name = "ओम प्रकाश गुप्ता"
+        def_spokesperson_role = "प्रवक्ता तथा वडा अध्यक्ष (वडा ५)"
+        def_spokesperson_phone = "९८५४०३४५८५"
+        def_spokesperson_email = "wd5.gaushalamun@gmail.com"
+    elif is_khadadevi:
+        def_mayor_name = "ज्ञानकुमार श्रेष्ठ"
+        def_mayor_role = "गाउँपालिका अध्यक्ष"
+        def_mayor_phone = "०६०-४२०१०६"
+        def_mayor_email = "mayor@khandadevimun.gov.np"
+
+        def_deputy_name = "रमा घिसिङ"
+        def_deputy_role = "गाउँपालिका उपाध्यक्ष"
+        def_deputy_phone = "०६०-४२०१०६"
+        def_deputy_email = "deputymayor@khandadevimun.gov.np"
+
+        def_cao_name = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_role = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_phone = "०६०-४२०१०७"
+        def_cao_email = "cao@khandadevimun.gov.np"
+
+        def_spokesperson_name = "नारायण कार्की"
+        def_spokesperson_role = "प्रवक्ता तथा वडा अध्यक्ष (वडा ६)"
+        def_spokesperson_phone = "०६०-४२०१०६"
+        def_spokesperson_email = "ward6@khandadevimun.gov.np"
+    elif is_benighat:
+        def_mayor_name = "श्री कृष्णबहादुर थपलिया (विवेक)"
+        def_mayor_role = "गाउँपालिका अध्यक्ष"
+        def_mayor_phone = "०१०-५२९००१"
+        def_mayor_email = "chairperson@benighatrorangmun.gov.np"
+
+        def_deputy_name = "श्रीमती टापकुमारी श्रेष्ठ"
+        def_deputy_role = "गाउँपालिका उपाध्यक्ष"
+        def_deputy_phone = "०१०-५२९००२"
+        def_deputy_email = "vicechair@benighatrorangmun.gov.np"
+
+        def_cao_name = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_role = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_phone = "०१०-५२९००३"
+        def_cao_email = "cao@benighatrorangmun.gov.np"
+
+        def_spokesperson_name = "श्री हेमराज त्रिपाठी"
+        def_spokesperson_role = "प्रवक्ता तथा वडा अध्यक्ष (वडा २)"
+        def_spokesperson_phone = "९८५१०१११०२"
+        def_spokesperson_email = "spokesperson@benighatrorangmun.gov.np"
+    else:
+        def_mayor_name = "टासी लामा ह्योल्मो"
+        def_mayor_role = "गाउँपालिका अध्यक्ष"
+        def_mayor_phone = "९८५११०२८३७"
+        def_mayor_email = "chairperson@panchpokharimun.gov.np"
+
+        def_deputy_name = "सुनिता अधिकारी"
+        def_deputy_role = "गाउँपालिका उपाध्यक्ष"
+        def_deputy_phone = "९७४९३२६६२७"
+        def_deputy_email = "vicechair@panchpokharimun.gov.np"
+
+        def_cao_name = "लक्ष्मण कुईकेल"
+        def_cao_role = "प्रमुख प्रशासकीय अधिकृत"
+        def_cao_phone = "९७४९३२६६१९"
+        def_cao_email = "cao@panchpokharimun.gov.np"
+
+        def_spokesperson_name = "निमा दोर्जे तामाङ"
+        def_spokesperson_role = "प्रवक्ता तथा वडा अध्यक्ष (वडा ३)"
+        def_spokesperson_phone = "९८४१००११०३"
+        def_spokesperson_email = "spokesperson@panchpokharimun.gov.np"
+
+    mayor_name = saved_mayor.get("name") or (mayor_rep.name if mayor_rep else def_mayor_name)
+    mayor_role = saved_mayor.get("designation") or (mayor_rep.designation if mayor_rep else def_mayor_role)
+    mayor_phone = saved_mayor.get("phone") or (mayor_rep.phone if mayor_rep else None) or def_mayor_phone
+    mayor_email = saved_mayor.get("email") or (mayor_rep.email if mayor_rep else None) or def_mayor_email
+
+    deputy_name = saved_deputy.get("name") or (deputy_rep.name if deputy_rep else def_deputy_name)
+    deputy_role = saved_deputy.get("designation") or (deputy_rep.designation if deputy_rep else def_deputy_role)
+    deputy_phone = saved_deputy.get("phone") or (deputy_rep.phone if deputy_rep else None) or def_deputy_phone
+    deputy_email = saved_deputy.get("email") or (deputy_rep.email if deputy_rep else None) or def_deputy_email
+
+    cao_name = saved_cao.get("name") or (cao_rep.name if cao_rep else def_cao_name)
+    cao_role = saved_cao.get("designation") or (cao_rep.designation if cao_rep else def_cao_role)
+    cao_phone = saved_cao.get("phone") or (cao_rep.phone if cao_rep else None) or def_cao_phone
+    cao_email = saved_cao.get("email") or (cao_rep.email if cao_rep else None) or def_cao_email
+
+    spokesperson_name = saved_spokesperson.get("name") or (spokesperson_rep.name if spokesperson_rep else def_spokesperson_name)
+    spokesperson_role = saved_spokesperson.get("designation") or (spokesperson_rep.designation if spokesperson_rep else def_spokesperson_role)
+    spokesperson_phone = saved_spokesperson.get("phone") or (spokesperson_rep.phone if spokesperson_rep else None) or def_spokesperson_phone
+    spokesperson_email = saved_spokesperson.get("email") or (spokesperson_rep.email if spokesperson_rep else None) or def_spokesperson_email
 
     leaders = [
         {
@@ -366,7 +564,7 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
         "totalAreaSqKm": profile.area_sq_km or 187.29,
         "elevationMeters": profile.elevation_meters or "१,१०० - ४,१०० मी.",
         "introduction": profile.introduction,
-        "coordinates": {"lat": 27.9736, "lng": 85.6425},
+        "coordinates": {"lat": 26.9667, "lng": 85.8333} if is_gaushala else ({"lat": 27.5458, "lng": 85.9872} if is_khadadevi else ({"lat": 27.8182, "lng": 84.7645} if is_benighat else {"lat": 27.9736, "lng": 85.6425})),
         "boundaries": profile.boundaries or DEFAULT_BOUNDARIES,
         "culturalIdentity": profile.cultural_identity or DEFAULT_CULTURAL_IDENTITY,
         "goodPractices": profile.good_practices or DEFAULT_GOOD_PRACTICES,
@@ -396,26 +594,46 @@ def build_profile_response(profile: MunicipalityProfile, db: Session) -> dict:
 
 @router.get("/profile")
 def get_profile(
+    request: Request,
     fiscal_year: Optional[str] = Query(None, alias="fiscalYear"),
     tenant_id: Optional[str] = Query(None, description="Tenant subdomain or UUID"),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
     db: Session = Depends(get_db)
 ):
     """पालिका प्रोफाइल प्राप्त गर्नुहोस् (मल्टि-टेनेन्ट र जनप्रतिनिधि तालिकाबाट लाइभ नेतृत्व सहित)"""
-    eff_tenant = tenant_id or x_tenant_id
+    eff_tenant = (tenant_id or x_tenant_id or "").strip()
+    if not eff_tenant:
+        from api.routers.auth import _get_token_payload
+        from models.user import User
+        payload = _get_token_payload(request)
+        if payload and payload.get("sub"):
+            u = db.query(User).filter(User.id == payload.get("sub"), User.deleted_at == None).first()
+            if u and u.tenant_id and u.tenant_id not in ("all", "*"):
+                eff_tenant = u.tenant_id
+
     profile = seed_profile_if_empty(db, eff_tenant)
     return build_profile_response(profile, db)
 
 
 @router.put("/profile")
 def update_profile(
+    request: Request,
     data: MunicipalityProfileUpdate,
     tenant_id: Optional[str] = Query(None, description="Tenant subdomain or UUID"),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
     db: Session = Depends(get_db)
 ):
     """पालिका प्रोफाइल अद्यावधिक गर्नुहोस् र जनप्रतिनिधि तालिकामा नेतृत्व सिंक्रोनाइज गर्नुहोस्"""
-    eff_tenant = tenant_id or x_tenant_id
+    eff_tenant = (tenant_id or x_tenant_id or "").strip()
+    if not eff_tenant:
+        from api.routers.auth import _get_token_payload
+        from models.user import User
+        payload = _get_token_payload(request)
+        if payload and payload.get("sub"):
+            u = db.query(User).filter(User.id == payload.get("sub"), User.deleted_at == None).first()
+            if u and u.tenant_id and u.tenant_id not in ("all", "*"):
+                eff_tenant = u.tenant_id
+
     profile = seed_profile_if_empty(db, eff_tenant)
 
     raw_data = data.model_dump(exclude_unset=True)

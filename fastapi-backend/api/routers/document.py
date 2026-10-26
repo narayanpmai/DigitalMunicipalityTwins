@@ -8,6 +8,7 @@ import os
 
 from core.database import get_db
 from models.document import DocumentArchive, DocumentExtraction
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/documents",
@@ -16,28 +17,29 @@ router = APIRouter(
 
 # ─── 1. DOCUMENT ARCHIVE & EXTRACTION STATS ────────────────────────────────
 @router.get("/stats")
-def get_document_stats(db: Session = Depends(get_db)):
+def get_document_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Summary metrics of archived documents, OCR extractions, categories, and fiscal years."""
-    total_docs = db.query(func.count(DocumentArchive.id)).scalar() or 0
-    total_extractions = db.query(func.count(DocumentExtraction.id)).scalar() or 0
-    verified_extractions = db.query(func.count(DocumentExtraction.id)).filter(
-        DocumentExtraction.status == "Verified"
-    ).scalar() or 0
-    published_extractions = db.query(func.count(DocumentExtraction.id)).filter(
-        DocumentExtraction.status == "Published"
-    ).scalar() or 0
-    pending_extractions = db.query(func.count(DocumentExtraction.id)).filter(
-        DocumentExtraction.status == "Pending Verification"
-    ).scalar() or 0
+    docs_q = ctx.filter_query(db.query(DocumentArchive), DocumentArchive)
+    total_docs = docs_q.count()
+    
+    extractions_q = db.query(DocumentExtraction).join(DocumentArchive)
+    extractions_q = ctx.filter_query(extractions_q, DocumentArchive)
+    total_extractions = extractions_q.count()
+    verified_extractions = extractions_q.filter(DocumentExtraction.status == "Verified").count()
+    published_extractions = extractions_q.filter(DocumentExtraction.status == "Published").count()
+    pending_extractions = extractions_q.filter(DocumentExtraction.status == "Pending Verification").count()
 
     # Category breakdown
-    cat_q = db.query(
+    cat_q = extractions_q.with_entities(
         DocumentExtraction.category, func.count(DocumentExtraction.id)
     ).group_by(DocumentExtraction.category).all()
     category_breakdown = {c or "General": cnt for c, cnt in cat_q}
 
     # Fiscal years
-    fy_q = db.query(
+    fy_q = docs_q.with_entities(
         DocumentArchive.fiscal_year, func.count(DocumentArchive.id)
     ).group_by(DocumentArchive.fiscal_year).all()
     fiscal_year_breakdown = {fy or "२०८१/०८२": cnt for fy, cnt in fy_q}
@@ -64,10 +66,12 @@ def get_extractions(
     documentId: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """Retrieve all OCR-extracted textual records with document join."""
-    query = db.query(DocumentExtraction)
+    query = db.query(DocumentExtraction).join(DocumentArchive)
+    query = ctx.filter_query(query, DocumentArchive)
     if status and status != "all":
         query = query.filter(DocumentExtraction.status.ilike(f"%{status}%"))
     if category and category != "all":
@@ -136,15 +140,18 @@ def upload_document(
     fiscalYear: str = Form("२०८१/०८२"),
     category: str = Form("Gazette"),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """Upload document file and trigger automatic OCR parsing."""
     did = uuid.uuid4()
     fname = file.filename if file else f"{category.lower()}_{fiscalYear.replace('/', '_')}.pdf"
     furl = f"/uploads/documents/{fname}"
+    eff_tenant = ctx.effective_tenant_id
 
     new_doc = DocumentArchive(
         id=did,
+        tenant_id=eff_tenant,
         title=title,
         fiscal_year=fiscalYear,
         file_name=fname,
@@ -157,7 +164,8 @@ def upload_document(
 
     # Generate initial OCR extraction for page 1
     ext_id = uuid.uuid4()
-    ocr_sample = f"पाँचपोखरी थाङपाल गाउँपालिका स्थानीय सरकार सञ्चालन ऐन २०७४ अन्तर्गत {title} स्वीकृत तथा प्रमाणीकरण गरिएको व्यहोरा।"
+    palika_label = ctx.tenant.name_np if ctx.tenant else "स्थानीय तह"
+    ocr_sample = f"{palika_label} स्थानीय सरकार सञ्चालन ऐन २०७४ अन्तर्गत {title} स्वीकृत तथा प्रमाणीकरण गरिएको व्यहोरा।"
     new_ext = DocumentExtraction(
         id=ext_id,
         document_id=did,
@@ -180,13 +188,19 @@ def upload_document(
 
 # ─── 6. BASELINE EXTRACTED INDICATORS ─────────────────────────────────────
 @router.get("/indicators")
-def get_extracted_indicators(fiscalYear: Optional[str] = None, db: Session = Depends(get_db)):
+def get_extracted_indicators(
+    fiscalYear: Optional[str] = None, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Retrieve verified and published indicators extracted from legal documents."""
-    query = db.query(DocumentExtraction).filter(
+    query = db.query(DocumentExtraction).join(DocumentArchive).filter(
         DocumentExtraction.status.in_(["Verified", "Published"])
     )
+    query = ctx.filter_query(query, DocumentArchive)
+
     if fiscalYear and fiscalYear != "all":
-        query = query.join(DocumentArchive).filter(DocumentArchive.fiscal_year == fiscalYear)
+        query = query.filter(DocumentArchive.fiscal_year == fiscalYear)
 
     records = query.order_by(desc(DocumentExtraction.extracted_at)).all()
     indicators = []
@@ -217,9 +231,10 @@ def get_documents(
     fiscalYear: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(DocumentArchive)
+    query = ctx.filter_query(db.query(DocumentArchive), DocumentArchive)
     if fiscalYear and fiscalYear != "all":
         query = query.filter(DocumentArchive.fiscal_year == fiscalYear)
     if search and search.strip():
@@ -234,10 +249,17 @@ def get_documents(
 
 @router.post("")
 @router.post("/")
-def create_document(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_document(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     did = uuid.uuid4()
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
+
     new_doc = DocumentArchive(
         id=did,
+        tenant_id=eff_tenant,
         title=payload.get("title", "नयाँ दस्ताबेज"),
         fiscal_year=payload.get("fiscalYear", "२०८१/०८२"),
         file_name=payload.get("fileName", "document.pdf"),
@@ -252,8 +274,12 @@ def create_document(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/{id}")
-def get_document(id: str, db: Session = Depends(get_db)):
-    doc = find_doc(id, db)
+def get_document(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    doc = find_doc(id, db, ctx)
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     data = doc.to_dict()
@@ -262,8 +288,12 @@ def get_document(id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}")
-def delete_document(id: str, db: Session = Depends(get_db)):
-    doc = find_doc(id, db)
+def delete_document(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    doc = find_doc(id, db, ctx)
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     db.delete(doc)
@@ -271,11 +301,15 @@ def delete_document(id: str, db: Session = Depends(get_db)):
     return {"message": "Document and associated extractions deleted successfully"}
 
 
-def find_doc(id_str: str, db: Session) -> Optional[DocumentArchive]:
+def find_doc(id_str: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[DocumentArchive]:
+    q = db.query(DocumentArchive)
+    if ctx:
+        q = ctx.filter_query(q, DocumentArchive)
     try:
         tid = uuid.UUID(id_str)
-        d = db.query(DocumentArchive).filter(DocumentArchive.id == tid).first()
+        d = q.filter(DocumentArchive.id == tid).first()
         if d: return d
     except ValueError:
         pass
-    return db.query(DocumentArchive).filter(DocumentArchive.title.ilike(f"%{id_str}%")).first()
+    return q.filter(DocumentArchive.title.ilike(f"%{id_str}%")).first()
+

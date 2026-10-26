@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from core.database import get_db
 from models.darta_chalani import Darta, Chalani
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/darta-chalani",
@@ -38,6 +39,7 @@ def from_ne_digit(s: Any) -> int:
 def serialize_darta(d: Darta) -> Dict[str, Any]:
     return {
         "id": str(d.id),
+        "tenantId": getattr(d, 'tenant_id', None),
         "registrationNo": d.registration_no,
         "fiscalYear": d.fiscal_year or "२०८१/०८२",
         "registeredDate": d.registered_date or "",
@@ -79,6 +81,7 @@ def serialize_darta(d: Darta) -> Dict[str, Any]:
 def serialize_chalani(c: Chalani) -> Dict[str, Any]:
     return {
         "id": str(c.id),
+        "tenantId": getattr(c, 'tenant_id', None),
         "dispatchNo": c.dispatch_no,
         "fiscalYear": c.fiscal_year or "२०८१/०८२",
         "dispatchDate": c.dispatch_date or "",
@@ -123,9 +126,10 @@ def get_darta_list(
     branch: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Darta)
+    query = ctx.filter_query(db.query(Darta), Darta)
     if fiscalYear and fiscalYear != 'all':
         query = query.filter(Darta.fiscal_year == fiscalYear)
     if branch and branch != 'all':
@@ -145,13 +149,18 @@ def get_darta_list(
 
 @router.post("/darta")
 @legacy_darta_router.post("")
-def create_darta(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_darta(
+    payload: Dict[str, Any] = Body(...), 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     reg_no = payload.get("registrationNo") or payload.get("registration_no")
     fy = payload.get("fiscalYear") or payload.get("fiscal_year") or "२०८१/०८२"
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
     
     # Auto-generate registration number if missing
     if not reg_no:
-        existing = db.query(Darta).filter(Darta.fiscal_year == fy).all()
+        existing = ctx.filter_query(db.query(Darta).filter(Darta.fiscal_year == fy), Darta).all()
         max_num = max([from_ne_digit(x.registration_no) for x in existing] + [0])
         reg_no = to_ne_digit(max_num + 1)
         
@@ -160,6 +169,7 @@ def create_darta(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_
     
     db_darta = Darta(
         id=new_id,
+        tenant_id=eff_tenant,
         registration_no=str(reg_no),
         fiscal_year=fy,
         registered_date=payload.get("registeredDate") or payload.get("entryDateBs") or "२०८१-०४-०१",
@@ -190,6 +200,7 @@ def create_darta(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_
     db.commit()
     db.refresh(db_darta)
     return serialize_darta(db_darta)
+
 
 @router.get("/darta/{id}")
 @legacy_darta_router.get("/{id}")
@@ -314,9 +325,10 @@ def get_chalani_list(
     department: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Chalani)
+    query = ctx.filter_query(db.query(Chalani), Chalani)
     if fiscalYear and fiscalYear != 'all':
         query = query.filter(Chalani.fiscal_year == fiscalYear)
     if department and department != 'all':
@@ -335,12 +347,17 @@ def get_chalani_list(
     return [serialize_chalani(r) for r in records]
 
 @router.post("/chalani")
-def create_chalani(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_chalani(
+    payload: Dict[str, Any] = Body(...), 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     dispatch_no = payload.get("dispatchNo") or payload.get("chalaniNo")
     fy = payload.get("fiscalYear") or payload.get("fiscal_year") or "२०८१/०८२"
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
     
     if not dispatch_no:
-        existing = db.query(Chalani).filter(Chalani.fiscal_year == fy).all()
+        existing = ctx.filter_query(db.query(Chalani).filter(Chalani.fiscal_year == fy), Chalani).all()
         max_num = max([from_ne_digit(x.dispatch_no) for x in existing] + [0])
         dispatch_no = to_ne_digit(max_num + 1)
         
@@ -349,6 +366,7 @@ def create_chalani(payload: Dict[str, Any] = Body(...), db: Session = Depends(ge
     
     db_chalani = Chalani(
         id=new_id,
+        tenant_id=eff_tenant,
         dispatch_no=str(dispatch_no),
         fiscal_year=fy,
         dispatch_date=payload.get("dispatchDate") or payload.get("entryDateBs") or "२०८१-०४-०१",
@@ -456,10 +474,14 @@ def set_chalani_approval(id: str, payload: Dict[str, Any] = Body(...), db: Sessi
 # -------------------------------------------------------------
 
 @router.get("/next-numbers")
-def get_next_numbers(fiscalYear: Optional[str] = Query(None), db: Session = Depends(get_db)):
+def get_next_numbers(
+    fiscalYear: Optional[str] = Query(None), 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     fy = fiscalYear or "२०८१/०८२"
-    dartas = db.query(Darta).filter(Darta.fiscal_year == fy).all()
-    chalanis = db.query(Chalani).filter(Chalani.fiscal_year == fy).all()
+    dartas = ctx.filter_query(db.query(Darta).filter(Darta.fiscal_year == fy), Darta).all()
+    chalanis = ctx.filter_query(db.query(Chalani).filter(Chalani.fiscal_year == fy), Chalani).all()
     
     max_darta = max([from_ne_digit(d.registration_no) for d in dartas] + [0])
     max_chalani = max([from_ne_digit(c.dispatch_no) for c in chalanis] + [0])
@@ -471,9 +493,12 @@ def get_next_numbers(fiscalYear: Optional[str] = Query(None), db: Session = Depe
     }
 
 @router.get("/stats")
-def get_stats(db: Session = Depends(get_db)):
-    dartas = db.query(Darta).all()
-    chalanis = db.query(Chalani).all()
+def get_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    dartas = ctx.filter_query(db.query(Darta), Darta).all()
+    chalanis = ctx.filter_query(db.query(Chalani), Chalani).all()
     
     total_darta = len(dartas)
     total_chalani = len(chalanis)
@@ -482,6 +507,7 @@ def get_stats(db: Session = Depends(get_db)):
     approved_chalani = sum(1 for c in chalanis if c.approval_status == 'approved')
     
     pending_darta = sum(1 for d in dartas if d.approval_status not in ['approved', 'rejected'])
+
     pending_chalani = sum(1 for c in chalanis if c.approval_status not in ['approved', 'rejected'])
     
     completed_darta = sum(1 for d in dartas if d.status == 'फर्स्यौट भएको')

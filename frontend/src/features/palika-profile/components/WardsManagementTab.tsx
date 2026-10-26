@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { municipalityApi } from '../../../api/municipality';
 import { representativesApi, Representative } from '../../../api/representatives';
 import { WardProfile } from '../../../types/profile';
+import { useTenant } from '../../../context/TenantContext';
 import {
   Building2,
   Phone,
@@ -179,21 +180,56 @@ export const WardsManagementTab: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingWard, setEditingWard] = useState<any>(null);
 
+  const { tenantId } = useTenant();
+
   // Fetch wards from backend
   const { data: dbWards = [] } = useQuery({
-    queryKey: ['wards-profile'],
+    queryKey: ['wards-profile', tenantId],
     queryFn: () => municipalityApi.getWards(),
   });
 
   // Single Source of Truth: Fetch authoritative elected representatives
   const { data: representatives = [] } = useQuery({
-    queryKey: ['representatives'],
+    queryKey: ['representatives', tenantId],
     queryFn: () => representativesApi.getAll(),
   });
 
   const wards = useMemo(() => {
+    if (Array.isArray(dbWards) && dbWards.length > 0) {
+      return (dbWards as any[]).map((dbW: any) => {
+        const wNo = Number(dbW.wardNo || dbW.wardNumber || dbW.ward_number || 1);
+        const repMatch = (representatives as Representative[]).find(
+          (r: Representative) =>
+            r.isCurrent !== false &&
+            (Number(r.wardNo) === wNo ||
+              (r.designation && r.designation.includes(`वडा नं. ${wNo}`)))
+        );
+        const defMatch = DEFAULT_WARDS.find((d) => d.wardNo === wNo);
+
+        return {
+          ...(defMatch || {}),
+          ...dbW,
+          id: dbW.id,
+          wardNo: wNo,
+          name: dbW.name || defMatch?.name || `वडा नं. ${wNo}`,
+          chairperson: repMatch?.name || dbW.chairperson || dbW.wardChairName || dbW.ward_chair_name || defMatch?.chairperson || '',
+          secretary: dbW.secretary || defMatch?.secretary || 'वडा सचिव',
+          phone: repMatch?.phone || dbW.phone || defMatch?.phone || '',
+          email: repMatch?.email || dbW.email || defMatch?.email || '',
+          officeLocation: dbW.officeLocation || defMatch?.officeLocation || '',
+          totalPopulation: dbW.totalPopulation || dbW.population || dbW.total_population || defMatch?.totalPopulation || 0,
+          malePopulation: dbW.malePopulation || dbW.male_population || defMatch?.malePopulation || 0,
+          femalePopulation: dbW.femalePopulation || dbW.female_population || defMatch?.femalePopulation || 0,
+          households: dbW.households || defMatch?.households || 0,
+          areaSqKm: dbW.areaSqKm || dbW.area_sq_km || defMatch?.areaSqKm || 0,
+          repPhotoUrl: repMatch?.photoUrl,
+          repParty: repMatch?.politicalParty,
+          repId: repMatch?.id,
+        };
+      }).sort((a, b) => a.wardNo - b.wardNo);
+    }
+
     return DEFAULT_WARDS.map((def) => {
-      const dbMatch = (dbWards as any[]).find((w: any) => w.wardNo === def.wardNo || w.wardNumber === def.wardNo);
       const repMatch = (representatives as Representative[]).find(
         (r: Representative) =>
           r.isCurrent !== false &&
@@ -203,18 +239,9 @@ export const WardsManagementTab: React.FC = () => {
 
       return {
         ...def,
-        ...(dbMatch || {}),
-        id: dbMatch?.id,
-        wardNo: def.wardNo,
-        // Single Source of Truth: representative overrides or dbMatch or fallback
-        chairperson: repMatch?.name || dbMatch?.chairperson || dbMatch?.wardChairName || def.chairperson,
-        secretary: dbMatch?.secretary || def.secretary,
-        phone: repMatch?.phone || dbMatch?.phone || def.phone,
-        email: repMatch?.email || dbMatch?.email || def.email,
-        officeLocation: dbMatch?.officeLocation || def.officeLocation,
-        totalPopulation: dbMatch?.totalPopulation || dbMatch?.population || def.totalPopulation,
-        households: dbMatch?.households || def.households,
-        areaSqKm: dbMatch?.areaSqKm || def.areaSqKm,
+        chairperson: repMatch?.name || def.chairperson,
+        phone: repMatch?.phone || def.phone,
+        email: repMatch?.email || def.email,
         repPhotoUrl: repMatch?.photoUrl,
         repParty: repMatch?.politicalParty,
         repId: repMatch?.id,

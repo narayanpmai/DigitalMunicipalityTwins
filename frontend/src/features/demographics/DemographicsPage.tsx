@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTenant } from '../../context/TenantContext';
 import { municipalityApi } from '../../api/municipality';
 import { demographicsApi } from '../../api/demographics';
 import { representativesApi, Representative } from '../../api/representatives';
@@ -68,21 +69,23 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
   const [sortField, setSortField] = useState<'wardNo' | 'totalPopulation' | 'households' | 'areaSqKm'>('wardNo');
   const [sortAsc, setSortAsc] = useState(true);
 
+  const { tenantId } = useTenant();
+
   // Fetch summary from backend
   const { data: summary, isLoading: isSummaryLoading } = useQuery({
-    queryKey: ['demographics-summary'],
+    queryKey: ['demographics-summary', tenantId],
     queryFn: () => municipalityApi.getDemographicsSummary(),
   });
 
   // Fetch wards from backend
   const { data: rawWards = [], isLoading: isWardsLoading } = useQuery({
-    queryKey: ['wards-demographics'],
+    queryKey: ['wards-demographics', tenantId],
     queryFn: () => municipalityApi.getWards(),
   });
 
   // Single Source of Truth: Fetch representatives from central database
   const { data: representatives = [] } = useQuery({
-    queryKey: ['representatives'],
+    queryKey: ['representatives', tenantId],
     queryFn: () => representativesApi.getAll(),
   });
 
@@ -99,9 +102,38 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
   ], []);
 
   const wards: (WardProfile & { literacyRate?: number; mainSettlement?: string; secretary?: string; phone?: string; photoUrl?: string })[] = useMemo(() => {
+    if (Array.isArray(rawWards) && rawWards.length > 0) {
+      return (rawWards as any[]).map((w: any) => {
+        const wardNumber = Number(w.wardNo || w.wardNumber || w.ward_number || 1);
+        const rep = (representatives as Representative[]).find(
+          (r: Representative) =>
+            r.isCurrent !== false &&
+            (Number(r.wardNo) === wardNumber ||
+              (r.designation && r.designation.includes(`वडा नं. ${wardNumber}`)))
+        );
+        const fallback = defaultWards.find(d => d.wardNo === wardNumber) || {};
+
+        return {
+          wardNo: wardNumber,
+          name: w.name || fallback.name || `वडा नं. ${wardNumber}`,
+          chairperson: rep?.name || w.chairperson || w.wardChairName || w.ward_chair_name || fallback.chairperson || '',
+          secretary: w.secretary || fallback.secretary || 'वडा सचिव',
+          phone: rep?.phone || w.phone || fallback.phone || '',
+          officeLocation: w.officeLocation || fallback.officeLocation || '',
+          households: Number(w.households || fallback.households || 0),
+          totalPopulation: Number(w.totalPopulation || w.population || w.total_population || fallback.totalPopulation || 0),
+          malePopulation: Number(w.malePopulation || w.male_population || fallback.malePopulation || 0),
+          femalePopulation: Number(w.femalePopulation || w.female_population || fallback.femalePopulation || 0),
+          areaSqKm: Number(w.areaSqKm || w.area_sq_km || fallback.areaSqKm || 0),
+          literacyRate: Number(w.literacyRate || fallback.literacyRate || 72),
+          mainSettlement: w.mainSettlement || fallback.mainSettlement || '',
+          photoUrl: rep?.photoUrl,
+        };
+      }).sort((a, b) => a.wardNo - b.wardNo);
+    }
+
     return defaultWards.map((fallback, idx) => {
       const wardNumber = idx + 1;
-      const w = rawWards.find((rw: any) => (rw.wardNo === wardNumber || rw.wardNumber === wardNumber)) || {};
       const rep = (representatives as Representative[]).find(
         (r: Representative) =>
           r.isCurrent !== false &&
@@ -111,22 +143,22 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
 
       return {
         wardNo: wardNumber,
-        name: w.name || fallback.name,
-        chairperson: rep?.name || w.chairperson || w.wardChairName || fallback.chairperson,
-        secretary: w.secretary || fallback.secretary,
-        phone: rep?.phone || w.phone || fallback.phone,
-        officeLocation: w.officeLocation || fallback.officeLocation,
-        households: Number(w.households || fallback.households || 0),
-        totalPopulation: Number(w.totalPopulation || w.population || fallback.totalPopulation || 0),
-        malePopulation: Number(w.malePopulation || fallback.malePopulation || 0),
-        femalePopulation: Number(w.femalePopulation || fallback.femalePopulation || 0),
-        areaSqKm: Number(w.areaSqKm || fallback.areaSqKm || 0),
-        literacyRate: Number(w.literacyRate || fallback.literacyRate || 72),
-        mainSettlement: w.mainSettlement || fallback.mainSettlement,
+        name: fallback.name,
+        chairperson: rep?.name || fallback.chairperson,
+        secretary: fallback.secretary,
+        phone: rep?.phone || fallback.phone,
+        officeLocation: fallback.officeLocation,
+        households: Number(fallback.households || 0),
+        totalPopulation: Number(fallback.totalPopulation || 0),
+        malePopulation: Number(fallback.malePopulation || 0),
+        femalePopulation: Number(fallback.femalePopulation || 0),
+        areaSqKm: Number(fallback.areaSqKm || 0),
+        literacyRate: Number(fallback.literacyRate || 72),
+        mainSettlement: fallback.mainSettlement,
         photoUrl: rep?.photoUrl,
       };
     });
-  }, [rawWards, representatives, defaultWards]);
+  }, [rawWards, defaultWards, representatives]);
 
   // Totals calculations
   const totals = useMemo(() => {

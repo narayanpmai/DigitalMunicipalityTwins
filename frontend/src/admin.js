@@ -1178,6 +1178,14 @@ window.doLogin = function(e) {
     localStorage.setItem('p5_token', authToken);
     localStorage.setItem('p5_role', data.user?.role || 'ward_user');
     localStorage.setItem('p5_email', email);
+    if (data.user) {
+      localStorage.setItem('p5_user', JSON.stringify(data.user));
+    }
+    const effTenant = data.tenantSubdomain || data.user?.tenantSubdomain || data.user?.tenantId;
+    if (effTenant && effTenant !== 'all') {
+      localStorage.setItem('tenant_id', effTenant);
+    }
+
     document.getElementById('loginModal').style.display = 'none';
     document.getElementById('adminApp').classList.remove('d-none');
     initAdminDashboard();

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from core.database import get_db
@@ -18,14 +18,26 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def get_representatives(
     ward_no: Optional[int] = Query(None, description="Filter by ward number"),
     is_current: Optional[bool] = Query(None, description="Filter by current term status"),
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
     db: Session = Depends(get_db)
 ):
+    eff_tenant = (tenant_id or x_tenant_id or "").strip().lower()
     query = db.query(Representative)
+    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "all", "digitaltwin", "localhost", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
+        if eff_tenant in ["gaushala", "gaushalamun", "gaushala_municipality"]:
+            query = query.filter(Representative.tenant_id == "gaushala")
+        else:
+            query = query.filter(Representative.tenant_id == eff_tenant)
+    else:
+        query = query.filter((Representative.tenant_id == "panchpokhari") | (Representative.tenant_id == None))
+
     if ward_no is not None:
         query = query.filter(Representative.ward_no == ward_no)
     if is_current is not None:
         query = query.filter(Representative.is_current == is_current)
-    return query.order_by(Representative.ward_no.asc(), Representative.designation.asc(), Representative.name.asc()).all()
+    from sqlalchemy import nulls_first
+    return query.order_by(nulls_first(Representative.ward_no.asc()), Representative.designation.asc(), Representative.name.asc()).all()
 
 @router.get("/{id}", response_model=RepresentativeSchema)
 def get_representative(id: str, db: Session = Depends(get_db)):

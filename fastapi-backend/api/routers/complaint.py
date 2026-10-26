@@ -7,6 +7,7 @@ import uuid
 
 from core.database import get_db
 from models.complaint import Complaint
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/complaints",
@@ -22,9 +23,10 @@ def get_complaints(
     ward: Optional[str] = None,
     wardNumber: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Complaint)
+    query = ctx.filter_query(db.query(Complaint), Complaint)
     
     if status and status != "all":
         query = query.filter(Complaint.status == status)
@@ -56,8 +58,11 @@ def get_complaints(
 
 
 @router.get("/stats")
-def get_complaints_stats(db: Session = Depends(get_db)):
-    complaints = db.query(Complaint).all()
+def get_complaints_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    complaints = ctx.filter_query(db.query(Complaint), Complaint).all()
     
     total = len(complaints)
     pending_count = len([c for c in complaints if c.status == "pending"])
@@ -112,10 +117,15 @@ def get_whatsapp_status():
 
 
 @router.post("/whatsapp/simulate")
-def simulate_whatsapp(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def simulate_whatsapp(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     msg = payload.get("message", "")
     phone = payload.get("phone", "9841000000")
     sender_name = payload.get("senderName", "नागरिक (व्हाट्सएप)")
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
     
     # Auto classify category from message text
     cat = "other"
@@ -141,6 +151,7 @@ def simulate_whatsapp(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
     new_comp = Complaint(
         id=cid,
+        tenant_id=eff_tenant,
         complaint_no=c_no,
         title=msg[:80] + ("..." if len(msg) > 80 else ""),
         description=msg,
@@ -148,7 +159,7 @@ def simulate_whatsapp(payload: Dict[str, Any], db: Session = Depends(get_db)):
         status="pending",
         complainant_name=sender_name,
         complainant_phone=phone,
-        complainant_address="पाँचपोखरी थाङपाल",
+        complainant_address=payload.get("complainantAddress", "स्थानीय बासिन्दा"),
         is_anonymous=False,
         ward_number=int(payload.get("wardNumber") or 1),
         priority="medium",
@@ -177,8 +188,13 @@ def simulate_whatsapp(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.post("/whatsapp/notify/{id}")
-def notify_citizen_whatsapp(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    comp = find_complaint(id, db)
+def notify_citizen_whatsapp(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    comp = find_complaint(id, db, ctx)
     if not comp:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
@@ -196,11 +212,16 @@ def notify_citizen_whatsapp(id: str, payload: Dict[str, Any], db: Session = Depe
 
 @router.post("")
 @router.post("/")
-def create_complaint(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_complaint(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     cid = uuid.uuid4()
     count = db.query(Complaint).count() + 1
     c_no = f"CMP-2081-{uuid.uuid4().hex[:4].upper()}"
     token = f"TRK-{uuid.uuid4().hex[:6].upper()}"
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
 
     is_anon = bool(payload.get("isAnonymous", False))
     cat = payload.get("category", "other")
@@ -209,6 +230,7 @@ def create_complaint(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
     new_comp = Complaint(
         id=cid,
+        tenant_id=eff_tenant,
         complaint_no=c_no,
         title=payload.get("title", "नयाँ गुनासो"),
         description=payload.get("description", ""),
@@ -237,16 +259,25 @@ def create_complaint(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/{id_or_no}")
-def get_complaint(id_or_no: str, db: Session = Depends(get_db)):
-    comp = find_complaint(id_or_no, db)
+def get_complaint(
+    id_or_no: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    comp = find_complaint(id_or_no, db, ctx)
     if not comp:
         raise HTTPException(status_code=404, detail="Complaint not found")
     return comp.to_dict()
 
 
 @router.put("/{id}")
-def update_complaint(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    comp = find_complaint(id, db)
+def update_complaint(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    comp = find_complaint(id, db, ctx)
     if not comp:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
@@ -270,8 +301,12 @@ def update_complaint(id: str, payload: Dict[str, Any], db: Session = Depends(get
 
 
 @router.delete("/{id}")
-def delete_complaint(id: str, db: Session = Depends(get_db)):
-    comp = find_complaint(id, db)
+def delete_complaint(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    comp = find_complaint(id, db, ctx)
     if not comp:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
@@ -280,15 +315,18 @@ def delete_complaint(id: str, db: Session = Depends(get_db)):
     return {"deleted": True, "id": str(comp.id)}
 
 
-def find_complaint(id_or_no: str, db: Session) -> Optional[Complaint]:
+def find_complaint(id_or_no: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[Complaint]:
+    q = db.query(Complaint)
+    if ctx:
+        q = ctx.filter_query(q, Complaint)
     try:
         tid = uuid.UUID(id_or_no)
-        c = db.query(Complaint).filter(Complaint.id == tid).first()
+        c = q.filter(Complaint.id == tid).first()
         if c: return c
     except ValueError:
         pass
 
-    return db.query(Complaint).filter(
+    return q.filter(
         (Complaint.complaint_no == id_or_no) |
         (Complaint.tracking_token == id_or_no)
     ).first()

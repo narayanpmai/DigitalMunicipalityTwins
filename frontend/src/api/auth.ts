@@ -3,7 +3,7 @@ import type { AuthResponse, User } from '../types/auth';
 
 export const authApi = {
   login: async (email: string, password: string, tenantId?: string): Promise<AuthResponse> => {
-    const res = await api.post<AuthResponse>('/auth/login', { email, password, tenantId });
+    const res = await api.post<AuthResponse>('/auth/login', { email, password, tenantId, tenant_subdomain: tenantId });
     if (res.accessToken) {
       localStorage.setItem('p5_token', res.accessToken);
       localStorage.setItem('p5_user', JSON.stringify(res.user));

@@ -115,6 +115,7 @@ export interface HouseholdRecord {
 }
 
 export interface DemographicSummary {
+  municipalityName?: string;
   population: {
     total: number;
     male: number;
@@ -283,4 +284,23 @@ export const demographicsApi = {
     const res = await client.post<{ message: string; count: number }>('/demographics/households/bulk-import', { households, replaceAll });
     return res.data;
   },
+
+  async getCensus2021(): Promise<any> {
+    const client = createApiClient();
+    const res = await client.get('/demographics/census-2021');
+    return res.data;
+  },
+
+  async getWardBoundaries(): Promise<any> {
+    const client = createApiClient();
+    const res = await client.get('/demographics/ward-boundaries');
+    return res.data;
+  },
+
+  async getMunicipalityBoundary(): Promise<any> {
+    const client = createApiClient();
+    const res = await client.get('/demographics/municipality-boundary');
+    return res.data;
+  },
 };
+

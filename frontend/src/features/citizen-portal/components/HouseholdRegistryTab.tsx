@@ -574,8 +574,18 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
   const isPublicMode = propIsPublicMode !== undefined 
     ? propIsPublicMode 
     : !location.pathname.startsWith('/app');
-  const { settings } = useTenant();
+  const { settings, tenantId } = useTenant();
   const palikaName = settings?.palika_name || 'पालिका';
+  const defaultCenter = useMemo<[number, number]>(() => {
+    const t = `${settings?.palika_name || ''} ${palikaName || ''} ${tenantId || ''}`.toLowerCase();
+    if (t.includes('गौशाला') || t.includes('gaushala')) return [26.9667, 85.8333];
+    if (t.includes('बेनिघाट') || t.includes('benighat')) return [27.8182, 84.7645];
+    if (t.includes('खाँडादेवी') || t.includes('khadadevi')) return [27.5458, 85.9872];
+    if (t.includes('गल्छी') || t.includes('galchhi')) return [27.8000, 85.0000];
+    if (t.includes('मेलम्ची') || t.includes('melamchi')) return [27.8300, 85.5800];
+    if (t.includes('हेलम्बु') || t.includes('helambu')) return [27.9736, 85.6425];
+    return [27.915, 85.615];
+  }, [settings?.palika_name, palikaName, tenantId]);
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWard, setSelectedWard] = useState<string>('all');
@@ -663,6 +673,14 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
+  const palikaBoundaryLayerRef = useRef<L.GeoJSON | null>(null);
+  const wardBoundaryLayerRef = useRef<L.GeoJSON | null>(null);
+
+  // GIS Layer Visibility Toggles
+  const [showPalikaBoundary, setShowPalikaBoundary] = useState(true);
+  const [showWardBoundaries, setShowWardBoundaries] = useState(true);
+  const [showHouseholdMarkers, setShowHouseholdMarkers] = useState(true);
+
   const baseLayersRef = useRef<{
     hybrid: L.TileLayer;
     esri: L.TileLayer;
@@ -1370,6 +1388,19 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
     ),
   });
 
+  // 3. Fetch Ward & Municipal Boundary GeoJSON layers for active tenant
+  const { data: wardBoundariesGeoJson } = useQuery<any>({
+    queryKey: ['demographics-ward-boundaries', tenantId],
+    queryFn: () => demographicsApi.getWardBoundaries(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: palikaBoundaryGeoJson } = useQuery<any>({
+    queryKey: ['demographics-municipality-boundary', tenantId],
+    queryFn: () => demographicsApi.getMunicipalityBoundary(),
+    staleTime: 10 * 60 * 1000,
+  });
+
   // Verify / Approve / Reject mutation (Admin only)
   const verifyMutation = useMutation({
     mutationFn: ({ id, status, remarks }: { id: string; status: 'approved' | 'rejected'; remarks?: string }) =>
@@ -1744,15 +1775,31 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
     return counts;
   }, [households]);
 
+  const totalWardsCount = useMemo(() => {
+    return Number(settings?.total_wards) || 8;
+  }, [settings?.total_wards]);
+
   const dynamicWards = useMemo(() => {
+    const isPanchpokhari = (settings?.palika_name || palikaName || '').includes('पाँचपोखरी');
+    
+    let baseWards: { id: string; name: string }[] = [];
+    if (isPanchpokhari) {
+      baseWards = WARD_METADATA;
+    } else {
+      baseWards = Array.from({ length: totalWardsCount }, (_, i) => ({
+        id: String(i + 1),
+        name: `वडा नं. ${i + 1}`,
+      }));
+    }
+
     return [
-      { id: 'all', name: 'सबै वडा (१-८)', count: households.length },
-      ...WARD_METADATA.map((w) => ({
+      { id: 'all', name: `सबै वडा (१-${totalWardsCount})`, count: households.length },
+      ...baseWards.map((w) => ({
         ...w,
         count: wardCounts[w.id] || 0,
       })),
     ];
-  }, [households, wardCounts]);
+  }, [households, wardCounts, settings?.total_wards, settings?.palika_name, palikaName, totalWardsCount]);
 
   // Summary counts
   const totalCount = households.length;
@@ -1798,8 +1845,8 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
       baseLayersRef.current = { hybrid, esri, osm, topo };
 
       const map = L.map(mapContainerRef.current, {
-        center: [27.915, 85.615],
-        zoom: 12,
+        center: defaultCenter,
+        zoom: 13,
         maxZoom: 22,
         layers: [hybrid],
       });
@@ -1911,10 +1958,16 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
       }
     };
 
+    (window as any).__handleSelectWardFilter = (wardNo: string) => {
+      setSelectedWard(String(wardNo));
+      if (mapInstanceRef.current) mapInstanceRef.current.closePopup();
+    };
+
     return () => {
       delete (window as any).__handleStartRelocateGps;
       delete (window as any).__handleStartEditHouse;
       delete (window as any).__handleViewHouseProfile;
+      delete (window as any).__handleSelectWardFilter;
     };
   }, [households, mapPoints, isPublicMode]);
 
@@ -2005,6 +2058,8 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
 
     const markerLayer = markerLayerRef.current;
     markerLayer.clearLayers();
+
+    if (!showHouseholdMarkers) return;
 
     const latLngs: [number, number][] = [];
 
@@ -2107,11 +2162,170 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
       markerLayer.addLayer(circle);
     });
 
-    if (latLngs.length > 0 && selectedWard !== 'all' && mapInstanceRef.current) {
+    if (latLngs.length > 0 && mapInstanceRef.current && selectedWard === 'all') {
       const bounds = L.latLngBounds(latLngs);
       mapInstanceRef.current.fitBounds(bounds, { padding: [25, 25], maxZoom: 15 });
     }
-  }, [mapPoints, households, searchTerm, selectedWard, viewMode]);
+  }, [mapPoints, households, searchTerm, selectedWard, viewMode, showHouseholdMarkers]);
+
+  // 1. Render Municipality Outer Boundary Layer
+  useEffect(() => {
+    if (!mapInstanceRef.current || viewMode === 'table') return;
+    const map = mapInstanceRef.current;
+
+    if (palikaBoundaryLayerRef.current) {
+      map.removeLayer(palikaBoundaryLayerRef.current);
+      palikaBoundaryLayerRef.current = null;
+    }
+
+    if (!showPalikaBoundary || !palikaBoundaryGeoJson?.features?.length) return;
+
+    try {
+      const layer = L.geoJSON(palikaBoundaryGeoJson, {
+        style: {
+          color: '#f59e0b',
+          weight: 3.5,
+          dashArray: '8, 6',
+          fill: false,
+          opacity: 0.95,
+        },
+        interactive: false,
+      });
+
+      layer.addTo(map);
+      palikaBoundaryLayerRef.current = layer;
+    } catch (e) {
+      console.warn('Failed to render palika boundary:', e);
+    }
+  }, [palikaBoundaryGeoJson, showPalikaBoundary, viewMode]);
+
+  // 2. Render Ward Boundaries Layer with interactive hover & popup
+  useEffect(() => {
+    if (!mapInstanceRef.current || viewMode === 'table') return;
+    const map = mapInstanceRef.current;
+
+    if (wardBoundaryLayerRef.current) {
+      map.removeLayer(wardBoundaryLayerRef.current);
+      wardBoundaryLayerRef.current = null;
+    }
+
+    if (!showWardBoundaries || !wardBoundariesGeoJson?.features?.length) return;
+
+    try {
+      const layer = L.geoJSON(wardBoundariesGeoJson, {
+        style: (feat: any) => {
+          const isSelected = selectedWard !== 'all' && Number(selectedWard) === feat?.properties?.ward_no;
+          return {
+            color: isSelected ? '#f59e0b' : '#38bdf8',
+            weight: isSelected ? 3.5 : 1.8,
+            fillColor: isSelected ? '#f59e0b' : '#0284c7',
+            fillOpacity: isSelected ? 0.22 : 0.08,
+            dashArray: isSelected ? undefined : '3, 3',
+          };
+        },
+        onEachFeature: (feat: any, l: any) => {
+          const p = feat.properties || {};
+          const wardTitle = p.ward_name || `वडा नं. ${p.ward_no}`;
+
+          // Hover tooltip
+          l.bindTooltip(`🏢 <strong>${wardTitle}</strong>`, {
+            direction: 'center',
+            permanent: false,
+            sticky: true,
+          });
+
+          // Click popup with full ward details
+          const popupContent = `
+            <div style="min-width: 230px; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #0f172a; padding: 2px;">
+              <div style="font-size: 13.5px; font-weight: 800; color: #0284c7; border-bottom: 2px solid #38bdf8; padding-bottom: 4px; margin-bottom: 8px;">
+                🏛️ ${wardTitle}
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; color: #334155;">
+                <div>👤 <strong>वडाध्यक्ष:</strong> ${p.chairperson || '—'}</div>
+                <div>📞 <strong>सम्पर्क:</strong> ${p.phone || '—'}</div>
+                <div>👥 <strong>जनसंख्या:</strong> ${(p.population || 0).toLocaleString('ne-NP')}</div>
+                <div>🏠 <strong>घरधुरी:</strong> ${(p.households || 0).toLocaleString('ne-NP')}</div>
+                ${p.area_sqkm ? `<div>📐 <strong>क्षेत्रफल:</strong> ${p.area_sqkm} वर्ग कि.मी.</div>` : ''}
+              </div>
+              <button
+                type="button"
+                onclick="window.__handleSelectWardFilter('${p.ward_no}')"
+                style="margin-top: 10px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(2,132,199,0.35);"
+              >
+                🎯 यस वडाका घरधुरी मात्र फिल्टर गर्नुहोस्
+              </button>
+            </div>
+          `;
+          l.bindPopup(popupContent);
+
+          // Hover highlight interactions
+          l.on('mouseover', () => {
+            const isSelected = selectedWard !== 'all' && Number(selectedWard) === p.ward_no;
+            l.setStyle({
+              weight: 3.5,
+              color: isSelected ? '#f59e0b' : '#34d399',
+              fillOpacity: 0.28,
+            });
+          });
+
+          l.on('mouseout', () => {
+            const isSelected = selectedWard !== 'all' && Number(selectedWard) === p.ward_no;
+            l.setStyle({
+              color: isSelected ? '#f59e0b' : '#38bdf8',
+              weight: isSelected ? 3.5 : 1.8,
+              fillColor: isSelected ? '#f59e0b' : '#0284c7',
+              fillOpacity: isSelected ? 0.22 : 0.08,
+              dashArray: isSelected ? undefined : '3, 3',
+            });
+          });
+        },
+      });
+
+      layer.addTo(map);
+      wardBoundaryLayerRef.current = layer;
+    } catch (e) {
+      console.warn('Failed to render ward boundaries:', e);
+    }
+  }, [wardBoundariesGeoJson, showWardBoundaries, selectedWard, viewMode]);
+
+  // Fit bounds when ward or whole palika is selected
+  useEffect(() => {
+    if (!mapInstanceRef.current || viewMode === 'table') return;
+    const map = mapInstanceRef.current;
+
+    if (selectedWard !== 'all' && wardBoundariesGeoJson?.features?.length) {
+      const wardNum = Number(selectedWard);
+      const targetFeat = wardBoundariesGeoJson.features.find((f: any) => f?.properties?.ward_no === wardNum);
+      if (targetFeat) {
+        try {
+          const wardBounds = L.geoJSON(targetFeat).getBounds();
+          if (wardBounds.isValid()) {
+            map.fitBounds(wardBounds, { padding: [35, 35], maxZoom: 16 });
+            return;
+          }
+        } catch (e) {
+          console.warn('Error fitting ward bounds:', e);
+        }
+      }
+    }
+
+    if (selectedWard === 'all') {
+      if (mapPoints.length === 0 && palikaBoundaryGeoJson?.features?.length) {
+        try {
+          const palikaBounds = L.geoJSON(palikaBoundaryGeoJson).getBounds();
+          if (palikaBounds.isValid()) {
+            map.fitBounds(palikaBounds, { padding: [30, 30] });
+            return;
+          }
+        } catch (e) {
+          map.setView(defaultCenter, 13);
+        }
+      } else if (mapPoints.length === 0) {
+        map.setView(defaultCenter, 13);
+      }
+    }
+  }, [selectedWard, wardBoundariesGeoJson, palikaBoundaryGeoJson, mapPoints.length, viewMode, defaultCenter]);
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -2737,124 +2951,218 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
               )}
             </div>
 
-            {/* Quick 1-Click 4 Base Layer Switcher Dock */}
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                padding: '0.25rem 0.35rem',
-                borderRadius: '8px',
-                border: '1px solid #334155',
-                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)',
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => handleSwitchBaseLayer('hybrid')}
+            {/* Layer Controls Docks */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {/* Quick 1-Click 4 Base Layer Switcher Dock */}
+              <div
                 style={{
-                  padding: '0.28rem 0.65rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: activeBaseLayer === 'hybrid' ? '#0284c7' : 'transparent',
-                  color: activeBaseLayer === 'hybrid' ? '#ffffff' : '#94a3b8',
-                  boxShadow: activeBaseLayer === 'hybrid' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.25rem',
+                  backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                  padding: '0.25rem 0.35rem',
+                  borderRadius: '8px',
+                  border: '1px solid #334155',
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)',
                 }}
-                title="Google Satellite Hybrid with Roads & Labels"
               >
-                <span>🛰️</span> <span>स्याटेलाइट</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleSwitchBaseLayer('hybrid')}
+                  style={{
+                    padding: '0.28rem 0.65rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: activeBaseLayer === 'hybrid' ? '#0284c7' : 'transparent',
+                    color: activeBaseLayer === 'hybrid' ? '#ffffff' : '#94a3b8',
+                    boxShadow: activeBaseLayer === 'hybrid' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="Google Satellite Hybrid with Roads & Labels"
+                >
+                  <span>🛰️</span> <span>स्याटेलाइट</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => handleSwitchBaseLayer('esri')}
-                style={{
-                  padding: '0.28rem 0.65rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: activeBaseLayer === 'esri' ? '#0284c7' : 'transparent',
-                  color: activeBaseLayer === 'esri' ? '#ffffff' : '#94a3b8',
-                  boxShadow: activeBaseLayer === 'esri' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                }}
-                title="Esri World Imagery Pure High-Res Photo Satellite"
-              >
-                <span>🌍</span> <span>Esri फोटो</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleSwitchBaseLayer('esri')}
+                  style={{
+                    padding: '0.28rem 0.65rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: activeBaseLayer === 'esri' ? '#0284c7' : 'transparent',
+                    color: activeBaseLayer === 'esri' ? '#ffffff' : '#94a3b8',
+                    boxShadow: activeBaseLayer === 'esri' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="Esri World Imagery Pure High-Res Photo Satellite"
+                >
+                  <span>🌍</span> <span>Esri फोटो</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => handleSwitchBaseLayer('osm')}
-                style={{
-                  padding: '0.28rem 0.65rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: activeBaseLayer === 'osm' ? '#0284c7' : 'transparent',
-                  color: activeBaseLayer === 'osm' ? '#ffffff' : '#94a3b8',
-                  boxShadow: activeBaseLayer === 'osm' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                }}
-                title="OpenStreetMap Standard Streets"
-              >
-                <span>🗺️</span> <span>सडक</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleSwitchBaseLayer('osm')}
+                  style={{
+                    padding: '0.28rem 0.65rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: activeBaseLayer === 'osm' ? '#0284c7' : 'transparent',
+                    color: activeBaseLayer === 'osm' ? '#ffffff' : '#94a3b8',
+                    boxShadow: activeBaseLayer === 'osm' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="OpenStreetMap Standard Streets"
+                >
+                  <span>🗺️</span> <span>सडक</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => handleSwitchBaseLayer('topo')}
+                <button
+                  type="button"
+                  onClick={() => handleSwitchBaseLayer('topo')}
+                  style={{
+                    padding: '0.28rem 0.65rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: activeBaseLayer === 'topo' ? '#0284c7' : 'transparent',
+                    color: activeBaseLayer === 'topo' ? '#ffffff' : '#94a3b8',
+                    boxShadow: activeBaseLayer === 'topo' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="OpenTopoMap Topographic Contours & Elevation"
+                >
+                  <span>🏔️</span> <span>टोपो धरातल</span>
+                </button>
+              </div>
+
+              {/* GIS Boundary & Layer Toggles Dock */}
+              <div
                 style={{
-                  padding: '0.28rem 0.65rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: activeBaseLayer === 'topo' ? '#0284c7' : 'transparent',
-                  color: activeBaseLayer === 'topo' ? '#ffffff' : '#94a3b8',
-                  boxShadow: activeBaseLayer === 'topo' ? '0 2px 6px rgba(2,132,199,0.5)' : 'none',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.25rem',
+                  backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                  padding: '0.25rem 0.35rem',
+                  borderRadius: '8px',
+                  border: '1px solid #334155',
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)',
                 }}
-                title="OpenTopoMap Topographic Contours & Elevation"
               >
-                <span>🏔️</span> <span>टोपो धरातल</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPalikaBoundary(!showPalikaBoundary)}
+                  style={{
+                    padding: '0.28rem 0.6rem',
+                    borderRadius: '6px',
+                    border: showPalikaBoundary ? '1px solid #f59e0b' : '1px solid #334155',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: showPalikaBoundary ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                    color: showPalikaBoundary ? '#fbbf24' : '#94a3b8',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="पालिका बाहिरी सिमाना तह देखाउनुहोस् / लुकाउनुहोस्"
+                >
+                  <span style={{ fontSize: '0.8rem' }}>{showPalikaBoundary ? '☑️' : '◻️'}</span>
+                  <span>पालिका सीमा</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowWardBoundaries(!showWardBoundaries)}
+                  style={{
+                    padding: '0.28rem 0.6rem',
+                    borderRadius: '6px',
+                    border: showWardBoundaries ? '1px solid #38bdf8' : '1px solid #334155',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: showWardBoundaries ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                    color: showWardBoundaries ? '#38bdf8' : '#94a3b8',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="वडा सिमाना बहुभुज (Ward Polygons) देखाउनुहोस् / लुकाउनुहोस्"
+                >
+                  <span style={{ fontSize: '0.8rem' }}>{showWardBoundaries ? '☑️' : '◻️'}</span>
+                  <span>वडा सिमाना</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowHouseholdMarkers(!showHouseholdMarkers)}
+                  style={{
+                    padding: '0.28rem 0.6rem',
+                    borderRadius: '6px',
+                    border: showHouseholdMarkers ? '1px solid #10b981' : '1px solid #334155',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backgroundColor: showHouseholdMarkers ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+                    color: showHouseholdMarkers ? '#34d399' : '#94a3b8',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                  title="घरधुरी GPS बिन्दुहरू देखाउनुहोस् / लुकाउनुहोस्"
+                >
+                  <span style={{ fontSize: '0.8rem' }}>{showHouseholdMarkers ? '☑️' : '◻️'}</span>
+                  <span>घरधुरी बिन्दु</span>
+                </button>
+              </div>
             </div>
 
-            {/* Legend */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', fontSize: '0.75rem' }}>
+            {/* Legend with GIS Boundary Markers */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.85rem', fontSize: '0.75rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#fbbf24' }}>
+                <span style={{ width: '14px', height: '0px', borderTop: '2.5px dashed #f59e0b', display: 'inline-block' }}></span>
+                पालिका सीमा
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#38bdf8' }}>
+                <span style={{ width: '12px', height: '10px', backgroundColor: 'rgba(2, 132, 199, 0.3)', border: '1.5px solid #38bdf8', borderRadius: '2px', display: 'inline-block' }}></span>
+                वडा बहुभुज
+              </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#cbd5e1' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }}></span>
+                <span style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }}></span>
                 सुरक्षित ({lowRiskCount.toLocaleString('ne-NP')})
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#cbd5e1' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f97316', display: 'inline-block' }}></span>
+                <span style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: '#f97316', display: 'inline-block' }}></span>
                 नदी तटीय ({medRiskCount.toLocaleString('ne-NP')})
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#cbd5e1' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }}></span>
+                <span style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }}></span>
                 पहिरो जोखिम ({highRiskCount.toLocaleString('ne-NP')})
               </span>
             </div>
@@ -5083,7 +5391,7 @@ export const HouseholdRegistryTab: React.FC<HouseholdRegistryTabProps> = ({ isPu
                             fontSize: '0.85rem',
                           }}
                         >
-                          {WARD_METADATA.map((w) => (
+                          {dynamicWards.filter((w) => w.id !== 'all').map((w) => (
                             <option key={w.id} value={w.id}>
                               {w.name}
                             </option>

@@ -713,6 +713,7 @@ export const publicNavSections: NavSection[] = [
 
 
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 
 interface SidebarProps {
   isPublic?: boolean;
@@ -722,6 +723,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { settings, currentTenant, tenantId } = useTenant();
+  const palikaName = settings?.palika_name || currentTenant?.name_np || 'डिजिटल ट्विन';
+
+  const tenantBadge = useMemo(() => {
+    const sub = (currentTenant?.subdomain || tenantId || '').toLowerCase();
+    const name = (palikaName || '').toLowerCase();
+    if (sub.includes('gaushala') || name.includes('गौशाला')) return 'GM';
+    if (sub.includes('khada') || sub.includes('khanda') || name.includes('खाँडादेवी')) return 'KD';
+    if (sub.includes('benighat') || name.includes('बेनिघाट')) return 'BR';
+    if (sub.includes('helambu') || name.includes('हेलम्बु')) return 'HM';
+    if (sub.includes('melamchi') || name.includes('मेलम्ची')) return 'MM';
+    if (sub.includes('indrawati') || name.includes('इन्द्रावती')) return 'IW';
+    if (sub.includes('galchhi') || name.includes('गल्छी')) return 'GL';
+    return 'P5';
+  }, [currentTenant?.subdomain, tenantId, palikaName]);
 
   const currentSections = useMemo(() => {
     if (isPublic) return publicNavSections;
@@ -799,7 +815,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
             boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
           }}
         >
-          P5
+          {tenantBadge}
         </div>
         <div>
           <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3 }}>
@@ -995,7 +1011,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
         }}
       >
         <Settings size={13} />
-        <span>पाँचपोखरी थाङपाल डिजिटल ट्विन</span>
+        <span>{palikaName}</span>
       </div>
     </>
   );

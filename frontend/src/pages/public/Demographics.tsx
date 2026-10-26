@@ -142,7 +142,7 @@ export const Demographics: React.FC = () => {
           <Users size={36} color="#38bdf8" />
           <div>
             <h1 style={{ margin: 0, fontSize: '1.9rem', fontWeight: 800 }}>जनसांख्यिक अवस्था</h1>
-            <p style={{ margin: 0, color: '#93c5fd', fontSize: '0.95rem' }}>राष्ट्रिय जनगणना २०७८ — पाँचपोखरी थाङपाल गाउँपालिका</p>
+            <p style={{ margin: 0, color: '#93c5fd', fontSize: '0.95rem' }}>राष्ट्रिय जनगणना २०७८ — {d.municipalityName || 'स्थानीय तह'}</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: '1.25rem', position: 'relative' }}>
@@ -151,7 +151,7 @@ export const Demographics: React.FC = () => {
             color: '#fff', padding: '0.45rem 1rem', borderRadius: 10, cursor: 'pointer', fontSize: '0.9rem',
           }}>
             <option value={0} style={{ color: '#0f172a' }}>सम्पूर्ण पालिका</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(w => (
+            {Array.from({ length: d.population?.wards || 8 }, (_, i) => i + 1).map(w => (
               <option key={w} value={w} style={{ color: '#0f172a' }}>वडा नं. {w}</option>
             ))}
           </select>
@@ -331,7 +331,7 @@ export const Demographics: React.FC = () => {
           {/* Data source footer */}
           <div style={{ marginTop: '1.5rem', background: '#f8fafc', borderRadius: 12, padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: 10, color: '#64748b', fontSize: '0.82rem' }}>
             <Activity size={15} />
-            <span>स्रोत: राष्ट्रिय जनगणना २०७८ — केन्द्रीय तथ्यांक विभाग, नेपाल सरकार। डाटा पाँचपोखरी थाङपाल गाउँपालिकाको डिजिटल ट्विन प्रणालीबाट लिइएको।</span>
+            <span>स्रोत: राष्ट्रिय जनगणना २०७८ — राष्ट्रिय तथ्याङ्क कार्यालय (NSO Nepal)। डाटा {d.municipalityName || 'पालिका'}को डिजिटल ट्विन प्रणालीबाट लिइएको।</span>
           </div>
         </>
       )}

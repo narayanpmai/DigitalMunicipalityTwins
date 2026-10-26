@@ -23,7 +23,7 @@ class Business(Base):
     __tablename__ = 'businesses'
     __table_args__ = {'extend_existing': True}
     
-    tenant_id = Column(String, nullable=True, name='tenant_id', default='f07c2bcc-81ad-4e27-aeff-1a65f04e9f06')
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     registration_no = Column(String, unique=True, name='registrationNo')
     business_name = Column(String, name='businessName')
@@ -62,6 +62,7 @@ class Business(Base):
 
         return {
             "id": str(self.id),
+            "tenantId": str(self.tenant_id) if self.tenant_id else None,
             "registrationNo": self.registration_no,
             "businessName": self.business_name,
             "businessNameEn": self.business_name_en or det.get("businessNameEn", ""),
@@ -110,7 +111,7 @@ class BusinessRenewal(Base):
     __table_args__ = {'extend_existing': True}
 
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(String, nullable=True, default='f07c2bcc-81ad-4e27-aeff-1a65f04e9f06')
+    tenant_id = Column(String, nullable=True)
     business_id = Column(String, nullable=False)
     registration_no = Column(String, nullable=False)
     business_name = Column(String, nullable=False)
@@ -151,7 +152,8 @@ class BusinessInspection(Base):
     __table_args__ = {'extend_existing': True}
 
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(String, nullable=True, default='f07c2bcc-81ad-4e27-aeff-1a65f04e9f06')
+    tenant_id = Column(String, nullable=True)
+
     business_id = Column(String, nullable=False)
     registration_no = Column(String, nullable=False)
     business_name = Column(String, nullable=False)

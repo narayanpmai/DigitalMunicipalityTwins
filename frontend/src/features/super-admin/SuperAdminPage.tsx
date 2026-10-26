@@ -288,6 +288,32 @@ export const SuperAdminPage: React.FC = () => {
     };
     fetchTenants();
 
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('p5_token');
+        const res = await axios.get('/api/v1/users', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.data && Array.isArray(res.data)) {
+          const remoteUsers: UserItem[] = res.data.map((u: any) => ({
+            id: String(u.id),
+            fullName: u.fullName || u.full_name || '',
+            email: u.email || '',
+            role: u.role || 'admin',
+            tenantId: u.tenantId || u.tenant_id || 'panchpokhari',
+            wardNumber: u.wardNumber || u.ward_number || null,
+            status: u.isActive !== false ? 'active' : 'suspended',
+            createdAt: u.createdAt || u.created_at || new Date().toISOString(),
+          }));
+          setUsersList(remoteUsers);
+          localStorage.setItem('p5_users_list', JSON.stringify(remoteUsers));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch users from API, falling back to local storage', err);
+      }
+    };
+    fetchUsers();
+
     const fetchSettings = async () => {
       try {
         const res = await axios.get('/api/v1/settings', {
@@ -2292,6 +2318,13 @@ export const SuperAdminPage: React.FC = () => {
                     <option value="panchpokhari">पाँचपोखरी थाङपाल</option>
                     <option value="helambu">हेलम्बु गाउँपालिका</option>
                     <option value="melamchi">मेलम्ची नगरपालिका</option>
+                    {tenants
+                      .filter((t) => !['panchpokhari', 'helambu', 'melamchi'].includes(t.subdomain || t.id))
+                      .map((t) => (
+                        <option key={t.id} value={t.subdomain || t.id}>
+                          {t.nameNp}
+                        </option>
+                      ))}
                     <option value="super_admin">केन्द्रीय Root Admin</option>
                   </select>
 

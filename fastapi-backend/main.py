@@ -162,6 +162,7 @@ app.include_router(digital_twin.router)
 
 from api.routers import ai_assistant
 app.include_router(ai_assistant.router)
+app.include_router(ai_assistant.chat_alias_router)
 
 from api.routers import land_classification
 app.include_router(land_classification.router)

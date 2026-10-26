@@ -19,26 +19,91 @@ router = APIRouter(
     tags=["GIS"]
 )
 
+import os
+import json
+
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data"))
+BOUNDARIES_DIR = os.path.join(DATA_DIR, "boundaries")
+
+def resolve_boundary_slug(val: str) -> str:
+    s = (val or "").strip().lower()
+    if any(k in s for k in ("gaushala", "7c9f1805")):
+        return "gaushala"
+    if any(k in s for k in ("benighat", "050b8da4")):
+        return "benighatrorang"
+    if any(k in s for k in ("galchhi", "0cea29fe")):
+        return "galchhi"
+    if any(k in s for k in ("khadadevi", "khandadevi", "94bf02d3")):
+        return "khadadevi"
+    if any(k in s for k in ("helambu", "a18b3cde")):
+        return "helambu"
+    if any(k in s for k in ("melamchi", "e4a22081", "c7a7e816")):
+        return "melamchi"
+    return "panchpokhari"
+
 @router.get("/boundary")
 def get_tenant_boundary(
     tenant: Tenant = Depends(get_current_tenant),
     db: Session = Depends(get_db)
 ):
+    slug = resolve_boundary_slug(tenant.subdomain or str(tenant.id))
+    outer_path = os.path.join(BOUNDARIES_DIR, f"{slug}_outer.json")
+    
+    if os.path.exists(outer_path):
+        try:
+            with open(outer_path, "r", encoding="utf-8") as f:
+                outer_feat = json.load(f)
+            return {
+                "type": "FeatureCollection",
+                "tenant_id": slug,
+                "palika_name": tenant.name_np or tenant.name_en,
+                "features": [outer_feat]
+            }
+        except Exception:
+            pass
+
+    # Fallback to MunicipalityProfile table if present
     profile = db.query(MunicipalityProfile).filter(MunicipalityProfile.tenant_id == tenant.id).first()
-    if not profile or not profile.boundaries:
-        # Fallback empty GeoJSON
+    if profile and isinstance(profile.boundaries, dict) and "coordinates" in str(profile.boundaries):
         return {
             "type": "FeatureCollection",
-            "features": [],
-            "center": [27.9850, 85.7580], # Default Panchpokhari center fallback
-            "zoom": 11
+            "tenant_id": slug,
+            "palika_name": tenant.name_np or tenant.name_en,
+            "features": [profile.boundaries]
         }
     
     return {
         "type": "FeatureCollection",
-        "features": [profile.boundaries], # Assuming boundaries stores the Feature or Polygon
-        "center": profile.boundaries.get("center", [27.9850, 85.7580]),
-        "zoom": profile.boundaries.get("zoom", 11)
+        "tenant_id": slug,
+        "palika_name": tenant.name_np or tenant.name_en,
+        "features": []
+    }
+
+@router.get("/ward-boundaries")
+def get_ward_boundaries(
+    tenant: Tenant = Depends(get_current_tenant),
+    db: Session = Depends(get_db)
+):
+    slug = resolve_boundary_slug(tenant.subdomain or str(tenant.id))
+    ward_path = os.path.join(BOUNDARIES_DIR, f"{slug}_wards.json")
+    
+    if os.path.exists(ward_path):
+        try:
+            with open(ward_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    # Fallback default
+    default_path = os.path.join(DATA_DIR, "ward_boundaries_geojson.json")
+    if os.path.exists(default_path):
+        with open(default_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {
+        "type": "FeatureCollection",
+        "tenant_id": slug,
+        "features": []
     }
 
 @router.get("/infrastructure", response_model=GeoJSONFeatureCollection)

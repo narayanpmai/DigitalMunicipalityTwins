@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 
 from core.database import get_db
+from core.tenant import get_tenant_context, TenantContext
 from models.budget import Budget
 
 router = APIRouter(
@@ -61,9 +62,11 @@ def get_budgets(
     fiscalYear: Optional[str] = None,
     ward: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     query = db.query(Budget).filter(Budget.deleted_at.is_(None))
+    query = ctx.filter_query(query, Budget)
 
     if type and type != "all":
         query = query.filter(Budget.type == normalize_budget_type(type))
@@ -93,8 +96,8 @@ def get_budgets(
 
 
 @router.get("/stats")
-def get_budget_stats(db: Session = Depends(get_db)):
-    budgets = db.query(Budget).filter(Budget.deleted_at.is_(None)).all()
+def get_budget_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    budgets = ctx.filter_query(db.query(Budget).filter(Budget.deleted_at.is_(None)), Budget).all()
     
     total_allocated = sum(float(b.allocated_amount or 0) for b in budgets)
     total_released = sum(float(b.released_amount or 0) for b in budgets)
@@ -125,16 +128,23 @@ def get_budget_stats(db: Session = Depends(get_db)):
     }
 
 
+
 @router.post("")
 @router.post("/")
-def create_budget(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_budget(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     bid = uuid.uuid4()
     alloc = float(payload.get("allocatedAmount") or 0)
     rel = float(payload.get("releasedAmount") or 0)
     spent = float(payload.get("spentAmount") or 0)
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
 
     new_budget = Budget(
         id=bid,
+        tenant_id=eff_tenant,
         title=payload.get("title", "नयाँ बजेट उपशीर्षक"),
         fiscal_year=payload.get("fiscalYear", "२०८१/०८२"),
         type=normalize_budget_type(payload.get("type")),
@@ -158,16 +168,25 @@ def create_budget(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/{id}")
-def get_budget(id: str, db: Session = Depends(get_db)):
-    b = find_budget(id, db)
+def get_budget(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    b = find_budget(id, db, ctx)
     if not b:
         raise HTTPException(status_code=404, detail="Budget not found")
     return b.to_dict()
 
 
 @router.put("/{id}")
-def update_budget(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    b = find_budget(id, db)
+def update_budget(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    b = find_budget(id, db, ctx)
     if not b:
         raise HTTPException(status_code=404, detail="Budget not found")
 
@@ -188,8 +207,12 @@ def update_budget(id: str, payload: Dict[str, Any], db: Session = Depends(get_db
 
 
 @router.delete("/{id}")
-def delete_budget(id: str, db: Session = Depends(get_db)):
-    b = find_budget(id, db)
+def delete_budget(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    b = find_budget(id, db, ctx)
     if not b:
         raise HTTPException(status_code=404, detail="Budget not found")
 
@@ -198,11 +221,14 @@ def delete_budget(id: str, db: Session = Depends(get_db)):
     return {"message": "Budget deleted successfully", "id": str(b.id)}
 
 
-def find_budget(id_str: str, db: Session) -> Optional[Budget]:
+def find_budget(id_str: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[Budget]:
+    q = db.query(Budget).filter(Budget.deleted_at.is_(None))
+    if ctx:
+        q = ctx.filter_query(q, Budget)
     try:
         tid = uuid.UUID(id_str)
-        b = db.query(Budget).filter(Budget.id == tid, Budget.deleted_at.is_(None)).first()
+        b = q.filter(Budget.id == tid).first()
         if b: return b
     except ValueError:
         pass
-    return db.query(Budget).filter(Budget.title.ilike(f"%{id_str}%"), Budget.deleted_at.is_(None)).first()
+    return q.filter(Budget.title.ilike(f"%{id_str}%")).first()

@@ -53,6 +53,8 @@ import { THEMATIC_MODULE_SCHEMAS, type ThematicModuleDef } from './thematicModul
 import { ThematicDynamicFormModal } from './components/ThematicDynamicFormModal';
 import { ThematicExcelImportModal } from './components/ThematicExcelImportModal';
 import { useTenant } from '../../context/TenantContext';
+import { municipalityApi } from '../../api/municipality';
+import { toNepaliDigits } from '../../utils/nepaliCalendar';
 
 // ── 1. Thematic Categories Definition ─────────────────────────────────────────
 export interface ThematicCategoryTab {
@@ -173,14 +175,18 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
   const location = useLocation();
   const isAdmin = !isReadOnly && location.pathname.startsWith('/app');
   const queryClient = useQueryClient();
-  const { settings } = useTenant();
-
-  // Dynamic palika info from TenantContext
-  const palikaName = settings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका';
-  const palikaAddress = settings?.address || 'गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक';
-  const palikaProvince = settings?.province || 'बागमती प्रदेश';
+  const { settings, tenantId } = useTenant();
+  const palikaName = settings?.palika_name || 'गौशाला नगरपालिका';
+  const isGaushala = tenantId === 'gaushala' || tenantId === 'gaushalamun' || (palikaName || '').includes('गौशाला');
+  const palikaAddress = settings?.address || (isGaushala ? 'नगर कार्यपालिकाको कार्यालय, गौशाला, महोत्तरी' : 'गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक');
+  const palikaProvince = settings?.province || (isGaushala ? 'मधेश प्रदेश' : 'बागमती प्रदेश');
   const palikaLogoUrl = settings?.logo_url;
-  const palikaSlogan = settings?.slogan || 'डाटामा आधारित राजनीति र प्रमाणमा आधारित विकास';
+  const palikaSlogan = settings?.slogan || (isGaushala ? 'कृषि, उद्योग र समृद्धिको सहर: हाम्रो गौशाला नगर' : 'डाटामा आधारित राजनीति र प्रमाणमा आधारित विकास');
+
+  const { data: dbWards = [] } = useQuery({
+    queryKey: ['wards', tenantId],
+    queryFn: () => municipalityApi.getWards(),
+  });
 
   const locationState = location.state as { selectedModuleKey?: number; activeTab?: 'kpis' | 'forms' | 'generator' | 'before_after' } | null;
   const [activeTab, setActiveTab] = useState<'kpis' | 'forms' | 'generator' | 'before_after'>(locationState?.activeTab || 'forms');
@@ -370,15 +376,26 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 }}
               >
-                <option value={0}>समग्र गाउँपालिका (All Wards)</option>
-                <option value={1}>वडा नं. १ (बाँसखर्क)</option>
-                <option value={2}>वडा नं. २ (बरुवा)</option>
-                <option value={3}>वडा नं. ३ (भोताङ)</option>
-                <option value={4}>वडा नं. ४ (थाङपालकोट)</option>
-                <option value={5}>वडा नं. ५ (गुन्सा)</option>
-                <option value={6}>वडा नं. ६ (थाङपालधाप)</option>
-                <option value={7}>वडा नं. ७ (भोटेनाम्लाङ)</option>
-                <option value={8}>वडा नं. ८ (लागर्चे)</option>
+                <option value={0}>समग्र {palikaName.includes('नगरपालिका') ? 'नगरपालिका' : 'गाउँपालिका'} (All Wards)</option>
+                {dbWards && dbWards.length > 0 ? (
+                  dbWards.map((w: any) => {
+                    const wNo = w.ward_number || w.wardNo;
+                    const wName = w.name ? (w.name.startsWith('वडा') ? w.name : `वडा नं. ${toNepaliDigits(wNo)} (${w.name})`) : `वडा नं. ${toNepaliDigits(wNo)}`;
+                    return (
+                      <option key={wNo} value={wNo}>{wName}</option>
+                    );
+                  })
+                ) : (
+                  isGaushala ? (
+                    Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>वडा नं. {toNepaliDigits(n)}</option>
+                    ))
+                  ) : (
+                    Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>वडा नं. {toNepaliDigits(n)}</option>
+                    ))
+                  )
+                )}
               </select>
             </div>
 

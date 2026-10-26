@@ -9,7 +9,7 @@ class DocumentArchive(Base):
     __tablename__ = 'document_archive'
     __table_args__ = {'extend_existing': True}
     
-    tenant_id = Column(String, nullable=True, name='tenant_id', default='f07c2bcc-81ad-4e27-aeff-1a65f04e9f06')
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, nullable=False)
     fiscal_year = Column(String, nullable=True, name='fiscalYear')
@@ -38,7 +38,7 @@ class DocumentExtraction(Base):
     __tablename__ = 'document_extraction'
     __table_args__ = {'extend_existing': True}
 
-    tenant_id = Column(String, nullable=True, name='tenant_id', default='f07c2bcc-81ad-4e27-aeff-1a65f04e9f06')
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     document_id = Column(PG_UUID(as_uuid=True), ForeignKey('document_archive.id', ondelete='CASCADE'), nullable=True, name='documentId')
     category = Column(String, nullable=True) # Gazette, BudgetBook, Act, CitizenCharter, MeetingDecision, LandRecord

@@ -8,6 +8,7 @@ from schemas.user import (
     UserCreate, UserUpdate, UserPublicSchema, RolePermissionsUpdate
 )
 from api.routers.auth import get_current_user, require_roles
+from core.tenant import TenantContext, get_tenant_context
 import uuid
 
 router = APIRouter(
@@ -54,10 +55,14 @@ def seed_roles_if_empty(db: Session):
 @router.get("", response_model=List[UserPublicSchema])
 def find_all(
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    """सबै प्रयोगकर्ताहरूको सूची (एडमिन मात्र)"""
-    return db.query(User).filter(User.deleted_at == None).order_by(User.created_at.desc()).all()
+    """सबै प्रयोगकर्ताहरूको सूची (एडमिन मात्र - सम्बन्धित पालिका अनुसार अलग)"""
+    query = db.query(User).filter(User.deleted_at == None)
+    query = ctx.filter_query(query, User)
+    return query.order_by(User.created_at.desc()).all()
+
 
 
 @router.get("/stats")
@@ -123,11 +128,14 @@ def update_role_permissions(
 @router.get("/{id}", response_model=UserPublicSchema)
 def find_one(
     id: str,
-    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.IT_ADMIN, UserRole.CAO)),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.IT_ADMIN, UserRole.CAO, UserRole.ADMIN)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """ID अनुसार प्रयोगकर्ता प्राप्त गर्नुहोस्"""
-    user = db.query(User).filter(User.id == id, User.deleted_at == None).first()
+    query = db.query(User).filter(User.id == id, User.deleted_at == None)
+    query = ctx.filter_query(query, User)
+    user = query.first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -137,9 +145,10 @@ def find_one(
 def create_user(
     body: UserCreate,
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    """नयाँ प्रयोगकर्ता सिर्जना गर्नुहोस् (एडमिन मात्र)"""
+    """नयाँ प्रयोगकर्ता सिर्जना गर्नुहोस् (एडमिन मात्र - सम्बन्धित पालिका अनुसार)"""
     existing = db.query(User).filter(User.email == body.email, User.deleted_at == None).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -147,6 +156,9 @@ def create_user(
     is_active = body.is_active
     if body.role and (hasattr(body.role, 'value') and body.role.value.startswith("public_") or str(body.role).startswith("public_")):
         is_active = False
+
+    is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+    eff_tenant = body.tenant_id if (is_super and body.tenant_id) else ctx.effective_tenant_id
 
     user = User(
         id=str(uuid.uuid4()),
@@ -156,7 +168,7 @@ def create_user(
         phone=body.phone,
         role=body.role.value if hasattr(body.role, 'value') else (body.role if body.role else UserRole.PUBLIC.value),
         ward_number=body.ward_number,
-        tenant_id=body.tenant_id,
+        tenant_id=eff_tenant,
         is_active=is_active if is_active is not None else True,
         email_verified=body.email_verified or False,
     )
@@ -164,6 +176,7 @@ def create_user(
     db.commit()
     db.refresh(user)
     return user
+
 
 
 @router.put("/{id}", response_model=UserPublicSchema)

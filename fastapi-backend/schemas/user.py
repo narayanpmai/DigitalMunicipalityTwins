@@ -10,7 +10,12 @@ from models.user import UserRole
 class LoginRequest(BaseModel):
     email: str
     password: str
-    tenant_subdomain: Optional[str] = None
+    tenant_subdomain: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices('tenant_subdomain', 'tenantSubdomain', 'tenantId', 'tenant_id', 'subdomain')
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class PublicRegisterRequest(BaseModel):

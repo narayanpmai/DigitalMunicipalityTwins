@@ -34,7 +34,7 @@ import { PalikaProfileEditModal } from './components/PalikaProfileEditModal';
 import './palika-profile.css';
 
 export const PalikaProfileMasterPage: React.FC = () => {
-  const { settings } = useTenant();
+  const { settings, tenantId } = useTenant();
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/app');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,26 +49,27 @@ export const PalikaProfileMasterPage: React.FC = () => {
 
   // Central Profile Query - Single Source of Truth
   const { data: profile } = useQuery({
-    queryKey: ['municipality-profile'],
+    queryKey: ['municipality-profile', tenantId],
     queryFn: () => municipalityApi.getProfile(),
   });
 
-  const palikaName = profile?.nameNp || profile?.name || settings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका';
-  const district = profile?.district || settings?.district || 'सिन्धुपाल्चोक';
-  const province = profile?.province || settings?.province || 'बागमती प्रदेश';
-  const totalWards = profile?.totalWards || 8;
-  const areaSqKm = profile?.totalAreaSqKm || 187.29;
-  const headquarters = profile?.headquarters || 'थाङपालधाप';
-  const totalPopVal = profile?.totalPopulation || profile?.demographics?.totalPopulation || 20540;
-  const malePopVal = profile?.demographics?.male || profile?.malePopulation || 9950;
-  const femalePopVal = profile?.demographics?.female || profile?.femalePopulation || 10590;
-  const totalHhVal = profile?.totalHouseholds || profile?.demographics?.households || 5805;
+  const isGaushala = tenantId === 'gaushala' || tenantId === 'gaushalamun' || (settings?.palika_name || '').includes('गौशाला');
+  const palikaName = profile?.nameNp || profile?.name || settings?.palika_name || (isGaushala ? 'गौशाला नगरपालिका' : 'पाँचपोखरी थाङपाल गाउँपालिका');
+  const district = profile?.district || settings?.district || (isGaushala ? 'महोत्तरी' : 'सिन्धुपाल्चोक');
+  const province = profile?.province || settings?.province || (isGaushala ? 'मधेश प्रदेश' : 'बागमती प्रदेश');
+  const totalWards = profile?.totalWards || (isGaushala ? 12 : 8);
+  const areaSqKm = profile?.totalAreaSqKm || (isGaushala ? 144.73 : 187.29);
+  const headquarters = profile?.headquarters || (isGaushala ? 'गौशाला बजार' : 'थाङपालधाप');
+  const totalPopVal = profile?.totalPopulation || profile?.demographics?.totalPopulation || (isGaushala ? 72481 : 20540);
+  const malePopVal = profile?.demographics?.male || profile?.malePopulation || (isGaushala ? 36250 : 9950);
+  const femalePopVal = profile?.demographics?.female || profile?.femalePopulation || (isGaushala ? 36231 : 10590);
+  const totalHhVal = profile?.totalHouseholds || profile?.demographics?.households || (isGaushala ? 14446 : 5805);
   const totalPopulation = toNepaliDigits(totalPopVal);
   const malePopulation = toNepaliDigits(malePopVal);
   const femalePopulation = toNepaliDigits(femalePopVal);
   const totalHouseholds = toNepaliDigits(totalHhVal);
-  const annualBudget = profile?.annualBudget || 'रु. ५८.४५ करोड';
-  const internalRevenue = profile?.internalRevenue || 'रु. २.८ करोड';
+  const annualBudget = profile?.annualBudget || (isGaushala ? 'रु. ७४.५० करोड' : 'रु. ५८.४५ करोड');
+  const internalRevenue = profile?.internalRevenue || (isGaushala ? 'रु. ४.२५ करोड' : 'रु. २.८ करोड');
 
   // Sync tab with URL query parameter or path
   useEffect(() => {

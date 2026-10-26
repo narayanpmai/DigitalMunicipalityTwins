@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.demographics import Household, DemographicCategory, DemographicIndicator, DemographicValue
 from schemas.demographics import HouseholdResponse, DashboardStats
 
@@ -14,18 +15,26 @@ router = APIRouter(
 # ─── Summary endpoint ───────────────────────────────────────────────────────
 
 @router.get("/summary")
-def get_summary(db: Session = Depends(get_db)):
+def get_summary(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Comprehensive demographic summary for public portal, synced with MunicipalityProfile Single Source of Truth."""
     from models.municipality import MunicipalityProfile
     from api.routers.municipality import seed_profile_if_empty, DEFAULT_DEMOGRAPHICS
 
-    profile = seed_profile_if_empty(db)
+    eff_tenant = tenant_id or x_tenant_id or (ctx.tenant_subdomain if not ctx.is_all else None)
+    profile = seed_profile_if_empty(db, eff_tenant)
     demo = dict(DEFAULT_DEMOGRAPHICS)
     if profile.demographics and isinstance(profile.demographics, dict):
         demo.update(profile.demographics)
 
-    total_hh_survey = db.query(Household).count() or 5357
-    at_risk_survey = db.query(Household).filter(Household.is_at_risk == True).count() or 142
+    hh_q = ctx.filter_query(db.query(Household), Household)
+    total_hh_survey = hh_q.count()
+    at_risk_survey = hh_q.filter(Household.is_at_risk == True).count()
+    disability_count = int(hh_q.with_entities(func.sum(Household.disability_count)).scalar() or 0)
 
     total_pop = profile.total_population or demo.get("totalPopulation") or 20540
     total_hh = profile.total_households or demo.get("households") or 5805
@@ -39,6 +48,7 @@ def get_summary(db: Session = Depends(get_db)):
     density = demo.get("density") or (round(total_pop / area, 1) if area else 109.7)
 
     return {
+        "municipalityName": profile.name_np or "गाउँपालिका",
         "population": {
             "total": total_pop,
             "male": int(male_sum),
@@ -75,7 +85,7 @@ def get_summary(db: Session = Depends(get_db)):
             "internet": 61,
         },
         "disability": {
-            "total": int(db.query(func.sum(Household.disability_count)).scalar() or 0) or 312,
+            "total": disability_count,
             "rate": 1.8,
         },
         "economic": {
@@ -94,10 +104,23 @@ def get_summary(db: Session = Depends(get_db)):
 # ─── Official NSO Nepal Census 2021 Dataset ─────────────────────────────────
 
 @router.get("/census-2021")
-def get_nso_census_2021():
+def get_nso_census_2021(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id")
+):
     """Returns official National Statistics Office (NSO Nepal) Census 2021 demographic dataset."""
     import os, json
-    json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "panchpokhari_nso_census_2021.json")
+    eff_tenant = (tenant_id or x_tenant_id or "panchpokhari").strip().lower()
+
+    filename = "panchpokhari_nso_census_2021.json"
+    if eff_tenant in ["benighatrorang", "benighat", "benighat_rorang"]:
+        filename = "benighat_nso_census_2021.json"
+    elif eff_tenant in ["khadadevi", "khandadevi", "khada_devi", "khanda_devi"]:
+        filename = "khadadevi_nso_census_2021.json"
+    elif eff_tenant in ["gaushala", "gaushalamun", "gaushala_municipality"]:
+        filename = "gaushala_nso_census_2021.json"
+
+    json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", filename)
     if os.path.exists(json_path):
         with open(json_path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -106,11 +129,16 @@ def get_nso_census_2021():
 # ─── Dashboard stats (legacy) ────────────────────────────────────────────────
 
 @router.get("/dashboard/stats", response_model=DashboardStats)
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    db: Session = Depends(get_db)
+):
     from models.municipality import MunicipalityProfile
     from api.routers.municipality import seed_profile_if_empty, DEFAULT_DEMOGRAPHICS
 
-    profile = seed_profile_if_empty(db)
+    eff_tenant = tenant_id or x_tenant_id
+    profile = seed_profile_if_empty(db, eff_tenant)
     demo = dict(DEFAULT_DEMOGRAPHICS)
     if profile.demographics and isinstance(profile.demographics, dict):
         demo.update(profile.demographics)
@@ -141,8 +169,9 @@ def get_households(
     status: Optional[str] = None,
     risk: Optional[str] = None,
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Household)
+    query = ctx.filter_query(db.query(Household), Household)
     if ward and ward > 0:
         query = query.filter(Household.ward_number == ward)
     if search:
@@ -161,6 +190,7 @@ def get_map_points(
     risk: Optional[str] = None,
     status: Optional[str] = None,
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     query = db.query(
         Household.id,
@@ -171,7 +201,9 @@ def get_map_points(
         Household.risk_level,
         Household.verification_status,
         Household.tole,
+        Household.tenant_id,
     )
+    query = ctx.filter_query(query, Household)
     if ward and ward > 0:
         query = query.filter(Household.ward_number == ward)
     if risk and risk != "all":
@@ -200,20 +232,27 @@ def get_map_points(
 # ─── Sync GPS ─────────────────────────────────────────────────────────────────
 
 @router.post("/households/sync-gps")
-def sync_gps(db: Session = Depends(get_db)):
-    count = db.query(Household).filter(Household.gps_lat.isnot(None)).count()
+def sync_gps(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    count = ctx.filter_query(db.query(Household), Household).filter(Household.gps_lat.isnot(None)).count()
     return {"message": "GPS sync complete", "count": count}
 
 # ─── Bulk import ──────────────────────────────────────────────────────────────
 
 @router.post("/households/bulk-import")
-def bulk_import(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def bulk_import(
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     try:
         replace_all = payload.get("replaceAll", False)
         households = payload.get("households", [])
         
         if replace_all:
-            db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
+            if ctx.is_all:
+                db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
+            else:
+                db.query(Household).filter(Household.tenant_id.in_(ctx.allowed_tenant_ids)).delete(synchronize_session=False)
             db.commit()
             
         count = 0
@@ -237,6 +276,7 @@ def bulk_import(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_d
             # Map keys that might be in camelCase to snake_case for SQLAlchemy model
             hh = Household(
                 id=data_id,
+                tenant_id=ctx.effective_tenant_id,
                 matrix_house_no=data.get("matrixHouseNo") or data.get("matrix_house_no") or f"TMP-{uuid.uuid4().hex[:8]}",
                 legacy_house_no=data.get("legacyHouseNo") or data.get("legacy_house_no"),
                 former_vdc=data.get("formerVdc") or data.get("former_vdc"),
@@ -250,7 +290,7 @@ def bulk_import(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_d
                 gps_lat=parse_float(data.get("gpsLat") or data.get("gps_lat") or data.get("latitude")),
                 gps_lon=parse_float(data.get("gpsLon") or data.get("gps_lon") or data.get("longitude")),
                 tole=data.get("tole"),
-                address=data.get("address", "पाँचपोखरी थाङपाल गाउँपालिका"),
+                address=data.get("address", "पालिका"),
                 house_type=data.get("houseType") or data.get("house_type", "semi-permanent"),
                 drinking_water_source=data.get("drinkingWaterSource") or data.get("drinking_water_source"),
                 toilet_type=data.get("toiletType") or data.get("toilet_type"),
@@ -282,9 +322,13 @@ def bulk_import(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_d
 # ─── Clear all ────────────────────────────────────────────────────────────────
 
 @router.post("/households-clear-all")
-def clear_all(db: Session = Depends(get_db)):
-    count = db.query(Household).count()
-    db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
+def clear_all(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    if ctx.is_all:
+        count = db.query(Household).count()
+        db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
+    else:
+        count = db.query(Household).filter(Household.tenant_id.in_(ctx.allowed_tenant_ids)).count()
+        db.query(Household).filter(Household.tenant_id.in_(ctx.allowed_tenant_ids)).delete(synchronize_session=False)
     db.commit()
     return {"message": "All households cleared", "count": count}
 
@@ -335,10 +379,11 @@ def get_demographic_values(
     indicator_id: Optional[str] = None,
     ward_number: Optional[int] = None,
     segment_key: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """Demographic values/data points with flexible filters."""
-    q = db.query(DemographicValue)
+    q = ctx.filter_query(db.query(DemographicValue), DemographicValue)
     if indicator_id:
         q = q.filter(DemographicValue.indicator_id == indicator_id)
     if ward_number is not None:
@@ -517,15 +562,15 @@ def import_google_sheet(payload: Any = Body(...)):
 # ─── Single household by ID (MUST be last among /households/* routes) ────────
 
 @router.get("/households/{id}", response_model=HouseholdResponse)
-def get_household(id: str, db: Session = Depends(get_db)):
-    household = db.query(Household).filter(Household.id == id).first()
+def get_household(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    household = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not household:
         raise HTTPException(status_code=404, detail="Household not found")
     return household
 
 @router.put("/households/{id}")
-def update_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db)):
-    hh = db.query(Household).filter(Household.id == id).first()
+def update_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
     
@@ -545,8 +590,8 @@ def update_household(id: str, payload: Any = Body(...), db: Session = Depends(ge
     return hh
 
 @router.put("/households/{id}/verify")
-def verify_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db)):
-    hh = db.query(Household).filter(Household.id == id).first()
+def verify_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
     data = payload if isinstance(payload, dict) else {}
@@ -557,8 +602,8 @@ def verify_household(id: str, payload: Any = Body(...), db: Session = Depends(ge
     return hh
 
 @router.delete("/households/{id}")
-def delete_household(id: str, db: Session = Depends(get_db)):
-    hh = db.query(Household).filter(Household.id == id).first()
+def delete_household(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
     db.delete(hh)
@@ -566,11 +611,83 @@ def delete_household(id: str, db: Session = Depends(get_db)):
     return {"message": "Household deleted"}
 
 @router.post("/households")
-def create_household(payload: Any = Body(...), db: Session = Depends(get_db)):
+def create_household(payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     data = payload if isinstance(payload, dict) else {}
     hh = Household(**{k: v for k, v in data.items() if hasattr(Household, k)})
+    hh.tenant_id = ctx.effective_tenant_id
     db.add(hh)
     db.commit()
     db.refresh(hh)
     return hh
+
+
+# ─── GIS Boundary Layers (वडा तथा पालिका सिमाना) ───────────────────────────
+import os
+import json
+
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data"))
+BOUNDARIES_DIR = os.path.join(DATA_DIR, "boundaries")
+
+def _resolve_palika_slug(ctx: TenantContext, explicit_tenant: Optional[str] = None) -> str:
+    raw = explicit_tenant or ctx.tenant_subdomain or ctx.effective_tenant_id or ""
+    if hasattr(ctx, "allowed_tenant_ids") and ctx.allowed_tenant_ids:
+        raw += " " + " ".join(ctx.allowed_tenant_ids)
+    raw = raw.lower()
+    if any(k in raw for k in ("gaushala", "7c9f1805")):
+        return "gaushala"
+    if any(k in raw for k in ("benighat", "050b8da4")):
+        return "benighatrorang"
+    if any(k in raw for k in ("galchhi", "0cea29fe")):
+        return "galchhi"
+    if any(k in raw for k in ("khadadevi", "khandadevi", "94bf02d3")):
+        return "khadadevi"
+    if any(k in raw for k in ("helambu", "a18b3cde")):
+        return "helambu"
+    if any(k in raw for k in ("melamchi", "e4a22081", "c7a7e816")):
+        return "melamchi"
+    return "panchpokhari"
+
+@router.get("/ward-boundaries")
+def get_ward_boundaries(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    slug = _resolve_palika_slug(ctx, tenant_id or x_tenant_id)
+    ward_path = os.path.join(BOUNDARIES_DIR, f"{slug}_wards.json")
+    if os.path.exists(ward_path):
+        try:
+            with open(ward_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    default_path = os.path.join(DATA_DIR, "ward_boundaries_geojson.json")
+    if os.path.exists(default_path):
+        with open(default_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {"type": "FeatureCollection", "tenant_id": slug, "features": []}
+
+@router.get("/municipality-boundary")
+def get_municipality_boundary(
+    tenant_id: Optional[str] = Query(None),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    slug = _resolve_palika_slug(ctx, tenant_id or x_tenant_id)
+    outer_path = os.path.join(BOUNDARIES_DIR, f"{slug}_outer.json")
+    if os.path.exists(outer_path):
+        try:
+            with open(outer_path, "r", encoding="utf-8") as f:
+                feat = json.load(f)
+                return {
+                    "type": "FeatureCollection",
+                    "tenant_id": slug,
+                    "features": [feat]
+                }
+        except Exception:
+            pass
+    return {"type": "FeatureCollection", "tenant_id": slug, "features": []}
+
 

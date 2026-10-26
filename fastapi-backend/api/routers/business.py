@@ -8,6 +8,7 @@ import uuid
 from core.database import get_db
 from models.business import Business, BusinessRenewal, BusinessInspection, calculate_annual_fee
 from models.master_data import BusinessMaster
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/businesses",
@@ -30,9 +31,10 @@ def get_businesses(
     category: Optional[str] = None,
     ward: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Business).filter(Business.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(Business).filter(Business.deleted_at.is_(None)), Business)
     
     if status and status != "all":
         query = query.filter(Business.status == status)
@@ -60,9 +62,12 @@ def get_businesses(
 
 @router.get("/stats")
 @singular_router.get("/stats")
-def get_business_stats(db: Session = Depends(get_db)):
-    businesses = db.query(Business).filter(Business.deleted_at.is_(None)).all()
-    renewals = db.query(BusinessRenewal).all()
+def get_business_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    businesses = ctx.filter_query(db.query(Business).filter(Business.deleted_at.is_(None)), Business).all()
+    renewals = ctx.filter_query(db.query(BusinessRenewal), BusinessRenewal).all()
 
     total_registered = len(businesses)
     active_count = len([b for b in businesses if b.status not in ["रद्द", "निलम्बित"]])
@@ -103,15 +108,21 @@ def get_business_stats(db: Session = Depends(get_db)):
 
 @router.get("/renewals")
 @singular_router.get("/renewals")
-def get_renewals(db: Session = Depends(get_db)):
-    records = db.query(BusinessRenewal).order_by(desc(BusinessRenewal.created_at)).all()
+def get_renewals(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    records = ctx.filter_query(db.query(BusinessRenewal), BusinessRenewal).order_by(desc(BusinessRenewal.created_at)).all()
     return [r.to_dict() for r in records]
 
 
 @router.get("/inspections")
 @singular_router.get("/inspections")
-def get_inspections(db: Session = Depends(get_db)):
-    records = db.query(BusinessInspection).order_by(desc(BusinessInspection.created_at)).all()
+def get_inspections(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    records = ctx.filter_query(db.query(BusinessInspection), BusinessInspection).order_by(desc(BusinessInspection.created_at)).all()
     return [i.to_dict() for i in records]
 
 
@@ -126,10 +137,16 @@ def get_mdm_businesses(db: Session = Depends(get_db)):
 @router.post("/")
 @singular_router.post("")
 @singular_router.post("/")
-def create_business(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_business(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     bid = uuid.uuid4()
     count = db.query(Business).count() + 1
     reg_no = payload.get("registrationNo") or f"पाँ.था./व्य.दर्ता/२०८१-{String_pad(count)}"
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
+
     
     cap = float(payload.get("capitaInvestmentNPR") or payload.get("initialCapital") or payload.get("capital_investment_npr") or 500000)
     fee = float(payload.get("annualFeeNPR") or payload.get("annual_fee_npr") or payload.get("licenseFee") or calculate_annual_fee(cap))
@@ -155,6 +172,7 @@ def create_business(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
     new_biz = Business(
         id=bid,
+        tenant_id=eff_tenant,
         registration_no=reg_no,
         business_name=payload.get("businessName") or payload.get("business_name", ""),
         business_name_en=payload.get("businessNameEn", ""),
@@ -191,8 +209,12 @@ def String_pad(n: int) -> str:
 
 @router.get("/{id}")
 @singular_router.get("/{id}")
-def get_business(id: str, db: Session = Depends(get_db)):
-    biz = find_business(id, db)
+def get_business(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    biz = find_business(id, db, ctx)
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
     return biz.to_dict()
@@ -200,8 +222,13 @@ def get_business(id: str, db: Session = Depends(get_db)):
 
 @router.put("/{id}")
 @singular_router.put("/{id}")
-def update_business(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    biz = find_business(id, db)
+def update_business(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    biz = find_business(id, db, ctx)
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
 
@@ -233,8 +260,13 @@ def update_business(id: str, payload: Dict[str, Any], db: Session = Depends(get_
 
 @router.post("/{id}/renew")
 @singular_router.post("/{id}/renew")
-def renew_business(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    biz = find_business(id, db)
+def renew_business(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    biz = find_business(id, db, ctx)
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
 
@@ -261,6 +293,7 @@ def renew_business(id: str, payload: Dict[str, Any], db: Session = Depends(get_d
     # Create renewal record
     renewal = BusinessRenewal(
         id=uuid.uuid4(),
+        tenant_id=biz.tenant_id or ctx.effective_tenant_id,
         business_id=str(biz.id),
         registration_no=biz.registration_no,
         business_name=biz.business_name,
@@ -289,16 +322,25 @@ def renew_business(id: str, payload: Dict[str, Any], db: Session = Depends(get_d
 
 @router.post("/inspections")
 @singular_router.post("/inspections")
-def add_inspection(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def add_inspection(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     reg_no = payload.get("registrationNo", "")
     biz = None
     if payload.get("businessId"):
-        biz = find_business(payload["businessId"], db)
+        biz = find_business(payload["businessId"], db, ctx)
     elif reg_no:
-        biz = db.query(Business).filter(Business.registration_no == reg_no).first()
+        q = db.query(Business).filter(Business.registration_no == reg_no)
+        q = ctx.filter_query(q, Business)
+        biz = q.first()
+
+    eff_tenant = (biz.tenant_id if biz else None) or payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
 
     ins_rec = BusinessInspection(
         id=uuid.uuid4(),
+        tenant_id=eff_tenant,
         business_id=str(biz.id) if biz else (payload.get("businessId") or ""),
         registration_no=biz.registration_no if biz else reg_no,
         business_name=biz.business_name if biz else payload.get("businessName", ""),
@@ -329,8 +371,13 @@ def add_inspection(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 @router.post("/{id}/status")
 @singular_router.post("/{id}/status")
-def update_business_status(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    biz = find_business(id, db)
+def update_business_status(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    biz = find_business(id, db, ctx)
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
 
@@ -345,8 +392,12 @@ def update_business_status(id: str, payload: Dict[str, Any], db: Session = Depen
 
 @router.delete("/{id}")
 @singular_router.delete("/{id}")
-def delete_business(id: str, db: Session = Depends(get_db)):
-    biz = find_business(id, db)
+def delete_business(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    biz = find_business(id, db, ctx)
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
 
@@ -355,14 +406,14 @@ def delete_business(id: str, db: Session = Depends(get_db)):
     return {"deleted": True, "id": str(biz.id)}
 
 
-def find_business(id_or_reg: str, db: Session) -> Optional[Business]:
+def find_business(id_or_reg: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[Business]:
+    q = db.query(Business).filter(Business.deleted_at.is_(None))
+    if ctx:
+        q = ctx.filter_query(q, Business)
     try:
         tid = uuid.UUID(id_or_reg)
-        b = db.query(Business).filter(Business.id == tid, Business.deleted_at.is_(None)).first()
+        b = q.filter(Business.id == tid).first()
         if b: return b
     except ValueError:
         pass
-    return db.query(Business).filter(
-        Business.registration_no == id_or_reg,
-        Business.deleted_at.is_(None)
-    ).first()
+    return q.filter(Business.registration_no == id_or_reg).first()

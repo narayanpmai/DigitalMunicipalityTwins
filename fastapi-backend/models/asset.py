@@ -56,6 +56,8 @@ class PublicAsset(Base):
             "vendorName": self.vendor_name or "",
             "remarks": self.remarks or "",
             "inspections": self.inspections if isinstance(self.inspections, list) else [],
+            "tenantId": str(self.tenant_id) if self.tenant_id else None,
+            "tenant_id": str(self.tenant_id) if self.tenant_id else None,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
         }

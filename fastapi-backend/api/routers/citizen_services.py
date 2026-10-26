@@ -7,6 +7,7 @@ import uuid
 
 from core.database import get_db
 from models.citizen_services import CitizenService
+from core.tenant import TenantContext, get_tenant_context
 
 router = APIRouter(
     prefix="/api/v1/citizen-services",
@@ -144,9 +145,10 @@ def get_services(
     ward: Optional[str] = None,
     wardNumber: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(CitizenService)
+    query = ctx.filter_query(db.query(CitizenService), CitizenService)
     
     if status and status != "all":
         query = query.filter(CitizenService.status == normalize_status(status))
@@ -178,8 +180,11 @@ def get_services(
 
 
 @router.get("/stats")
-def get_services_stats(db: Session = Depends(get_db)):
-    records = db.query(CitizenService).all()
+def get_services_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    records = ctx.filter_query(db.query(CitizenService), CitizenService).all()
     total = len(records)
     
     status_counts: Dict[str, int] = {}
@@ -208,8 +213,15 @@ def get_service_templates():
 
 
 @router.get("/track/{application_no}")
-def track_service_application(application_no: str, db: Session = Depends(get_db)):
-    service = find_service(application_no, db)
+def track_service_application(
+    application_no: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    service = find_service(application_no, db, ctx)
+    if not service:
+        # Also try without ctx for public citizens who may track without tenant header
+        service = find_service(application_no, db, None)
     if not service:
         raise HTTPException(status_code=404, detail="Service application not found")
     return service.to_dict()
@@ -217,10 +229,15 @@ def track_service_application(application_no: str, db: Session = Depends(get_db)
 
 @router.post("")
 @router.post("/")
-def create_service_application(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_service_application(
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     sid = uuid.uuid4()
     count = db.query(CitizenService).count() + 1
     app_no = payload.get("applicationNo") or f"SVC-2081-{String_pad(count, 5)}"
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
 
     stype = normalize_service_type(payload.get("serviceType") or payload.get("type"))
     stat = normalize_status(payload.get("status", "applied"))
@@ -229,6 +246,7 @@ def create_service_application(payload: Dict[str, Any], db: Session = Depends(ge
 
     new_app = CitizenService(
         id=sid,
+        tenant_id=eff_tenant,
         application_no=app_no,
         service_type=stype,
         status=stat,
@@ -257,16 +275,25 @@ def String_pad(n: int, width: int = 5) -> str:
 
 
 @router.get("/{id}")
-def get_service_application(id: str, db: Session = Depends(get_db)):
-    service = find_service(id, db)
+def get_service_application(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    service = find_service(id, db, ctx)
     if not service:
         raise HTTPException(status_code=404, detail="Application not found")
     return service.to_dict()
 
 
 @router.put("/{id}")
-def update_service_application(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    service = find_service(id, db)
+def update_service_application(
+    id: str, 
+    payload: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    service = find_service(id, db, ctx)
     if not service:
         raise HTTPException(status_code=404, detail="Application not found")
 
@@ -293,8 +320,12 @@ def update_service_application(id: str, payload: Dict[str, Any], db: Session = D
 
 
 @router.delete("/{id}")
-def delete_service_application(id: str, db: Session = Depends(get_db)):
-    service = find_service(id, db)
+def delete_service_application(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    service = find_service(id, db, ctx)
     if not service:
         raise HTTPException(status_code=404, detail="Application not found")
 
@@ -303,15 +334,19 @@ def delete_service_application(id: str, db: Session = Depends(get_db)):
     return {"message": "Application deleted successfully", "id": str(service.id)}
 
 
-def find_service(id_or_appno: str, db: Session) -> Optional[CitizenService]:
+def find_service(id_or_appno: str, db: Session, ctx: Optional[TenantContext] = None) -> Optional[CitizenService]:
+    q = db.query(CitizenService)
+    if ctx:
+        q = ctx.filter_query(q, CitizenService)
     try:
         tid = uuid.UUID(id_or_appno)
-        s = db.query(CitizenService).filter(CitizenService.id == tid).first()
+        s = q.filter(CitizenService.id == tid).first()
         if s: return s
     except ValueError:
         pass
 
-    return db.query(CitizenService).filter(
+    return q.filter(
         (CitizenService.application_no == id_or_appno) |
         (CitizenService.certificate_no == id_or_appno)
     ).first()
+

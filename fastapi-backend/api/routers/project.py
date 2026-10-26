@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import get_tenant_context, TenantContext
 from models.project import Project
 import uuid
 from datetime import datetime
@@ -466,14 +467,18 @@ def _to_camel_project(p: Any) -> Dict[str, Any]:
     if "progressPercentage" in d and "physicalProgress" not in d: d["physicalProgress"] = d["progressPercentage"]
     return d
 
-def _get_projects_dataset(db: Session) -> List[Dict[str, Any]]:
+def _get_projects_dataset(db: Session, ctx: TenantContext) -> List[Dict[str, Any]]:
     try:
-        results = db.query(Project).all()
+        query = db.query(Project)
+        query = ctx.filter_query(query, Project)
+        results = query.all()
         if results and len(results) > 0:
             return [_to_camel_project(p) for p in results]
     except Exception:
         pass
-    return [_to_camel_project(p) for p in INITIAL_PROJECTS]
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return [_to_camel_project(p) for p in INITIAL_PROJECTS]
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -481,9 +486,9 @@ def _get_projects_dataset(db: Session) -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 @router.get("/stats/summary")
-def get_project_stats_summary(db: Session = Depends(get_db)):
+def get_project_stats_summary(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Return municipal project summary statistics for dashboard and reports"""
-    dataset = _get_projects_dataset(db)
+    dataset = _get_projects_dataset(db, ctx)
     total_projects = len(dataset)
     completed = len([p for p in dataset if p.get("status") == "completed"])
     ongoing = len([p for p in dataset if p.get("status") == "ongoing"])
@@ -515,13 +520,14 @@ def get_projects(
     search: Optional[str] = Query(None),
     wardNumber: Optional[int] = Query(None, alias="wardNumber"),
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """
     Get filtered list of municipal projects.
     Returns: { "data": [...projects], "total": count }
     """
-    dataset = _get_projects_dataset(db)
+    dataset = _get_projects_dataset(db, ctx)
 
     filtered = dataset
     if fiscalYear and fiscalYear.lower() != "all":
@@ -553,30 +559,35 @@ def get_projects(
 
 
 @router.get("/{id}")
-def get_project_by_id(id: str, db: Session = Depends(get_db)):
+def get_project_by_id(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get project details by UUID or projectCode"""
     try:
-        p = db.query(Project).filter((Project.id == id) | (Project.project_code == id)).first()
+        query = db.query(Project).filter((Project.id == id) | (Project.project_code == id))
+        query = ctx.filter_query(query, Project)
+        p = query.first()
         if p:
             return _to_camel_project(p)
     except Exception:
         pass
 
-    for p in INITIAL_PROJECTS:
-        if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
-            return _to_camel_project(p)
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        for p in INITIAL_PROJECTS:
+            if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
+                return _to_camel_project(p)
 
     raise HTTPException(status_code=404, detail="Project not found (आयोजना फेला परेन)")
 
 
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_project(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_project(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a new municipal project or agreement"""
     proj_id = str(uuid.uuid4())
     ward_num = int(data.get("wardNumber") or data.get("ward_number") or 1)
     short_hash = uuid.uuid4().hex[:4].upper()
-    proj_code = data.get("projectCode") or data.get("project_code") or f"PPK-W{ward_num:02d}-2081-{short_hash}"
+    eff_tenant = data.get("tenant_id") or data.get("tenantId") or (None if ctx.is_all else ctx.tenant_subdomain)
+    proj_code = data.get("projectCode") or data.get("project_code") or f"PRJ-W{ward_num:02d}-2081-{short_hash}"
     name = data.get("name") or "नयाँ विकास आयोजना"
     sector = data.get("sector") or "पूर्वाधार"
     budget_val = float(data.get("budget") or data.get("allocatedBudget") or 0.0)
@@ -584,6 +595,7 @@ def create_project(data: Dict[str, Any], db: Session = Depends(get_db)):
     try:
         db_p = Project(
             id=proj_id,
+            tenant_id=eff_tenant,
             project_code=proj_code,
             name=name,
             name_en=data.get("nameEn") or data.get("name_en"),
@@ -647,10 +659,17 @@ def create_project(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/{id}")
-def update_project(id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_project(
+    id: str, 
+    data: Dict[str, Any], 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Update project details, agreement, or monitoring progress"""
     try:
-        p = db.query(Project).filter((Project.id == id) | (Project.project_code == id)).first()
+        query = db.query(Project).filter((Project.id == id) | (Project.project_code == id))
+        query = ctx.filter_query(query, Project)
+        p = query.first()
         if p:
             if "name" in data: p.name = data["name"]
             if "wardNumber" in data: p.ward_number = int(data["wardNumber"])
@@ -686,19 +705,26 @@ def update_project(id: str, data: Dict[str, Any], db: Session = Depends(get_db))
     except Exception:
         pass
 
-    for p in INITIAL_PROJECTS:
-        if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
-            p.update(data)
-            return _to_camel_project(p)
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        for p in INITIAL_PROJECTS:
+            if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
+                p.update(data)
+                return _to_camel_project(p)
 
-    return {"message": "Updated successfully", "id": id}
+    raise HTTPException(status_code=404, detail="Project not found")
 
 
 @router.delete("/{id}")
-def delete_project(id: str, db: Session = Depends(get_db)):
+def delete_project(
+    id: str, 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Delete a project record"""
     try:
-        p = db.query(Project).filter((Project.id == id) | (Project.project_code == id)).first()
+        query = db.query(Project).filter((Project.id == id) | (Project.project_code == id))
+        query = ctx.filter_query(query, Project)
+        p = query.first()
         if p:
             db.delete(p)
             db.commit()
@@ -706,6 +732,10 @@ def delete_project(id: str, db: Session = Depends(get_db)):
     except Exception:
         pass
 
-    global INITIAL_PROJECTS
-    INITIAL_PROJECTS = [p for p in INITIAL_PROJECTS if p["id"] != id and p.get("projectCode") != id]
-    return {"success": True, "message": "Project deleted successfully"}
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        global INITIAL_PROJECTS
+        INITIAL_PROJECTS = [p for p in INITIAL_PROJECTS if p["id"] != id and p.get("projectCode") != id]
+        return {"success": True, "message": "Project deleted successfully"}
+
+    raise HTTPException(status_code=404, detail="Project not found")
+

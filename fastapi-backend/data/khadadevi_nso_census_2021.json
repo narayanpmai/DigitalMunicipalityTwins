@@ -1,0 +1,263 @@
+{
+  "source": {
+    "agency": "राष्ट्रिय तथ्याङ्क कार्यालय (National Statistics Office - NSO Nepal)",
+    "census_year": "२०७८ (Census 2021)",
+    "url": "https://censusresults.nsonepal.gov.np/population?province=3&district=32&municipality=6",
+    "title": "National Population and Housing Census 2021 - Khandadevi Rural Municipality",
+    "last_verified": "2026-10-16"
+  },
+  "overview": {
+    "municipality_name_np": "खाँडादेवी गाउँपालिका",
+    "municipality_name_en": "Khandadevi Rural Municipality",
+    "district": "रामेछाप (32)",
+    "province": "बागमती प्रदेश (3)",
+    "total_population": 19312,
+    "male_population": 8995,
+    "female_population": 10317,
+    "male_percent": 46.58,
+    "female_percent": 53.42,
+    "sex_ratio": 87.19,
+    "total_households": 5501,
+    "average_household_size": 3.51,
+    "population_density": 128,
+    "annual_growth_rate": -2.77,
+    "area_sq_km": 150.07,
+    "elevation_meters": "४६५ मी. देखि १,९८५ मी.",
+    "literacy_rate": 62.2,
+    "male_literacy_rate": 72.2,
+    "female_literacy_rate": 53.5
+  },
+  "wards": [
+    {
+      "ward_no": 1,
+      "name_np": "राकाथुम",
+      "total": 2602,
+      "male": 1225,
+      "female": 1377,
+      "percent": 13.47
+    },
+    {
+      "ward_no": 2,
+      "name_np": "मझुवा",
+      "total": 1476,
+      "male": 666,
+      "female": 810,
+      "percent": 7.64
+    },
+    {
+      "ward_no": 3,
+      "name_np": "भीरपानी (सित्खा/गाल्पा)",
+      "total": 2377,
+      "male": 1091,
+      "female": 1286,
+      "percent": 12.31
+    },
+    {
+      "ward_no": 4,
+      "name_np": "आमडाँडा (भीरपानी/पकरबास)",
+      "total": 3128,
+      "male": 1503,
+      "female": 1625,
+      "percent": 16.2
+    },
+    {
+      "ward_no": 5,
+      "name_np": "पकरबास",
+      "total": 1949,
+      "male": 912,
+      "female": 1037,
+      "percent": 10.09
+    },
+    {
+      "ward_no": 6,
+      "name_np": "माकादुम (गाउँपालिका केन्द्र)",
+      "total": 1601,
+      "male": 743,
+      "female": 858,
+      "percent": 8.29
+    },
+    {
+      "ward_no": 7,
+      "name_np": "खाँडादेवी (ऐतिहासिक मन्दिर)",
+      "total": 3003,
+      "male": 1405,
+      "female": 1598,
+      "percent": 15.55
+    },
+    {
+      "ward_no": 8,
+      "name_np": "गागल–भदौरे",
+      "total": 1722,
+      "male": 795,
+      "female": 927,
+      "percent": 8.92
+    },
+    {
+      "ward_no": 9,
+      "name_np": "पिङ्खुरी",
+      "total": 1454,
+      "male": 655,
+      "female": 799,
+      "percent": 7.53
+    }
+  ],
+  "religion": [
+    {
+      "name_np": "हिन्दु",
+      "name_en": "Hindu",
+      "percentage": 70.8,
+      "population": 13672,
+      "color": "#ef4444"
+    },
+    {
+      "name_np": "बौद्ध",
+      "name_en": "Bouddha",
+      "percentage": 28.4,
+      "population": 5478,
+      "color": "#f59e0b"
+    },
+    {
+      "name_np": "इसाई",
+      "name_en": "Christian",
+      "percentage": 0.4,
+      "population": 84,
+      "color": "#3b82f6"
+    },
+    {
+      "name_np": "प्रकृति",
+      "name_en": "Prakriti",
+      "percentage": 0.2,
+      "population": 42,
+      "color": "#10b981"
+    },
+    {
+      "name_np": "किराँत",
+      "name_en": "Kirat",
+      "percentage": 0.2,
+      "population": 36,
+      "color": "#8b5cf6"
+    }
+  ],
+  "caste_ethnicity": [
+    {
+      "name_np": "तामाङ",
+      "name_en": "Tamang",
+      "percentage": 26.0,
+      "population": 5018
+    },
+    {
+      "name_np": "क्षेत्री",
+      "name_en": "Kshetri",
+      "percentage": 25.7,
+      "population": 4964
+    },
+    {
+      "name_np": "नेवाः (नेवार)",
+      "name_en": "Newar",
+      "percentage": 20.7,
+      "population": 3995
+    },
+    {
+      "name_np": "माझी",
+      "name_en": "Majhi",
+      "percentage": 8.0,
+      "population": 1539
+    },
+    {
+      "name_np": "मगर",
+      "name_en": "Magar",
+      "percentage": 6.9,
+      "population": 1327
+    },
+    {
+      "name_np": "परियार (दलित)",
+      "name_en": "Pariyar",
+      "percentage": 3.0,
+      "population": 581
+    },
+    {
+      "name_np": "विश्वकर्मा (दलित)",
+      "name_en": "Bishwokarma",
+      "percentage": 2.4,
+      "population": 473
+    },
+    {
+      "name_np": "पहाडी ब्राह्मण",
+      "name_en": "Brahman - Hill",
+      "percentage": 2.3,
+      "population": 446
+    },
+    {
+      "name_np": "मिजार (दलित)",
+      "name_en": "Mijar",
+      "percentage": 1.9,
+      "population": 368
+    },
+    {
+      "name_np": "थामी",
+      "name_en": "Thami",
+      "percentage": 1.2,
+      "population": 224
+    },
+    {
+      "name_np": "अन्य समुदाय",
+      "name_en": "Others",
+      "percentage": 1.9,
+      "population": 377
+    }
+  ],
+  "mother_tongue": [
+    {
+      "name_np": "नेपाली भाषा",
+      "name_en": "Nepali",
+      "percentage": 47.9,
+      "speakers": 9254
+    },
+    {
+      "name_np": "तामाङ भाषा",
+      "name_en": "Tamang",
+      "percentage": 25.7,
+      "speakers": 4956
+    },
+    {
+      "name_np": "नेपालभाषा (नेवारी)",
+      "name_en": "Nepalbhasha",
+      "percentage": 13.6,
+      "speakers": 2617
+    },
+    {
+      "name_np": "माझी भाषा",
+      "name_en": "Majhi",
+      "percentage": 6.5,
+      "speakers": 1256
+    },
+    {
+      "name_np": "मगर ढुट भाषा",
+      "name_en": "Magar Dhut",
+      "percentage": 4.6,
+      "speakers": 888
+    },
+    {
+      "name_np": "थामी भाषा",
+      "name_en": "Thami",
+      "percentage": 1.1,
+      "speakers": 213
+    },
+    {
+      "name_np": "अन्य भाषा",
+      "name_en": "Others",
+      "percentage": 0.6,
+      "speakers": 128
+    }
+  ],
+  "housing_and_amenities": {
+    "households_with_toilet_percent": 98.5,
+    "households_without_toilet_percent": 1.5,
+    "owned_house_percent": 97.8,
+    "rented_house_percent": 1.8,
+    "birth_registration_under_5_percent": 78.4,
+    "disability_prevalence_percent": 2.64,
+    "male_household_head_percent": 68.2,
+    "female_household_head_percent": 31.8
+  }
+}

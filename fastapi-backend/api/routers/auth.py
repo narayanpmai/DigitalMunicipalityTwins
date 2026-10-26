@@ -64,9 +64,12 @@ def require_roles(*roles: UserRole):
 
 @router.post("/login")
 def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
-    """Email र password प्रयोग गरी लगइन गर्नुहोस् (Multi-tenant safe)"""
+    """Email र password प्रयोग गरी लगइन गर्नुहोस् (Multi-tenant safe & isolated)"""
     email = body.email.strip().lower()
-    tenant_subdomain = body.tenant_subdomain
+    raw_subdomain = (body.tenant_subdomain or "").strip().lower()
+
+    # Normalize "all", "central", empty to None
+    tenant_subdomain = raw_subdomain if raw_subdomain not in ("all", "default", "central", "") else None
 
     # Normalize gov.np emails → @p5digital.local
     lookup_email = email
@@ -74,53 +77,31 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     if re.match(r".*@[a-z0-9]+\.gov\.np$", email):
         lookup_email = re.sub(r"@[^@]+$", "@p5digital.local", email)
 
-    # Resolve tenant UUID from subdomain
-    resolved_tenant_id: Optional[str] = None
-    if tenant_subdomain and tenant_subdomain not in ("all", ""):
-        tenant = db.query(Tenant).filter(Tenant.subdomain == tenant_subdomain).first()
-        if tenant:
-            resolved_tenant_id = tenant.id
-
-    user: Optional[User] = None
-
-    # Tier 1: exact match (email + tenant_id)
-    if resolved_tenant_id:
-        user = db.query(User).filter(
-            User.email == lookup_email,
-            User.tenant_id == resolved_tenant_id,
-            User.deleted_at == None
+    # 1. Resolve targeted tenant if specified
+    tenant_obj: Optional[Tenant] = None
+    if tenant_subdomain:
+        tenant_obj = db.query(Tenant).filter(
+            (Tenant.subdomain == tenant_subdomain) | (Tenant.id == tenant_subdomain)
         ).first()
-        if not user and lookup_email != email:
-            user = db.query(User).filter(
-                User.email == email,
-                User.tenant_id == resolved_tenant_id,
-                User.deleted_at == None
-            ).first()
+        if not tenant_obj:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="तोकिएको पालिका प्रणालीमा फेला परेन। कृपया मान्य पालिका छान्नुहोस्।"
+            )
 
-    # Tier 2: global user (NULL tenant)
-    if not user:
-        user = db.query(User).filter(User.email == lookup_email, User.deleted_at == None).first()
-        if not user and lookup_email != email:
-            user = db.query(User).filter(User.email == email, User.deleted_at == None).first()
-        if user:
-            user_tenant = user.tenant_id
-            is_global = not user_tenant or user_tenant == "all"
-            is_same_tenant = resolved_tenant_id and user_tenant == resolved_tenant_id
-            is_subdomain_match = tenant_subdomain and user_tenant == tenant_subdomain
-            no_tenant_selected = not resolved_tenant_id
-            if not (is_global or is_same_tenant or is_subdomain_match or no_tenant_selected):
-                user = None
-
-    # Tier 3: legacy subdomain-as-tenant_id
-    if not user and tenant_subdomain and tenant_subdomain != "all":
+    # 2. Look up user by email
+    user: Optional[User] = db.query(User).filter(
+        User.email == lookup_email,
+        User.deleted_at == None
+    ).first()
+    if not user and lookup_email != email:
         user = db.query(User).filter(
-            User.email == lookup_email,
-            User.tenant_id == tenant_subdomain,
+            User.email == email,
             User.deleted_at == None
         ).first()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="गलत इमेल वा पासवर्ड।")
 
     if not user.is_active:
         raise HTTPException(
@@ -129,7 +110,40 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
         )
 
     if not verify_password(body.password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="गलत इमेल वा पासवर्ड।")
+
+    # 3. Multi-tenant isolation check
+    user_tenant = (user.tenant_id or "").strip()
+    is_super_admin = user.role in ("super_admin", "it_admin") or user_tenant in ("all", "*")
+
+    # Find home tenant record for user (if municipal user)
+    user_home_tenant: Optional[Tenant] = None
+    if user_tenant and not is_super_admin:
+        user_home_tenant = db.query(Tenant).filter(
+            (Tenant.id == user_tenant) | (Tenant.subdomain == user_tenant)
+        ).first()
+
+    user_tenant_subdomain = "all" if is_super_admin else (
+        user_home_tenant.subdomain if user_home_tenant else (user_tenant or None)
+    )
+
+    # If user selected a specific tenant, ensure their account belongs to this tenant!
+    if tenant_obj and not is_super_admin:
+        target_uuid = str(tenant_obj.id)
+        target_subdomain = str(tenant_obj.subdomain).lower()
+
+        matches = (
+            not user_tenant or
+            user_tenant.lower() == target_subdomain or
+            user_tenant == target_uuid or
+            (user_home_tenant and (user_home_tenant.id == tenant_obj.id or user_home_tenant.subdomain.lower() == target_subdomain))
+        )
+        if not matches:
+            palika_name = tenant_obj.name_np or target_subdomain
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"तपाईंको खाता यस पालिका ({palika_name}) मा दर्ता गरिएको छैन। कृपया आफ्नो सम्बन्धित पालिका छान्नुहोस्।"
+            )
 
     # Update last login
     from datetime import datetime
@@ -138,11 +152,16 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     user.last_login_ip = client_ip
     db.add(user)
 
+    # Effective tenant subdomain for response
+    resp_tenant_subdomain = tenant_obj.subdomain if tenant_obj else (user_tenant_subdomain or "all")
+    effective_tenant_id = user_home_tenant.id if user_home_tenant else (user.tenant_id or "all")
+
     # Generate tokens
     payload = {
         "sub": str(user.id), "email": user.email,
         "role": user.role, "wardNumber": user.ward_number,
-        "tenantId": str(user.tenant_id) if user.tenant_id else None
+        "tenantId": effective_tenant_id,
+        "tenantSubdomain": resp_tenant_subdomain
     }
     access_token = create_access_token(payload)
     refresh_token = create_refresh_token(payload)
@@ -151,16 +170,12 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     user.refresh_token = hashed_refresh
     db.commit()
 
-    # Resolve tenant subdomain for response
-    resp_tenant_subdomain = tenant_subdomain
-    if not resp_tenant_subdomain and user.tenant_id and user.tenant_id != "all":
-        tenant_obj = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
-        if tenant_obj:
-            resp_tenant_subdomain = tenant_obj.subdomain
-
     return {
         "accessToken": access_token,
+        "access_token": access_token,
         "refreshToken": refresh_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
         "tenantSubdomain": resp_tenant_subdomain,
         "user": {
             "id": user.id,
@@ -168,7 +183,7 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
             "fullName": user.full_name,
             "role": user.role,
             "wardNumber": user.ward_number,
-            "tenantId": user.tenant_id,
+            "tenantId": effective_tenant_id,
             "tenantSubdomain": resp_tenant_subdomain,
         }
     }
