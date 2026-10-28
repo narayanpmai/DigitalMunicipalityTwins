@@ -24,20 +24,23 @@ app = FastAPI(
 async def tenant_middleware(request: Request, call_next):
     # 1. Try to get tenant from explicit header (best for frontend/backend separated domains)
     tenant_header = request.headers.get("x-tenant-id")
-    if tenant_header:
-        request.state.tenant = tenant_header
+    if tenant_header and tenant_header.strip():
+        request.state.tenant = tenant_header.strip()
         return await call_next(request)
 
     # 2. Fallback to Host header
-    host = request.headers.get("host", "")
+    raw_host = request.headers.get("host", "")
+    host = raw_host.split(":")[0].strip()
     subdomain = "default"
     if host:
-        # e.g. "panchpokhari.digitaltwin.gov.np:8000" -> "panchpokhari"
-        parts = host.split(".")
-        if len(parts) > 1 and parts[0] not in ["www", "api"]:
-            subdomain = parts[0]
-        elif parts[0].startswith("localhost") or parts[0].startswith("127"):
-            subdomain = "localhost"
+        import re
+        is_ip = bool(re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host)) or host in ("localhost", "127.0.0.1")
+        if not is_ip:
+            parts = host.split(".")
+            if len(parts) > 1 and parts[0] not in ["www", "api", "app", "digitaltwin", "portal", "admin", "dev", "stage"]:
+                subdomain = parts[0]
+        else:
+            subdomain = "default"
             
     request.state.tenant = subdomain
     return await call_next(request)
@@ -166,6 +169,10 @@ app.include_router(ai_assistant.chat_alias_router)
 
 from api.routers import land_classification
 app.include_router(land_classification.router)
+
+from api.routers import backup
+app.include_router(backup.router)
+app.include_router(backup.settings_backup_router)
 
 
 uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")

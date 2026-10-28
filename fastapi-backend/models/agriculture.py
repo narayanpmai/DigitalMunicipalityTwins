@@ -68,6 +68,7 @@ class AgricultureProfile(Base):
     __tablename__ = 'agriculture_profiles'
     __table_args__ = {'extend_existing': True}
     
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id = Column(String, ForeignKey('household_registries.id'), name='household_id')
     land_area_hectares = Column(Numeric(10, 2), default=0, name='landAreaHectares')
@@ -118,6 +119,7 @@ class AgricultureVetMedicine(Base):
     __tablename__ = 'agriculture_vet_medicines'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     medicine_name = Column(String(255), nullable=False, name='medicineName')
     batch_number = Column(String(100), nullable=True, name='batchNumber')
@@ -146,6 +148,7 @@ class AgricultureVetDistribution(Base):
     __tablename__ = 'agriculture_vet_distributions'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     medicine_id = Column(PG_UUID(as_uuid=True), nullable=False, name='medicineId')
     farmer_id = Column(String(100), nullable=False, name='farmerId')
@@ -173,6 +176,7 @@ class VetAiRecord(Base):
     __tablename__ = 'agriculture_vet_ai_records'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     farmer_name = Column(String(100), nullable=False, name='farmerName')
     contact_phone = Column(String(20), nullable=True, name='contactPhone')
@@ -209,6 +213,7 @@ class VetVaccinationRecord(Base):
     __tablename__ = 'agriculture_vet_vaccinations'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     vaccine_name = Column(String(100), nullable=False, name='vaccineName')
     ear_tag_number = Column(String(50), nullable=False, name='earTagNumber')
@@ -243,6 +248,7 @@ class VetDiagnosisRecord(Base):
     __tablename__ = 'agriculture_vet_diagnoses'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     farmer_name = Column(String(100), nullable=False, name='farmerName')
     ward_number = Column(Integer, default=1, name='wardNumber')
@@ -279,6 +285,7 @@ class AgricultureData(Base):
     __tablename__ = 'agriculture_data'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ward_number = Column(Integer, nullable=False, name='wardNumber')
     crop_name = Column(String, nullable=False, name='cropName')

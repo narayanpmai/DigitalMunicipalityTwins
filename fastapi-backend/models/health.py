@@ -15,6 +15,7 @@ class HealthFacility(Base):
     """health_facilities — camelCase DB columns"""
     __tablename__ = 'health_facilities'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     name = Column(String)
     name_en = Column(String, nullable=True, name='nameEn')
@@ -41,6 +42,7 @@ class AmbulanceContact(Base):
     """health_ambulances — snake_case DB columns"""
     __tablename__ = 'health_ambulances'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     driver_name = Column(String)
     vehicle_number = Column(String)
@@ -58,6 +60,7 @@ class PatientRecord(Base):
     """health_patients — snake_case DB columns"""
     __tablename__ = 'health_patients'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     patient_no = Column(String, unique=True)
     first_name = Column(String)
@@ -91,6 +94,7 @@ class IpdAdmission(Base):
     """health_ipd_admissions — snake_case DB columns"""
     __tablename__ = 'health_ipd_admissions'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     admission_no = Column(String, nullable=True)
     patient_id = Column(String, nullable=True)
@@ -119,6 +123,7 @@ class HealthDischargeSummary(Base):
     """health_discharge_summaries"""
     __tablename__ = 'health_discharge_summaries'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     discharge_no = Column(String, nullable=True)
     admission_id = Column(String)
@@ -143,6 +148,7 @@ class LabTestRecord(Base):
     """health_lab_tests — snake_case DB columns"""
     __tablename__ = 'health_lab_tests'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     test_order_no = Column(String, nullable=True)
     patient_id = Column(String, nullable=True)
@@ -169,6 +175,7 @@ class HealthPrescription(Base):
     """health_prescriptions — mixed case DB columns"""
     __tablename__ = 'health_prescriptions'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     rx_number = Column(String, nullable=True)
     patient_id = Column(String, nullable=True)
@@ -201,6 +208,7 @@ class HealthDhis2Report(Base):
     """health_dhis2_reports — snake_case DB columns"""
     __tablename__ = 'health_dhis2_reports'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     fiscal_year = Column(String)
     month_nepali = Column(String)
@@ -232,6 +240,7 @@ class MedicineStockItem(Base):
     """health_medicines — camelCase DB columns"""
     __tablename__ = 'health_medicines'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     medicine_name = Column(String, name='medicineName')
     generic_name = Column(String, nullable=True, name='genericName')
@@ -253,6 +262,7 @@ class HealthSupplier(Base):
     """health_suppliers — snake_case DB columns"""
     __tablename__ = 'health_suppliers'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     supplier_name = Column(String)
     contact_person = Column(String, nullable=True)
@@ -280,6 +290,7 @@ class HealthPurchase(Base):
     """health_purchases — snake_case DB columns"""
     __tablename__ = 'health_purchases'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     grn_no = Column(String, nullable=True)
     invoice_no = Column(String, nullable=True)
@@ -312,6 +323,7 @@ class HealthPurchase(Base):
 class MedicineBatch(Base):
     __tablename__ = 'health_medicine_batches'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     medicine_name = Column(String)
     generic_name = Column(String, nullable=True)
@@ -343,6 +355,7 @@ class HealthPosSale(Base):
     """health_pos_sales — snake_case DB columns"""
     __tablename__ = 'health_pos_sales'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     bill_no = Column(String, nullable=True)
     patient_no = Column(String, nullable=True)
@@ -380,6 +393,7 @@ class HealthPosReturn(Base):
     """health_pos_returns — Bill returns / refunds / credit notes"""
     __tablename__ = 'health_pos_returns'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     return_no = Column(String, unique=True)
     original_bill_no = Column(String, index=True, nullable=False)
@@ -399,6 +413,7 @@ class HealthInsuranceClaim(Base):
     """health_insurance_claims — snake_case DB columns"""
     __tablename__ = 'health_insurance_claims'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     claim_no = Column(String, nullable=True)
     policy_number = Column(String)
@@ -433,6 +448,7 @@ class HealthStockTransfer(Base):
     """health_stock_transfers — snake_case DB columns"""
     __tablename__ = 'health_stock_transfers'
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     transfer_no = Column(String, nullable=True)
     transfer_type = Column(String)

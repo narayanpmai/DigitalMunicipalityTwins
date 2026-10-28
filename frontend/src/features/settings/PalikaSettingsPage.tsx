@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import {
   Building2,
@@ -11,6 +12,7 @@ import {
   Globe,
   MapPin,
   Calendar,
+  CalendarRange,
   AlertTriangle,
   Upload,
   RefreshCw,
@@ -862,6 +864,22 @@ export const PalikaSettingsPage: React.FC = () => {
                 <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', display: 'block' }}>
                   दर्ता, चलानी र योजना कार्यक्रमहरूमा यही आर्थिक वर्ष स्वतः प्रयोग हुनेछ।
                 </span>
+                <Link
+                  to="/app/admin?tab=fiscal-year"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.8rem',
+                    color: '#2563eb',
+                    fontWeight: 700,
+                    marginTop: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <CalendarRange size={14} />
+                  <span>आर्थिक वर्षको विस्तृत सेटअप (पात्रो, मिति तथा नयाँ वर्ष थप्न यहाँ जानुहोस्) &rarr;</span>
+                </Link>
               </div>
 
               <div>

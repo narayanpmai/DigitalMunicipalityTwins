@@ -10,30 +10,45 @@ export const getAuthToken = (): string | null => {
 const SYSTEM_SUBDOMAINS = ['www', 'digitaltwin', 'app', 'portal', 'admin', 'dashboard', 'api', 'dev', 'stage', 'smartptrm', 'localhost'];
 
 export const getTenantId = (): string => {
-  // 1. Try from stored user object (set at login from JWT)
+  // 1. URL parameter (?tenant=... or ?palika=...) takes highest precedence
+  if (typeof window !== 'undefined') {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTenant = params.get('tenant') || params.get('palika');
+      if (urlTenant && urlTenant !== 'all' && !SYSTEM_SUBDOMAINS.includes(urlTenant.toLowerCase())) {
+        return urlTenant.toLowerCase();
+      }
+    } catch {}
+  }
+
+  // 2. Explicitly selected tenant in localStorage (set by Palika switcher or Super Admin switcher)
+  // This allows super-admins and cross-tenant users to switch municipalities in the UI
+  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('tenant_id') : null;
+  if (stored && stored !== 'all' && stored !== '' && !SYSTEM_SUBDOMAINS.includes(stored.toLowerCase())) {
+    return stored.toLowerCase();
+  }
+
+  // 3. User assigned home tenant from JWT / login profile
   try {
     const storedUser = localStorage.getItem('p5_user');
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       const userTenant = parsed?.tenantSubdomain || parsed?.tenant_subdomain || parsed?.tenantId || parsed?.tenant_id || parsed?.subdomain;
       if (userTenant && userTenant !== 'all' && !SYSTEM_SUBDOMAINS.includes(userTenant.toLowerCase())) {
-        return userTenant;
+        return userTenant.toLowerCase();
       }
     }
   } catch {}
 
-  // 2. Use the explicitly selected tenant subdomain (set at login or palika switcher)
-  const stored = localStorage.getItem('tenant_id');
-  if (stored && stored !== 'all' && stored !== '' && !SYSTEM_SUBDOMAINS.includes(stored.toLowerCase())) {
-    return stored;
-  }
-
-  // 3. Dynamic extraction from subdomain (for multi-subdomain deployments, e.g. gaushala.smartptrm.com)
+  // 4. Dynamic extraction from subdomain (e.g. khadadevi.smartptrm.com)
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    if (parts.length > 2 && !SYSTEM_SUBDOMAINS.includes(parts[0].toLowerCase())) {
-      return parts[0];
+    // Do not parse IP addresses (e.g. 103.140.0.154) as subdomains
+    if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      const parts = hostname.split('.');
+      if (parts.length > 2 && !SYSTEM_SUBDOMAINS.includes(parts[0].toLowerCase())) {
+        return parts[0].toLowerCase();
+      }
     }
   }
 
@@ -135,7 +150,34 @@ const fixMojibake = (data: any): any => {
     (error) => {
       if (error.response?.status === 401) {
         console.warn('Unauthorized request - session may have expired.');
-        toast.error('सेसन समाप्त भयो। कृपया फेरि लगइन गर्नुहोस्।', { id: 'session-expired' });
+        const hadToken = !!localStorage.getItem('p5_token');
+
+        // Clean up expired or corrupted session keys so requests don't keep failing
+        localStorage.removeItem('p5_token');
+        localStorage.removeItem('p5_user');
+        localStorage.removeItem('p5_role');
+        localStorage.removeItem('p5_email');
+        localStorage.removeItem('p5_name');
+
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isAdminRoute =
+          currentPath.startsWith('/app') ||
+          currentPath.startsWith('/super-admin') ||
+          currentPath.startsWith('/admin');
+
+        // Only show session expired toast if the user was on an admin/protected route
+        // and had an expired token. Never show on public portal routes.
+        if (isAdminRoute && hadToken) {
+          toast.error('सेसन समाप्त भयो। कृपया फेरि लगइन गर्नुहोस्।', { id: 'session-expired' });
+          setTimeout(() => {
+            if (
+              window.location.pathname.startsWith('/app') ||
+              window.location.pathname.startsWith('/super-admin')
+            ) {
+              window.location.href = '/login';
+            }
+          }, 1500);
+        }
       } else if (error.response?.status === 403) {
         toast.error('तपाईंलाई यो कार्य गर्न अनुमति छैन।', { id: 'forbidden' });
       } else if (error.response?.status >= 500) {

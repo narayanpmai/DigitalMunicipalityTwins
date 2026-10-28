@@ -34,17 +34,17 @@ class TenantContext:
 
             # Aliases for known palikas
             if any(k in raw_ids for k in ("gaushala", "gaushalamun", "7c9f1805-7907-4955-a138-813b9aa61499")):
-                raw_ids.extend(["gaushala", "gaushalamun", "gaushala_municipality", "7c9f1805-7907-4955-a138-813b9aa61499"])
+                raw_ids.extend(["gaushala", "gaushalamun", "gaushala_municipality", "7c9f1805-7907-4955-a138-813b9aa61499", "767297b4-deac-430b-8b32-f1010bb0f12d"])
             if any(k in raw_ids for k in ("benighatrorang", "benighat", "050b8da4-61d2-49d0-b788-0729be064b26")):
                 raw_ids.extend(["benighatrorang", "benighat", "benighat_rorang", "050b8da4-61d2-49d0-b788-0729be064b26"])
             if any(k in raw_ids for k in ("khadadevi", "khandadevi", "94bf02d3-9c23-4d84-a346-6461f414bcda")):
                 raw_ids.extend(["khadadevi", "khandadevi", "94bf02d3-9c23-4d84-a346-6461f414bcda"])
             if any(k in raw_ids for k in ("galchhi", "0cea29fe-1247-4ce3-840d-3a3d3d0323d6")):
                 raw_ids.extend(["galchhi", "0cea29fe-1247-4ce3-840d-3a3d3d0323d6"])
-            if any(k in raw_ids for k in ("helambu", "a18b3cde-92be-5f38-bf00-2b76f15fa017")):
-                raw_ids.extend(["helambu", "a18b3cde-92be-5f38-bf00-2b76f15fa017"])
-            if any(k in raw_ids for k in ("melamchi", "e4a22081-43e7-40ae-b081-dec13630100d", "c7a7e816-96bd-4f13-82c9-1ac60a9de34d")):
-                raw_ids.extend(["melamchi", "melamchimunicipality", "e4a22081-43e7-40ae-b081-dec13630100d", "c7a7e816-96bd-4f13-82c9-1ac60a9de34d"])
+            if any(k in raw_ids for k in ("helambu", "a18b3cde-92be-5f38-bf00-2b76f15fa017", "82b27265-df98-47aa-a47d-5350ce5ffbbc")):
+                raw_ids.extend(["helambu", "a18b3cde-92be-5f38-bf00-2b76f15fa017", "82b27265-df98-47aa-a47d-5350ce5ffbbc"])
+            if any(k in raw_ids for k in ("melamchi", "e4a22081-43e7-40ae-b081-dec13630100d", "c7a7e816-96bd-4f13-82c9-1ac60a9de34d", "31f59d30-75b5-4553-b0f3-200314bd3716")):
+                raw_ids.extend(["melamchi", "melamchimunicipality", "e4a22081-43e7-40ae-b081-dec13630100d", "c7a7e816-96bd-4f13-82c9-1ac60a9de34d", "31f59d30-75b5-4553-b0f3-200314bd3716"])
             if any(k in raw_ids for k in ("panchpokhari", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06")):
                 raw_ids.extend(["panchpokhari", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"])
 
@@ -57,6 +57,8 @@ class TenantContext:
         if self.is_all:
             return query
         col = getattr(model_or_column, 'tenant_id', model_or_column)
+        if "panchpokhari" in self.allowed_tenant_ids:
+            return query.filter((col.in_(self.allowed_tenant_ids)) | (col.is_(None)))
         return query.filter(col.in_(self.allowed_tenant_ids))
 
 
@@ -73,7 +75,11 @@ def get_tenant_context(
     if payload and payload.get("sub"):
         current_user = db.query(User).filter(User.id == payload.get("sub"), User.deleted_at == None).first()
 
-    requested_tenant = (tenant_id or x_tenant_id or "").strip().lower()
+    state_tenant = getattr(request.state, "tenant", None) if hasattr(request, "state") else None
+    raw_req = tenant_id or x_tenant_id or state_tenant or ""
+    requested_tenant = str(raw_req).strip().lower()
+    if requested_tenant in ("default", "localhost", "103"):
+        requested_tenant = ""
 
     # 2. If user is authenticated
     if current_user:
@@ -101,11 +107,11 @@ def get_tenant_context(
 
     # 3. Unauthenticated request (e.g. public portal, GIS, badapatra)
     if not requested_tenant or requested_tenant in ("all", "*", "central", ""):
-        # Default public tenant is panchpokhari or global
+        # Default public tenant is panchpokhari
         t = db.query(Tenant).filter(Tenant.subdomain == "panchpokhari").first()
         if t:
             return TenantContext(tenant=t, tenant_id=str(t.id), tenant_subdomain=t.subdomain)
-        return TenantContext(is_all=True)
+        return TenantContext(tenant_id="panchpokhari", tenant_subdomain="panchpokhari")
 
     t = db.query(Tenant).filter(
         (Tenant.subdomain == requested_tenant) | (Tenant.id == requested_tenant)

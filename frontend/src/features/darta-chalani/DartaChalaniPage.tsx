@@ -29,7 +29,9 @@ import {
   HelpCircle,
   Download,
   Hash,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportToExcel } from '../../utils/exportUtils';
 import { BsCalendarModal } from '../../components/common/BsCalendarModal';
 import { adToBs, toNepaliDigits, toEnglishDigits } from '../../utils/nepaliCalendar';
 import { useTenant } from '../../context/TenantContext';
@@ -630,6 +632,58 @@ export const DartaChalaniPage: React.FC = () => {
     };
   }, [dartaList, chalaniList]);
 
+  const handleExportExcel = () => {
+    const dateStr = new Date().toISOString().slice(0, 10);
+    if (activeTab === 'darta') {
+      const columns = [
+        { header: 'क्र.सं.', key: '__index__', width: 8 },
+        { header: 'दर्ता नं.', key: 'registrationNo', width: 16 },
+        { header: 'दर्ता मिति (BS)', key: 'registeredDate', width: 16 },
+        { header: 'दर्ता मिति (AD)', key: 'registeredDateAd', width: 16 },
+        { header: 'पठाउने कार्यालय / व्यक्ति', key: 'senderName', width: 28 },
+        { header: 'ठेगाना', key: 'senderAddress', width: 22 },
+        { header: 'सम्पर्क नं.', key: 'senderContact', width: 16 },
+        { header: 'प्राप्त चलानी नं.', key: 'senderChalaniNo', width: 18 },
+        { header: 'पत्र संख्या', key: 'letterRefNo', width: 16 },
+        { header: 'पत्रको विषय', key: 'subject', width: 36 },
+        { header: 'तोकिएको शाखा', key: 'assignedBranch', width: 26, format: (v: any, r: any) => v || r.department || '-' },
+        { header: 'कर्मचारी', key: 'assignedOfficer', width: 20 },
+        { header: 'स्थिति', key: 'status', width: 16 },
+        { header: 'स्वीकृति स्थिति', key: 'approvalStatus', width: 16 },
+        { header: 'प्रमाणीकरण कोड', key: 'verificationCode', width: 18 },
+      ];
+      exportToExcel({
+        filename: `Panchpokhari_Darta_Register_${dateStr}`,
+        sheetName: 'दर्ता_किताब',
+        columns,
+        data: filteredDarta,
+      });
+    } else {
+      const columns = [
+        { header: 'क्र.सं.', key: '__index__', width: 8 },
+        { header: 'चलानी नं.', key: 'dispatchNo', width: 16 },
+        { header: 'चलानी मिति (BS)', key: 'dispatchDate', width: 16 },
+        { header: 'चलानी मिति (AD)', key: 'dispatchDateAd', width: 16 },
+        { header: 'पाउने कार्यालय / व्यक्ति', key: 'receiverName', width: 28, format: (v: any, r: any) => v || r.receiver || '-' },
+        { header: 'ठेगाना', key: 'receiverAddress', width: 22 },
+        { header: 'सम्पर्क नं.', key: 'receiverContact', width: 16 },
+        { header: 'पत्र संख्या', key: 'letterRefNo', width: 16 },
+        { header: 'पत्रको विषय', key: 'subject', width: 36 },
+        { header: 'पठाउने शाखा', key: 'department', width: 26 },
+        { header: 'हस्ताक्षरकर्ता', key: 'signedBy', width: 22 },
+        { header: 'स्थिति', key: 'status', width: 16 },
+        { header: 'स्वीकृति स्थिति', key: 'approvalStatus', width: 16 },
+        { header: 'प्रमाणीकरण कोड', key: 'verificationCode', width: 18 },
+      ];
+      exportToExcel({
+        filename: `Panchpokhari_Chalani_Register_${dateStr}`,
+        sheetName: 'चलानी_किताब',
+        columns,
+        data: filteredChalani,
+      });
+    }
+  };
+
   const handleExportCsv = () => {
     if (activeTab === 'darta') {
       const headers = ['दर्ता नं.', 'दर्ता मिति (BS)', 'दर्ता मिति (AD)', 'पठाउने कार्यालय/व्यक्ति', 'ठेगाना', 'सम्पर्क नं.', 'प्राप्त चलानी नं.', 'पत्र संख्या', 'विषय', 'तोकिएको शाखा', 'कर्मचारी', 'स्थिति', 'स्वीकृति स्थिति', 'प्रमाणीकरण कोड'];
@@ -843,25 +897,48 @@ export const DartaChalaniPage: React.FC = () => {
           </button>
 
           <button
-            onClick={handleExportCsv}
+            onClick={handleExportExcel}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              padding: '0.65rem 1.15rem',
+              borderRadius: '10px',
+              border: '1px solid #059669',
+              cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(16,185,129,0.3)',
+              transition: 'all 0.2s ease',
+            }}
+            title="वर्तमान सूची एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} />
+            <span>एक्सेल (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={handleExportCsv}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
               backgroundColor: 'rgba(255,255,255,0.14)',
               color: '#ffffff',
               fontWeight: 600,
               fontSize: '0.88rem',
-              padding: '0.65rem 1rem',
+              padding: '0.65rem 0.95rem',
               borderRadius: '10px',
               border: '1px solid rgba(255,255,255,0.25)',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
-            title="वर्तमान सूची Excel/CSV मा डाउनलोड गर्नुहोस्"
+            title="वर्तमान सूची CSV मा डाउनलोड गर्नुहोस्"
           >
-            <Download size={16} />
-            <span>CSV निर्यात</span>
+            <Download size={15} />
+            <span>CSV</span>
           </button>
         </div>
       </div>

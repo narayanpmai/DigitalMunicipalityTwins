@@ -41,6 +41,8 @@ import {
   toNepaliDigits,
 } from '../../utils/nepaliCalendar';
 import { NEPAL_ADMIN_STRUCTURE } from '../../utils/nepalAdministrativeData';
+import { BackupManagement } from '../admin/BackupManagement';
+import { DataExportCenter } from '../admin/DataExportCenter';
 
 interface Tenant {
   id: string;
@@ -342,18 +344,40 @@ export const SuperAdminPage: React.FC = () => {
 
     const token = localStorage.getItem('p5_token');
     const activeFy = updatedList.find((x) => x.isActive);
+    const activeName = activeFy ? activeFy.name : '२०८१/०८२';
+    localStorage.setItem('p5_active_fiscal_year', activeName);
+
     try {
       await axios.post(
         '/api/v1/settings/bulk',
         {
           fiscal_years_list: JSON.stringify(updatedList),
-          active_fiscal_year: activeFy ? activeFy.name : '२०८१/०८२',
+          active_fiscal_year: activeName,
         },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
+      axios.post('/api/v1/fiscal-years/activate', { year: activeName }).catch(() => {});
     } catch (err) {
       // Non-blocking warning
     }
+
+    window.dispatchEvent(new CustomEvent('fiscalYearChanged', { detail: { fiscalYear: activeName } }));
+    window.dispatchEvent(
+      new CustomEvent('fiscalYearsListUpdated', {
+        detail: {
+          fiscalYears: updatedList.map((x) => ({
+            id: x.id || `fy-${x.name}`,
+            name: x.name,
+            startDateBs: x.startBs,
+            endDateBs: x.endBs,
+            startDateAd: x.startAd,
+            endDateAd: x.endAd,
+            isCurrent: x.isActive,
+          })),
+          activeFiscalYear: activeName,
+        },
+      })
+    );
   };
 
   // Fiscal Year Preset Selector with Auto-Date Calculations
@@ -713,6 +737,8 @@ export const SuperAdminPage: React.FC = () => {
     localStorage.removeItem('p5_role');
     localStorage.removeItem('p5_email');
     localStorage.removeItem('p5_name');
+    localStorage.removeItem('tenant_id');
+    localStorage.removeItem('active_palika');
     sessionStorage.clear();
     window.location.href = '/index.html';
   };
@@ -2678,59 +2704,61 @@ export const SuperAdminPage: React.FC = () => {
               TAB 5: SYSTEM SETTINGS
              ══════════════════════════════════════════════════════════ */}
           {activeTab === 'settings' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.5rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>
-                केन्द्रीय प्रणाली सेटिङ (Global System Settings)
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
-                क्लाउड पूर्वाधार, PostGIS डाटाबेस अटोमेसन, SMS गेटवे तथा सुरक्षा नीतिहरू
-              </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.5rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>
+                  केन्द्रीय प्रणाली सेटिङ (Global System Settings)
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
+                  क्लाउड पूर्वाधार, SMS गेटवे तथा प्लेटफर्म ब्रान्डिङ
+                </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '650px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
-                    प्लेटफर्म ब्रान्डिङ नाम
-                  </label>
-                  <input
-                    type="text"
-                    value={systemSettings.platformName}
-                    onChange={(e) => setSystemSettings({ ...systemSettings, platformName: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '650px' }}>
                   <div>
-                    <strong style={{ fontSize: '0.88rem', display: 'block', color: '#0f172a' }}>दैनिक PostGIS स्वचालित ब्याकअप (Automated Backup)</strong>
-                    <small style={{ color: '#64748b' }}>scripts/backup_db.ps1 स्वचालित रोटेसन (७ दिनको स्न्यापसट सुरक्षित)</small>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      प्लेटफर्म ब्रान्डिङ नाम
+                    </label>
+                    <input
+                      type="text"
+                      value={systemSettings.platformName}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, platformName: e.target.value })}
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    />
                   </div>
-                  <span style={{ color: '#059669', fontWeight: 700, fontSize: '0.82rem' }}>सक्रिय</span>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
-                  <div>
-                    <strong style={{ fontSize: '0.88rem', display: 'block', color: '#0f172a' }}>आपतकालीन SMS गेटवे (NTC / Sparrow SMS)</strong>
-                    <small style={{ color: '#64748b' }}>विपद् पूर्वसूचनाको नागरिक प्रसारणका लागि जडित गेटवे</small>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+                    <div>
+                      <strong style={{ fontSize: '0.88rem', display: 'block', color: '#0f172a' }}>आपतकालीन SMS गेटवे (NTC / Sparrow SMS)</strong>
+                      <small style={{ color: '#64748b' }}>विपद् पूर्वसूचनाको नागरिक प्रसारणका लागि जडित गेटवे</small>
+                    </div>
+                    <span style={{ color: '#059669', fontWeight: 700, fontSize: '0.82rem' }}>सक्रिय</span>
                   </div>
-                  <span style={{ color: '#059669', fontWeight: 700, fontSize: '0.82rem' }}>सक्रिय</span>
-                </div>
 
-                <button
-                  onClick={() => showToast('प्रणाली सेटिङहरू सुरक्षित गरियो!')}
-                  style={{
-                    padding: '10px 24px',
-                    backgroundColor: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '9999px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    alignSelf: 'flex-start',
-                    boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
-                  }}
-                >
-                  सेटिङ सुरक्षित गर्नुहोस्
-                </button>
+                  <button
+                    onClick={() => showToast('प्रणाली सेटिङहरू सुरक्षित गरियो!')}
+                    style={{
+                      padding: '10px 24px',
+                      backgroundColor: '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '9999px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      alignSelf: 'flex-start',
+                      boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+                    }}
+                  >
+                    सेटिङ सुरक्षित गर्नुहोस्
+                  </button>
+                </div>
+              </div>
+
+              {/* Full Database Backup & Disaster Recovery Module */}
+              <BackupManagement />
+
+              {/* Centralized Municipal Data Export Hub */}
+              <div style={{ marginTop: '2rem' }}>
+                <DataExportCenter />
               </div>
             </div>
           )}

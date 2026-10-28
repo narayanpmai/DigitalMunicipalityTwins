@@ -14,6 +14,7 @@ class WasteVehicle(Base):
     __tablename__ = 'waste_vehicles'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     license_plate = Column(String(50), nullable=False, name='licensePlate')
     driver_name = Column(String(100), nullable=True, name='driverName')
@@ -42,6 +43,7 @@ class WasteRate(Base):
     __tablename__ = 'waste_rates'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     waste_type = Column(String(100), nullable=False, name='wasteType')
     rate_per_kg = Column(Numeric(10, 2), nullable=False, name='ratePerKg')
@@ -65,6 +67,7 @@ class WasteSchedule(Base):
     __tablename__ = 'waste_schedules'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     ward_no = Column(Integer, default=1, name='wardNo')
     route_code = Column(String, nullable=True, name='routeCode')
@@ -106,6 +109,7 @@ class DisposalSite(Base):
     __tablename__ = 'waste_disposal_sites'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     site_name = Column(String, nullable=False, name='siteName')
     site_type = Column(String, default='compost_plant', name='siteType')
@@ -144,6 +148,7 @@ class SanitationWorker(Base):
     __tablename__ = 'waste_sanitation_workers'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     worker_code = Column(String, nullable=True, name='workerCode')
     full_name = Column(String, nullable=False, name='fullName')
@@ -184,6 +189,7 @@ class WasteAlert(Base):
     __tablename__ = 'waste_alerts'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     reporter_id = Column(PG_UUID(as_uuid=True), nullable=True, name='reporter_id')
     issue_type = Column(String(255), nullable=True, name='issueType')
@@ -215,6 +221,7 @@ class WasteWallet(Base):
     __tablename__ = 'waste_wallets'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id = Column(PG_UUID(as_uuid=True), nullable=True, name='household_id')
     balance = Column(Numeric(12, 2), default=0.0)
@@ -242,6 +249,7 @@ class WasteTransaction(Base):
     __tablename__ = 'waste_transactions'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id = Column(PG_UUID(as_uuid=True), nullable=True, name='household_id')
     waste_rate_id = Column(PG_UUID(as_uuid=True), nullable=True, name='waste_rate_id')

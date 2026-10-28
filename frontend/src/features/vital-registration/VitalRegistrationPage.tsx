@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { NepaliDatePicker } from '../../components/common/NepaliDatePicker';
 import * as XLSX from 'xlsx';
+import { exportVitalEventsData } from '../../utils/exportUtils';
 import ssisFallbackData from '../../data/ssis_vital_report.json';
 import {
   Users,
@@ -652,24 +653,68 @@ export const VitalRegistrationPage: React.FC = () => {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setShowAddModal(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                padding: '0.65rem 1.25rem',
-                background: '#38bdf8',
-                border: 'none',
-                borderRadius: '10px',
-                color: '#0f172a',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.85rem'
-              }}
-            >
-              <Plus size={16} /> नयाँ घटना दर्ता
-            </button>
+            <>
+              <button
+                onClick={() => exportVitalEventsData(filteredRegistry, 'xlsx')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.65rem 1.15rem',
+                  background: '#10b981',
+                  border: '1px solid #059669',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)',
+                  transition: 'all 0.2s'
+                }}
+                title="वर्तमान खोज तथा फिल्टर अनुसार घटना दर्ता लगत एक्सेलमा निर्यात गर्नुहोस्"
+              >
+                <FileSpreadsheet size={16} /> घटना लगत Excel (.xlsx)
+              </button>
+              <button
+                onClick={() => exportVitalEventsData(filteredRegistry, 'csv')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.65rem 1rem',
+                  background: 'rgba(255, 255, 255, 0.18)',
+                  border: '1px solid rgba(255, 255, 255, 0.35)',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  backdropFilter: 'blur(8px)',
+                  transition: 'all 0.2s'
+                }}
+                title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+              >
+                <Download size={15} /> CSV
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.65rem 1.25rem',
+                  background: '#38bdf8',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#0f172a',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '0.85rem'
+                }}
+              >
+                <Plus size={16} /> नयाँ घटना दर्ता
+              </button>
+            </>
           )}
 
           <button

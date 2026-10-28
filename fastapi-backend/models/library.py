@@ -55,6 +55,7 @@ class DigitalBook(Base):
     def to_dict(self):
         return {
             "id": str(self.id),
+            "tenant_id": self.tenant_id,
             "bookId": self.book_id or f"LIB-{str(self.id)[:6]}",
             "book_id": self.book_id or f"LIB-{str(self.id)[:6]}",
             "isbn": self.isbn or "",
@@ -118,6 +119,7 @@ class BorrowRecord(Base):
     def to_dict(self, book_title: str = None):
         return {
             "id": str(self.id),
+            "tenant_id": self.tenant_id,
             "bookId": str(self.book_id) if self.book_id else "",
             "book_id": str(self.book_id) if self.book_id else "",
             "bookTitle": book_title or "पालिका पुस्तक",

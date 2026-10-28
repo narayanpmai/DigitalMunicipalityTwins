@@ -176,21 +176,7 @@ const COMMON_DEFAULTS: Partial<PublicSettings> = {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 const getEffectiveTenantId = (): string => {
-  try {
-    const storedUser = localStorage.getItem('p5_user');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      const userTenant = user?.tenantSubdomain || user?.tenant_subdomain || user?.tenantId || user?.tenant_id || user?.subdomain;
-      if (userTenant && userTenant !== 'all' && !['www', 'digitaltwin', 'app', 'localhost'].includes(userTenant.toLowerCase())) {
-        return userTenant;
-      }
-    }
-  } catch {}
-  const stored = localStorage.getItem('tenant_id');
-  if (stored && stored !== 'all' && stored !== '' && !['www', 'digitaltwin', 'app', 'localhost'].includes(stored.toLowerCase())) {
-    return stored;
-  }
-  return getTenantId(); // falls back to getTenantId
+  return getTenantId();
 };
 
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -201,6 +187,7 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const setTenantId = (newId: string) => {
     localStorage.setItem('tenant_id', newId);
     setTenantIdState(newId);
+    window.dispatchEvent(new CustomEvent('tenantChanged', { detail: { tenantId: newId } }));
   };
 
   const fetchSettings = useCallback(async () => {

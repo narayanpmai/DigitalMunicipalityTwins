@@ -486,9 +486,15 @@ def _get_projects_dataset(db: Session, ctx: TenantContext) -> List[Dict[str, Any
 # ---------------------------------------------------------------------------
 
 @router.get("/stats/summary")
-def get_project_stats_summary(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def get_project_stats_summary(
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """Return municipal project summary statistics for dashboard and reports"""
     dataset = _get_projects_dataset(db, ctx)
+    if fiscalYear and fiscalYear.lower() != "all":
+        dataset = [p for p in dataset if str(p.get("fiscalYear", "")).strip() == fiscalYear.strip()]
     total_projects = len(dataset)
     completed = len([p for p in dataset if p.get("status") == "completed"])
     ongoing = len([p for p in dataset if p.get("status") == "ongoing"])
@@ -656,6 +662,56 @@ def create_project(data: Dict[str, Any], db: Session = Depends(get_db), ctx: Ten
         }
         INITIAL_PROJECTS.insert(0, new_item)
         return _to_camel_project(new_item)
+
+
+@router.post("/bulk-import")
+def bulk_import_projects(
+    items: List[Dict[str, Any]],
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """
+    Bulk import projects from SuTRA or planning Excel sheets.
+    """
+    imported = 0
+    eff_tenant = ctx.effective_tenant_id
+    for item in items:
+        proj_id = item.get("id") or str(uuid.uuid4())
+        proj_code = item.get("projectCode") or item.get("project_code") or f"PRJ-{uuid.uuid4().hex[:6].upper()}"
+        budget_val = float(item.get("budget") or item.get("allocatedBudget") or 0)
+        
+        db_p = Project(
+            id=proj_id,
+            tenant_id=eff_tenant,
+            project_code=proj_code,
+            name=item.get("name") or "योजना",
+            name_en=item.get("nameEn") or item.get("name_en"),
+            description=item.get("description", ""),
+            ward_number=int(item.get("wardNumber") or item.get("ward_number") or 1),
+            sector=item.get("sector") or "पूर्वाधार विकास",
+            status=item.get("status") or "planned",
+            budget=budget_val,
+            funding_source=item.get("fundingSource") or item.get("budgetSource") or "गाउँपालिका आन्तरिक स्रोत",
+            fiscal_year=item.get("fiscalYear") or item.get("fiscal_year") or "२०८१/०८२",
+            contractor=item.get("contractor") or item.get("committeeName") or "उपभोक्ता समिति",
+            progress_percentage=float(item.get("progressPercentage") or item.get("physicalProgress") or 0),
+            beneficiary_count=int(item.get("beneficiaryCount") or 0),
+            level=item.get("level") or "गाउँपालिकास्तरीय",
+            committee_name=item.get("committeeName") or item.get("committee_name"),
+            committee_chair=item.get("committeeChair") or item.get("committee_chair"),
+            palika_grant=float(item.get("palikaGrant") or budget_val),
+            community_contribution=float(item.get("communityContribution") or 0),
+            total_agreement_amount=float(item.get("totalAgreementAmount") or budget_val),
+            paid_amount=float(item.get("paidAmount") or 0),
+            agreement_status=item.get("agreementStatus") or "सम्झौता सम्पन्न",
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.add(db_p)
+        imported += 1
+
+    db.commit()
+    return {"success": True, "message": f"Successfully imported {imported} projects", "count": imported}
 
 
 @router.put("/{id}")

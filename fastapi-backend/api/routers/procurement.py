@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.procurement import Procurement
 
 STATUS_MAP_IN = {
@@ -78,9 +79,13 @@ def get_procurements(
     sector: Optional[str] = None,
     wardNo: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Procurement).filter(Procurement.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(Procurement).filter(Procurement.deleted_at.is_(None)), Procurement)
+    if fiscalYear and fiscalYear != "all":
+        query = query.filter(Procurement.fiscal_year == fiscalYear)
     if status and status != "all":
         query = query.filter(Procurement.status == normalize_status(status))
     if method and method != "all":
@@ -102,8 +107,15 @@ def get_procurements(
 
 
 @router.get("/stats")
-def get_procurement_stats(db: Session = Depends(get_db)):
-    tenders = db.query(Procurement).filter(Procurement.deleted_at.is_(None)).all()
+def get_procurement_stats(
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    query = ctx.filter_query(db.query(Procurement).filter(Procurement.deleted_at.is_(None)), Procurement)
+    if fiscalYear and fiscalYear != "all":
+        query = query.filter(Procurement.fiscal_year == fiscalYear)
+    tenders = query.all()
     
     total_est = sum(float(t.estimated_amount or 0) for t in tenders)
     total_awarded = sum(float(t.awarded_amount or 0) for t in tenders if t.awarded_amount)

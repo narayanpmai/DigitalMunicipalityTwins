@@ -34,7 +34,9 @@ import {
   UserCheck,
   Send,
   Ban,
+  Download,
 } from 'lucide-react';
+import { exportBusinessesData } from '../../utils/exportUtils';
 import {
   businessApi,
   Business,
@@ -294,15 +296,29 @@ export const BusinessRegistrationPage: React.FC<BusinessRegistrationPageProps> =
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
-            onClick={() => window.print()}
+            onClick={() => exportBusinessesData(filteredList, 'xlsx')}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.65rem 1.15rem', background: 'rgba(255,255,255,0.12)',
+              padding: '0.65rem 1.15rem', background: '#10b981',
+              border: '1px solid #059669', borderRadius: '10px',
+              color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)',
+            }}
+            title="हालको खोज/फिल्टर अनुसार व्यवसाय लगत एक्सेलमा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} /> एक्सेल (.xlsx) निर्यात
+          </button>
+          <button
+            onClick={() => exportBusinessesData(filteredList, 'csv')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.65rem 1rem', background: 'rgba(255,255,255,0.15)',
               border: '1px solid rgba(255,255,255,0.25)', borderRadius: '10px',
               color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer',
             }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
           >
-            <FileSpreadsheet size={16} /> प्रतिवेदन निर्यात
+            <Download size={15} /> CSV
           </button>
           {isAdmin && (
             <button

@@ -14,6 +14,7 @@ class School(Base):
     __tablename__ = 'schools'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     name_en = Column(String, nullable=True, name='nameEn')
@@ -85,6 +86,7 @@ class Student(Base):
     __tablename__ = 'students'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     full_name = Column(String, nullable=False, name='fullName')
     admission_no = Column(String, nullable=True, name='admissionNo')
@@ -125,6 +127,7 @@ class Teacher(Base):
     __tablename__ = 'teachers'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     full_name = Column(String, nullable=False, name='fullName')
     school_id = Column(String, nullable=True, name='schoolId')
@@ -161,6 +164,7 @@ class EducationAttendance(Base):
     __tablename__ = 'education_attendance'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     date = Column(String, nullable=True)
     user_name = Column(String, nullable=True, name='userName')
@@ -194,6 +198,7 @@ class EducationNutrition(Base):
     __tablename__ = 'education_nutrition'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     school_name = Column(String, nullable=False, name='schoolName')
     ward_number = Column(Integer, default=1, name='wardNumber')
@@ -224,6 +229,7 @@ class Assessment(Base):
     __tablename__ = 'assessments'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id = Column(String, nullable=True, name='studentId')
     student_name = Column(String, nullable=False, name='studentName')

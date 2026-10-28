@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.planning import Plan
 
 router = APIRouter(
@@ -65,9 +66,13 @@ def get_plans(
     sector: Optional[str] = None,
     ward: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Plan).filter(Plan.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(Plan).filter(Plan.deleted_at.is_(None)), Plan)
+    if fiscalYear and fiscalYear != "all":
+        query = query.filter(Plan.fiscal_year == fiscalYear)
 
     if type and type != "all":
         query = query.filter(Plan.type == normalize_plan_type(type))
@@ -95,8 +100,15 @@ def get_plans(
 
 
 @router.get("/stats")
-def get_planning_stats(db: Session = Depends(get_db)):
-    plans = db.query(Plan).filter(Plan.deleted_at.is_(None)).all()
+def get_planning_stats(
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    query = ctx.filter_query(db.query(Plan).filter(Plan.deleted_at.is_(None)), Plan)
+    if fiscalYear and fiscalYear != "all":
+        query = query.filter(Plan.fiscal_year == fiscalYear)
+    plans = query.all()
     total = len(plans)
     
     total_budget = sum(float(p.estimated_budget or 0) for p in plans)

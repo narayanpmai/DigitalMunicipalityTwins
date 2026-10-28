@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional, Dict, Any
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.revenue import Revenue
 from schemas.revenue import (
     RevenueSchema,
@@ -258,15 +259,17 @@ SEED_RECORDS = [
 ]
 
 
-def _get_db_or_seed(db: Session):
-    """Try DB first, fall back to seed data."""
+def _get_db_or_seed(db: Session, ctx: TenantContext):
+    """Try DB first, fall back to seed data only for Panchpokhari."""
     try:
-        results = db.query(Revenue).limit(200).all()
+        results = ctx.filter_query(db.query(Revenue), Revenue).limit(200).all()
         if results:
             return [_model_to_dict(r) for r in results]
     except Exception:
         pass
-    return SEED_RECORDS
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return SEED_RECORDS
+    return []
 
 
 def _model_to_dict(r: Revenue) -> dict:
@@ -309,11 +312,12 @@ def get_revenues(
     search: Optional[str] = Query(None),
     paymentMethod: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
 ):
     """
     राजस्व अभिलेखहरू सूची — List all revenue records with optional filters.
     """
-    records = _get_db_or_seed(db)
+    records = _get_db_or_seed(db, ctx)
 
     if type:
         records = [r for r in records if type.split(' ')[0] in (r.get('type') or '')]
@@ -342,11 +346,12 @@ def get_revenues(
 def get_revenue_stats(
     fiscalYear: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
 ):
     """
     राजस्व तथ्यांक — Revenue statistics with breakdown by type, method, and ward.
     """
-    records = _get_db_or_seed(db)
+    records = _get_db_or_seed(db, ctx)
 
     if fiscalYear:
         records = [r for r in records if (r.get('fiscalYear') or '') == fiscalYear]
@@ -591,6 +596,7 @@ def verify_epayment(
 
         net = round(float(req.netAmount), 2)
         db_record = Revenue(
+            tenant_id=ctx.effective_tenant_id,
             id=str(uuid.uuid4()),
             receipt_no=receipt_no,
             type=req.revenueHead,
@@ -656,6 +662,7 @@ def verify_epayment(
 def create_revenue_record(
     data: RevenueCreate,
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
 ):
     """
     नगद/म्यानुअल राजस्व रसिद दर्ता — Manual cash receipt registration.
@@ -670,6 +677,7 @@ def create_revenue_record(
 
     try:
         db_record = Revenue(
+            tenant_id=ctx.effective_tenant_id,
             id=str(uuid.uuid4()),
             receipt_no=receipt_no,
             type=data.type,

@@ -119,8 +119,34 @@ import { LandClassificationPage } from './features/land-classification/LandClass
 import { SecurityAuditPage } from './features/security-audit/SecurityAuditPage';
 import { DocumentArchivePage } from './features/document-archive/DocumentArchivePage';
 import { Citizen360Page } from './features/citizen-360/Citizen360Page';
+import { WashPage } from './features/wash/WashPage';
+import { RoadsPage } from './features/roads/RoadsPage';
+import { EnvironmentPage } from './features/environment/EnvironmentPage';
+import { MarketInspectionPage } from './features/market-inspection/MarketInspectionPage';
+import { CflgSportsPage } from './features/cflg-sports/CflgSportsPage';
+import { SocialAuditPage } from './features/social-audit/SocialAuditPage';
 
-const ADMIN_ROLES = ['super_admin', 'admin', 'cao', 'it_admin', 'planning_officer', 'ward_secretary'];
+const ADMIN_ROLES = [
+  'super_admin',
+  'admin',
+  'cao',
+  'it_admin',
+  'planning_officer',
+  'revenue_officer',
+  'ward_secretary',
+  'ward_user',
+  'disaster_officer',
+  'tourism_officer',
+  'data_entry',
+  'health_officer',
+  'medical_officer',
+  'lab_technician',
+  'pharmacist',
+  'education_officer',
+  'agriculture_officer',
+  'accountant',
+  'engineer',
+];
 const SUPER_ADMIN_ROLES = ['super_admin', 'it_admin'];
 
 export const App: React.FC = () => {
@@ -387,6 +413,20 @@ export const App: React.FC = () => {
           <Route path="/strategic-priorities.html" element={<Navigate to="/strategic-priorities" replace />} />
           <Route path="/women-children-senior.html" element={<Navigate to="/women-children-senior" replace />} />
           <Route path="/project-agreement.html" element={<Navigate to="/project-agreement" replace />} />
+
+          {/* Comprehensive Sectoral Modules (Public Citizen Access) */}
+          <Route path="/wash" element={<ErrorBoundary><WashPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/wash.html" element={<Navigate to="/wash" replace />} />
+          <Route path="/roads" element={<ErrorBoundary><RoadsPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/roads.html" element={<Navigate to="/roads" replace />} />
+          <Route path="/environment" element={<ErrorBoundary><EnvironmentPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/environment.html" element={<Navigate to="/environment" replace />} />
+          <Route path="/market-inspection" element={<ErrorBoundary><MarketInspectionPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/market-inspection.html" element={<Navigate to="/market-inspection" replace />} />
+          <Route path="/cflg-sports" element={<ErrorBoundary><CflgSportsPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/cflg-sports.html" element={<Navigate to="/cflg-sports" replace />} />
+          <Route path="/social-audit" element={<ErrorBoundary><SocialAuditPage isPublic={true} /></ErrorBoundary>} />
+          <Route path="/social-audit.html" element={<Navigate to="/social-audit" replace />} />
         </Route>
 
         {/* ADMIN DASHBOARD ROUTES */}
@@ -417,6 +457,8 @@ export const App: React.FC = () => {
           {/* Admin Feature Routes under /app/... */}
           <Route path="/app/progress-reports" element={<ErrorBoundary><ProgressReportsPage /></ErrorBoundary>} />
           <Route path="/app/admin" element={<ErrorBoundary><AdminConsolePage /></ErrorBoundary>} />
+          <Route path="/app/fiscal-years" element={<ErrorBoundary><AdminConsolePage defaultTab="fiscal-year" /></ErrorBoundary>} />
+          <Route path="/fiscal-years" element={<ErrorBoundary><AdminConsolePage defaultTab="fiscal-year" /></ErrorBoundary>} />
           <Route path="/app/mdm" element={<ErrorBoundary><MasterDataManagement /></ErrorBoundary>} />
           <Route path="/app/e-office" element={<ErrorBoundary><EOfficeManagement /></ErrorBoundary>} />
           <Route path="/app/project-lifecycle" element={<ErrorBoundary><ProjectLifecycle /></ErrorBoundary>} />
@@ -493,6 +535,15 @@ export const App: React.FC = () => {
           <Route path="/app/citizen-360" element={<ErrorBoundary><Citizen360Page /></ErrorBoundary>} />
           <Route path="/citizen-360" element={<Navigate to="/app/citizen-360" replace />} />
           <Route path="/app/c360" element={<Navigate to="/app/citizen-360" replace />} />
+
+          {/* New Comprehensive Sectoral Modules (Admin Management) */}
+          <Route path="/app/wash" element={<ErrorBoundary><WashPage isPublic={false} /></ErrorBoundary>} />
+          <Route path="/app/roads" element={<ErrorBoundary><RoadsPage isPublic={false} /></ErrorBoundary>} />
+          <Route path="/app/environment" element={<ErrorBoundary><EnvironmentPage isPublic={false} /></ErrorBoundary>} />
+          <Route path="/app/market-inspection" element={<ErrorBoundary><MarketInspectionPage isPublic={false} /></ErrorBoundary>} />
+          <Route path="/app/cflg-sports" element={<ErrorBoundary><CflgSportsPage isPublic={false} /></ErrorBoundary>} />
+          <Route path="/app/social-audit" element={<ErrorBoundary><SocialAuditPage isPublic={false} /></ErrorBoundary>} />
+
           {/* Fallback for any other route inside admin */}
           <Route path="/app/*" element={<Navigate to="/app" replace />} />
         </Route>

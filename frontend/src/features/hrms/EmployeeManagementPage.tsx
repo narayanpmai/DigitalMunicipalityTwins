@@ -27,7 +27,9 @@ import {
   Table as TableIcon,
   BadgeCheck,
   RefreshCw,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportEmployeesData } from '../../utils/exportUtils';
 import { branchesApi, Branch } from '../../api/branches';
 import { ROLE_DEFINITIONS } from '../super-admin/SuperAdminPage';
 
@@ -570,6 +572,49 @@ export const EmployeeManagementPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => exportEmployeesData(filteredEmployees, 'xlsx')}
+            style={{
+              padding: '0.8rem 1.3rem',
+              background: '#10b981',
+              color: '#ffffff',
+              borderRadius: '10px',
+              border: '1px solid #059669',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 10px rgba(16, 185, 129, 0.25)',
+              transition: 'all 0.2s',
+            }}
+            title="हालको खोज/फिल्टर अनुसार कर्मचारी लगत एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={18} /> एक्सेल (.xlsx) निर्यात
+          </button>
+
+          <button
+            onClick={() => exportEmployeesData(filteredEmployees, 'csv')}
+            style={{
+              padding: '0.8rem 1.1rem',
+              background: '#f8fafc',
+              color: '#334155',
+              borderRadius: '10px',
+              border: '1.5px solid #cbd5e1',
+              fontWeight: 600,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'all 0.2s',
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={16} /> CSV
+          </button>
+
           <button
             onClick={handleSyncStaff}
             disabled={isSyncing}

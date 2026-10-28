@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenant } from '../../context/TenantContext';
 import {
@@ -30,6 +31,9 @@ import {
   AlertCircle,
   UserPlus,
   HeartPulse,
+  Database,
+  FileSpreadsheet,
+  CalendarRange,
 } from 'lucide-react';
 import { ROLE_DEFINITIONS } from '../super-admin/SuperAdminPage';
 import { branchesApi, type Branch } from '../../api/branches';
@@ -37,11 +41,29 @@ import { rtiApi, type RtiRequest, type RtiStatus } from '../../api/rti';
 import { usersApi, type User as ApiUser, type Role as ApiRole } from '../../api/users';
 import { UserActionModal } from './UserActionModal';
 import { SecurityAuditPage } from '../security-audit/SecurityAuditPage';
+import { BackupManagement } from './BackupManagement';
+import { DataExportCenter } from './DataExportCenter';
+import { FiscalYearManagement } from './FiscalYearManagement';
 
-export const AdminConsolePage: React.FC = () => {
+interface AdminConsolePageProps {
+  defaultTab?: 'settings' | 'users' | 'wards' | 'branches' | 'rti' | 'audit' | 'permissions' | 'backup' | 'export' | 'fiscal-year';
+}
+
+export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }) => {
   const queryClient = useQueryClient();
   const { settings, tenantId } = useTenant();
-  const [activeTab, setActiveTab] = useState<'settings' | 'users' | 'wards' | 'branches' | 'rti' | 'audit' | 'permissions'>('branches');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') as any;
+
+  const [activeTab, setActiveTab] = useState<'settings' | 'users' | 'wards' | 'branches' | 'rti' | 'audit' | 'permissions' | 'backup' | 'export' | 'fiscal-year'>(
+    urlTab || defaultTab || 'settings'
+  );
+
+  useEffect(() => {
+    if (urlTab && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
 
   // Municipal Settings Form State
   const [palikaName, setPalikaName] = useState(settings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका');
@@ -159,14 +181,33 @@ export const AdminConsolePage: React.FC = () => {
   // Map of Roles to assigned Feature IDs
   const { data: dbRoles = [], isLoading: isLoadingRoles } = useQuery<ApiRole[]>({
     queryKey: ['roles'],
-    queryFn: () => usersApi.getRoles(),
+    queryFn: async () => {
+      const roles = await usersApi.getRoles();
+      if (Array.isArray(roles) && roles.length > 0) {
+        try {
+          localStorage.setItem('p5_role_permissions', JSON.stringify(roles));
+        } catch {}
+      }
+      return roles;
+    },
   });
 
   const updateRolePermissionsMutation = useMutation({
     mutationFn: ({ roleName, permissions }: { roleName: string; permissions: string[] }) =>
       usersApi.updateRolePermissions(roleName, permissions),
-    onSuccess: () => {
+    onSuccess: (_savedRole, variables) => {
       queryClient.invalidateQueries({ queryKey: ['roles'] });
+      try {
+        const cached = localStorage.getItem('p5_role_permissions');
+        let list: any[] = cached ? JSON.parse(cached) : [];
+        const idx = list.findIndex((r: any) => r.name === variables.roleName);
+        if (idx >= 0) {
+          list[idx].permissions = variables.permissions;
+        } else {
+          list.push({ name: variables.roleName, permissions: variables.permissions });
+        }
+        localStorage.setItem('p5_role_permissions', JSON.stringify(list));
+      } catch {}
     },
     onError: (error) => {
       console.error('Failed to update role permissions:', error);
@@ -426,80 +467,127 @@ export const AdminConsolePage: React.FC = () => {
           <Activity size={16} />
           <span>अडिट तथा सुरक्षा लग</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('backup')}
+          className={`dt-btn ${activeTab === 'backup' ? 'dt-btn-primary' : 'dt-btn-outline'}`}
+        >
+          <Database size={16} />
+          <span>डाटाबेस ब्याकअप (Backup)</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('export');
+            setSearchParams({ tab: 'export' });
+          }}
+          className={`dt-btn ${activeTab === 'export' ? 'dt-btn-primary' : 'dt-btn-outline'}`}
+          style={{
+            backgroundColor: activeTab === 'export' ? '#10b981' : undefined,
+            borderColor: activeTab === 'export' ? '#059669' : undefined,
+            color: activeTab === 'export' ? '#ffffff' : undefined,
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          <span>डाटा निर्यात केन्द्र (Data Export)</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('fiscal-year');
+            setSearchParams({ tab: 'fiscal-year' });
+          }}
+          className={`dt-btn ${activeTab === 'fiscal-year' ? 'dt-btn-primary' : 'dt-btn-outline'}`}
+          style={{
+            backgroundColor: activeTab === 'fiscal-year' ? '#2563eb' : undefined,
+            borderColor: activeTab === 'fiscal-year' ? '#1d4ed8' : undefined,
+            color: activeTab === 'fiscal-year' ? '#ffffff' : undefined,
+          }}
+        >
+          <CalendarRange size={16} />
+          <span>आर्थिक वर्ष व्यवस्थापन (Fiscal Year)</span>
+        </button>
       </div>
 
       {/* Tab 1: System Settings */}
       {activeTab === 'settings' && (
-        <div className="dt-card" style={{ maxWidth: '700px', padding: '2rem' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1.25rem' }}>
-            पालिका ब्रान्डिङ तथा आधारभूत विवरण
-          </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
+          <div className="dt-card" style={{ maxWidth: '750px', padding: '2rem' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1.25rem' }}>
+              पालिका ब्रान्डिङ तथा आधारभूत विवरण
+            </h2>
 
-          {saveSuccess && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--success-light)', color: '#065f46', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem' }}>
-              <CheckCircle2 size={16} />
-              <span>सेटिङ सफलतापूर्वक सुरक्षित भयो!</span>
-            </div>
-          )}
+            {saveSuccess && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--success-light)', color: '#065f46', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem' }}>
+                <CheckCircle2 size={16} />
+                <span>सेटिङ सफलतापूर्वक सुरक्षित भयो!</span>
+              </div>
+            )}
 
-          <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                गाउँपालिकाको नाम (Palika Name) *
-              </label>
-              <input
-                type="text"
-                required
-                className="dt-input"
-                value={palikaName}
-                onChange={(e) => setPalikaName(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                पालिकाको नारा (Slogan) *
-              </label>
-              <input
-                type="text"
-                required
-                className="dt-input"
-                value={slogan}
-                onChange={(e) => setSlogan(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                  आधिकारिक फोन नम्बर
+                  गाउँपालिकाको नाम (Palika Name) *
                 </label>
                 <input
                   type="text"
+                  required
                   className="dt-input"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={palikaName}
+                  onChange={(e) => setPalikaName(e.target.value)}
                 />
               </div>
 
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                  आधिकारिक इमेल ठेगाना
+                  पालिकाको नारा (Slogan) *
                 </label>
                 <input
-                  type="email"
+                  type="text"
+                  required
                   className="dt-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={slogan}
+                  onChange={(e) => setSlogan(e.target.value)}
                 />
               </div>
-            </div>
 
-            <button type="submit" className="dt-btn dt-btn-primary" style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}>
-              <Save size={16} />
-              <span>परिवर्तन सुरक्षित गर्नुहोस्</span>
-            </button>
-          </form>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                    आधिकारिक फोन नम्बर
+                  </label>
+                  <input
+                    type="text"
+                    className="dt-input"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                    आधिकारिक इमेल ठेगाना
+                  </label>
+                  <input
+                    type="email"
+                    className="dt-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="dt-btn dt-btn-primary" style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}>
+                <Save size={16} />
+                <span>परिवर्तन सुरक्षित गर्नुहोस्</span>
+              </button>
+            </form>
+          </div>
+
+          {/* Dedicated Full-Width Database Backup Section */}
+          <div style={{ width: '100%' }}>
+            <BackupManagement />
+          </div>
         </div>
       )}
 
@@ -1453,6 +1541,21 @@ export const AdminConsolePage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tab 8: Database Backup & Recovery */}
+      {activeTab === 'backup' && (
+        <BackupManagement />
+      )}
+
+      {/* Tab 9: Centralized Data Export Center */}
+      {activeTab === 'export' && (
+        <DataExportCenter />
+      )}
+
+      {/* Tab 10: Fiscal Year Setup */}
+      {activeTab === 'fiscal-year' && (
+        <FiscalYearManagement />
       )}
 
       {/* Add/Edit User Modal */}

@@ -67,26 +67,22 @@ def find_all(
 
 @router.get("/stats")
 def get_stats(
-    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.IT_ADMIN)),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """प्रयोगकर्ता तथ्याङ्क: कुल, सक्रिय, भूमिका अनुसार"""
-    total = db.query(User).filter(User.deleted_at == None).count()
-    active = db.query(User).filter(User.deleted_at == None, User.is_active == True).count()
-    by_role = (
-        db.query(User.role, db.query(User).filter(User.deleted_at == None, User.role == User.role).count())
-        .filter(User.deleted_at == None)
-        .group_by(User.role)
-        .all()
-    )
-    # Simple approach: count per role
+    base_q = db.query(User).filter(User.deleted_at == None)
+    base_q = ctx.filter_query(base_q, User)
+
+    total = base_q.count()
+    active = base_q.filter(User.is_active == True).count()
     from sqlalchemy import func
     role_counts = (
         db.query(User.role, func.count(User.id).label("count"))
         .filter(User.deleted_at == None)
-        .group_by(User.role)
-        .all()
     )
+    role_counts = ctx.filter_query(role_counts, User).group_by(User.role).all()
     return {
         "total": total,
         "active": active,
@@ -96,7 +92,6 @@ def get_stats(
 
 @router.get("/roles")
 def get_roles(
-    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     """सबै भूमिका र अनुमतिहरू प्राप्त गर्नुहोस्"""
@@ -184,18 +179,41 @@ def update_user(
     id: str,
     body: UserUpdate,
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """प्रयोगकर्ता अद्यावधिक गर्नुहोस्"""
     user = db.query(User).filter(User.id == id, User.deleted_at == None).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+    if not is_super:
+        target_t = str(user.tenant_id or "").lower()
+        allowed_lower = [str(x).lower() for x in ctx.allowed_tenant_ids]
+        if not (target_t in allowed_lower or (target_t in ("panchpokhari", "") and "panchpokhari" in allowed_lower)):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="तपाईंलाई अर्को पालिकाको प्रयोगकर्ता फेरबदल गर्न अनुमति छैन (Unauthorized to modify user from another municipality)"
+            )
+
     update_data = body.model_dump(exclude_unset=True)
     if "password" in update_data and update_data["password"]:
         update_data["password"] = hash_password(update_data["password"])
     else:
         update_data.pop("password", None)
+
+    if not is_super:
+        # Non-super admins cannot reassign tenant
+        update_data.pop("tenant_id", None)
+        # Non-super admins cannot promote anyone to SUPER_ADMIN or IT_ADMIN
+        if "role" in update_data and update_data["role"]:
+            role_val = update_data["role"].value if hasattr(update_data["role"], "value") else str(update_data["role"])
+            if role_val in (UserRole.SUPER_ADMIN.value, UserRole.IT_ADMIN.value):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Cannot assign super administrator role"
+                )
 
     if "role" in update_data and update_data["role"]:
         update_data["role"] = update_data["role"].value if hasattr(update_data["role"], "value") else update_data["role"]
@@ -222,12 +240,24 @@ def update_user(
 def toggle_active(
     id: str,
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """प्रयोगकर्ता सक्रिय/निष्क्रिय टगल गर्नुहोस्"""
     user = db.query(User).filter(User.id == id, User.deleted_at == None).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+    if not is_super:
+        target_t = str(user.tenant_id or "").lower()
+        allowed_lower = [str(x).lower() for x in ctx.allowed_tenant_ids]
+        if not (target_t in allowed_lower or (target_t in ("panchpokhari", "") and "panchpokhari" in allowed_lower)):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="तपाईंलाई अर्को पालिकाको प्रयोगकर्ता फेरबदल गर्न अनुमति छैन (Unauthorized to modify user from another municipality)"
+            )
+
     user.is_active = not user.is_active
     db.commit()
     db.refresh(user)
@@ -245,12 +275,24 @@ def toggle_active(
 def delete_user(
     id: str,
     current_user: User = Depends(require_roles(*ADMIN_ROLES)),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """प्रयोगकर्ता सफ्ट-डिलिट गर्नुहोस्"""
     user = db.query(User).filter(User.id == id, User.deleted_at == None).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+    if not is_super:
+        target_t = str(user.tenant_id or "").lower()
+        allowed_lower = [str(x).lower() for x in ctx.allowed_tenant_ids]
+        if not (target_t in allowed_lower or (target_t in ("panchpokhari", "") and "panchpokhari" in allowed_lower)):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="तपाईंलाई अर्को पालिकाको प्रयोगकर्ता मेटाउन अनुमति छैन (Unauthorized to delete user from another municipality)"
+            )
+
     from datetime import datetime
     user.deleted_at = datetime.utcnow()
     db.commit()

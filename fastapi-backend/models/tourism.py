@@ -7,6 +7,7 @@ class Destination(Base):
     __tablename__ = 'tourism_destinations'
     __table_args__ = {'extend_existing': True}
     
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     name = Column(String)
     name_en = Column(String, nullable=True, name='nameEn')
@@ -50,6 +51,7 @@ class Hotel(Base):
     __tablename__ = 'tourism_hotels'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     name = Column(String)
     type = Column(String, default='homestay')
@@ -105,6 +107,7 @@ class TouristLog(Base):
     __tablename__ = 'tourism_tourist_logs'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     tourist_name = Column(String, name='touristName')
     country = Column(String, default='Nepal')
@@ -150,6 +153,7 @@ class TourPackage(Base):
     __tablename__ = 'tourism_packages'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     title = Column(String)
     title_en = Column(String, nullable=True, name='titleEn')
@@ -193,6 +197,7 @@ class LocalProduct(Base):
     __tablename__ = 'tourism_local_products'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     name = Column(String)
     name_en = Column(String, nullable=True, name='nameEn')
@@ -226,6 +231,7 @@ class Reservation(Base):
     __tablename__ = 'tourism_reservations'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(String, primary_key=True)
     guest_name = Column(String, name='guestName')
     phone = Column(String)

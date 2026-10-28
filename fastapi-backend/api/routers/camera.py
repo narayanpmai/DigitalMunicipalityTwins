@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.camera import AiCamera
 from schemas.camera import (
     AiCameraSchema,
@@ -69,46 +70,63 @@ DEFAULT_CAMERAS = [
     },
 ]
 
-def seed_cameras_if_empty(db: Session):
-    count = db.query(AiCamera).count()
-    if count == 0:
-        for cam in DEFAULT_CAMERAS:
-            db_cam = AiCamera(
-                id=str(uuid.uuid4()),
-                last_ping=datetime.utcnow(),
-                **cam
-            )
-            db.add(db_cam)
-        db.commit()
+def seed_cameras_if_empty(db: Session, ctx: TenantContext):
+    if ctx.is_all or "panchpokhari" in ctx.allowed_tenant_ids:
+        count = ctx.filter_query(db.query(AiCamera), AiCamera).count()
+        if count == 0:
+            for cam in DEFAULT_CAMERAS:
+                db_cam = AiCamera(
+                    id=str(uuid.uuid4()),
+                    tenant_id="panchpokhari",
+                    last_ping=datetime.utcnow(),
+                    **cam
+                )
+                db.add(db_cam)
+            db.commit()
 
 @router.get("", response_model=List[AiCameraSchema])
-def get_cameras(db: Session = Depends(get_db)):
-    seed_cameras_if_empty(db)
-    cameras = db.query(AiCamera).order_by(AiCamera.camera_id.asc()).all()
+def get_cameras(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    seed_cameras_if_empty(db, ctx)
+    cameras = ctx.filter_query(db.query(AiCamera), AiCamera).order_by(AiCamera.camera_id.asc()).all()
     # Ensure UUID id is serialized as string
     for cam in cameras:
         cam.id = str(cam.id)
     return cameras
 
 @router.get("/stats", response_model=CameraStats)
-def get_stats(db: Session = Depends(get_db)):
-    seed_cameras_if_empty(db)
-    cameras = db.query(AiCamera).all()
+def get_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    seed_cameras_if_empty(db, ctx)
+    cameras = ctx.filter_query(db.query(AiCamera), AiCamera).all()
     today_total = sum(c.today_visitor_count or 0 for c in cameras)
     all_time_total = sum(c.total_visitor_count or 0 for c in cameras)
     return CameraStats(todayTotal=today_total, allTimeTotal=all_time_total)
 
 @router.get("/{id}", response_model=AiCameraSchema)
-def get_camera(id: str, db: Session = Depends(get_db)):
-    cam = db.query(AiCamera).filter(AiCamera.id == id).first()
+def get_camera(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    cam = ctx.filter_query(db.query(AiCamera), AiCamera).filter(AiCamera.id == id).first()
     if not cam:
         raise HTTPException(status_code=404, detail="Camera not found")
     return cam
 
 @router.post("", response_model=AiCameraSchema)
-def create_camera(data: AiCameraCreate, db: Session = Depends(get_db)):
+def create_camera(
+    data: AiCameraCreate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     db_cam = AiCamera(
         id=str(uuid.uuid4()),
+        tenant_id=ctx.effective_tenant_id,
         last_ping=datetime.utcnow(),
         **data.dict()
     )
@@ -118,8 +136,13 @@ def create_camera(data: AiCameraCreate, db: Session = Depends(get_db)):
     return db_cam
 
 @router.put("/{id}", response_model=AiCameraSchema)
-def update_camera(id: str, data: AiCameraUpdate, db: Session = Depends(get_db)):
-    cam = db.query(AiCamera).filter(AiCamera.id == id).first()
+def update_camera(
+    id: str,
+    data: AiCameraUpdate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    cam = ctx.filter_query(db.query(AiCamera), AiCamera).filter(AiCamera.id == id).first()
     if not cam:
         raise HTTPException(status_code=404, detail="Camera not found")
         
@@ -132,8 +155,12 @@ def update_camera(id: str, data: AiCameraUpdate, db: Session = Depends(get_db)):
     return cam
 
 @router.delete("/{id}")
-def delete_camera(id: str, db: Session = Depends(get_db)):
-    cam = db.query(AiCamera).filter(AiCamera.id == id).first()
+def delete_camera(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    cam = ctx.filter_query(db.query(AiCamera), AiCamera).filter(AiCamera.id == id).first()
     if not cam:
         raise HTTPException(status_code=404, detail="Camera not found")
         
@@ -142,11 +169,16 @@ def delete_camera(id: str, db: Session = Depends(get_db)):
     return {"success": True, "message": "Camera deleted successfully"}
 
 @router.post("/ping", response_model=AiCameraSchema)
-def mock_camera_ping(payload: CameraPingPayload, db: Session = Depends(get_db)):
-    cam = db.query(AiCamera).filter(AiCamera.camera_id == payload.cameraId).first()
+def mock_camera_ping(
+    payload: CameraPingPayload,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    cam = ctx.filter_query(db.query(AiCamera), AiCamera).filter(AiCamera.camera_id == payload.cameraId).first()
     if not cam:
         cam = AiCamera(
             id=str(uuid.uuid4()),
+            tenant_id=ctx.effective_tenant_id,
             camera_id=payload.cameraId,
             name=f"AI Camera {payload.cameraId}",
             type="Entrance",

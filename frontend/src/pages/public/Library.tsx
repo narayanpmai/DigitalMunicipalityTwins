@@ -37,6 +37,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { sectoralApi } from '../../api/sectoral';
+import { useTenant } from '../../context/TenantContext';
 import type { LibraryBook } from '../../types/library';
 import './Library.css';
 
@@ -48,12 +49,25 @@ const MEDIA_FILTERS = [
   { id: 'videobook', label: 'भिडियो ई-कक्षा', icon: Video },
 ];
 
-const COMMUNITY_BRANCHES = [
-  { name: 'थाङपालधाप सामुदायिक पुस्तकालय तथा सूचना केन्द्र', ward: 'वडा नं. ६', time: 'आइतबार - शुक्रबार: बिहान ९:०० - बेलुका ४:००', phone: '०११-५९०००१' },
-  { name: 'भोताङ खुला ज्ञान तथा पठन केन्द्र', ward: 'वडा नं. ३', time: 'आइतबार - शुक्रबार: बिहान १०:०० - बेलुका ५:००', phone: '०११-५९०००२' },
-  { name: 'बरुवा डिजिटल सिकाई तथा सामुदायिक पुस्तकालय', ward: 'वडा नं. २', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०११-५९०००३' },
-  { name: 'गुन्सा हिमाली अध्ययन तथा अनुसन्धान केन्द्र', ward: 'वडा नं. ५', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०११-५९०००४' },
-];
+const PALIKA_BRANCHES: Record<string, Array<{ name: string; ward: string; time: string; phone: string }>> = {
+  khadadevi: [
+    { name: 'खाँडादेवी केन्द्रीय सार्वजनिक पुस्तकालय तथा सूचना केन्द्र', ward: 'वडा नं. ३', time: 'आइतबार - शुक्रबार: बिहान ९:०० - बेलुका ४:००', phone: '०४८-५४०००१' },
+    { name: 'गाल्पा ज्ञान विकास तथा सामुदायिक सिकाई केन्द्र', ward: 'वडा नं. ४', time: 'आइतबार - शुक्रबार: बिहान १०:०० - बेलुका ५:००', phone: '०४८-५४०००२' },
+    { name: 'माकादुम डिजिटल पठन तथा स्रोत केन्द्र', ward: 'वडा नं. ६', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०४८-५४०००३' },
+    { name: 'पिङ्खुरी जनचेतना पुस्तकालय', ward: 'वडा नं. २', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०४८-५४०००४' },
+  ],
+  gaushala: [
+    { name: 'गौशाला नगर पुस्तकालय तथा वाचनालय', ward: 'वडा नं. ५', time: 'आइतबार - शुक्रबार: बिहान ९:०० - बेलुका ५:००', phone: '०४४-५५०००१' },
+    { name: 'निगम सूचना तथा ज्ञान केन्द्र', ward: 'वडा नं. ३', time: 'आइतबार - शुक्रबार: बिहान १०:०० - बेलुका ५:००', phone: '०४४-५५०००२' },
+    { name: 'रामविहारी सामुदायिक अध्ययन केन्द्र', ward: 'वडा नं. १', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०४४-५५०००३' },
+  ],
+  default: [
+    { name: 'थाङपालधाप सामुदायिक पुस्तकालय तथा सूचना केन्द्र', ward: 'वडा नं. ६', time: 'आइतबार - शुक्रबार: बिहान ९:०० - बेलुका ४:००', phone: '०११-५९०००१' },
+    { name: 'भोताङ खुला ज्ञान तथा पठन केन्द्र', ward: 'वडा नं. ३', time: 'आइतबार - शुक्रबार: बिहान १०:०० - बेलुका ५:००', phone: '०११-५९०००२' },
+    { name: 'बरुवा डिजिटल सिकाई तथा सामुदायिक पुस्तकालय', ward: 'वडा नं. २', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०११-५९०००३' },
+    { name: 'गुन्सा हिमाली अध्ययन तथा अनुसन्धान केन्द्र', ward: 'वडा नं. ५', time: 'आइतबार - शुक्रबार: बिहान ९:०० - दिउँसो ३:००', phone: '०११-५९०००४' },
+  ],
+};
 
 const getYouTubeEmbedUrl = (url?: string): string | null => {
   if (!url) return null;
@@ -108,14 +122,21 @@ export const Library: React.FC = () => {
   });
   const [suggestSubmitted, setSuggestSubmitted] = useState(false);
 
+  const { tenantId, settings } = useTenant();
+
+  // Community Branches for active palika
+  const communityBranches = useMemo(() => {
+    return PALIKA_BRANCHES[tenantId] || PALIKA_BRANCHES.default;
+  }, [tenantId]);
+
   // Fetch Library Books & Stats
   const { data: rawBooks = [], isLoading: isLoadingBooks } = useQuery({
-    queryKey: ['publicLibraryBooks'],
+    queryKey: ['publicLibraryBooks', tenantId],
     queryFn: () => sectoralApi.getLibraryBooks(),
   });
 
   const { data: rawStats } = useQuery({
-    queryKey: ['publicLibraryStats'],
+    queryKey: ['publicLibraryStats', tenantId],
     queryFn: () => sectoralApi.getLibraryStats(),
   });
 
@@ -229,7 +250,7 @@ export const Library: React.FC = () => {
       try {
         await navigator.share({
           title: book.title,
-          text: `${book.title} - पाँचपोखरी थाङपाल गाउँपालिका डिजिटल पुस्तकालय`,
+          text: `${book.title} - ${settings?.palika_name || (tenantId === 'khadadevi' ? 'खाँडादेवी गाउँपालिका' : 'पाँचपोखरी थाङपाल गाउँपालिका')} डिजिटल पुस्तकालय`,
           url,
         });
         return;
@@ -658,13 +679,13 @@ export const Library: React.FC = () => {
       {/* ── Community Branches Section ── */}
       <section style={{ backgroundColor: '#ffffff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.03)', marginTop: '2rem' }}>
         <h3 style={{ color: '#0f172a', fontWeight: 800, fontSize: '1.25rem', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Building size={22} color="#0284c7" /> पाँचपोखरी थाङपालका सामुदायिक पुस्तकालय तथा पठन शाखाहरू
+          <Building size={22} color="#0284c7" /> {settings?.palika_name || (tenantId === 'khadadevi' ? 'खाँडादेवी गाउँपालिका' : 'पाँचपोखरी थाङपाल गाउँपालिका')}का सामुदायिक पुस्तकालय तथा पठन शाखाहरू
         </h3>
         <p style={{ color: '#64748b', fontSize: '0.88rem', margin: '0 0 1.5rem 0' }}>
           भौतिक पुस्तक अध्ययन तथा पठन कक्षका लागि आफ्ना नजिकका वडास्तरीय पुस्तकालय केन्द्रहरूमा सम्पर्क गर्न सक्नुहुन्छ:
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {COMMUNITY_BRANCHES.map(b => (
+          {communityBranches.map(b => (
             <div key={b.name} style={{ padding: '1.25rem', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <h5 style={{ fontWeight: 700, margin: '0 0 0.5rem 0', color: '#0f172a', fontSize: '0.95rem' }}>{b.name}</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', color: '#64748b', fontSize: '0.82rem' }}>

@@ -173,6 +173,12 @@ export const Home: React.FC = () => {
     else if (q.includes('सिफारिस') || q.includes('सेवा')) navigate('/citizen-services');
     else if (q.includes('गुनासो')) navigate('/complaints');
     else if (q.includes('पर्यटन') || q.includes('पाँचपोखरी')) navigate('/tourism');
+    else if (q.includes('खानेपानी') || q.includes('धारा') || q.includes('wash') || q.includes('मुहान')) navigate('/wash');
+    else if (q.includes('सडक') || q.includes('बाटो') || q.includes('पुल') || q.includes('यातायात') || q.includes('mtmp')) navigate('/roads');
+    else if (q.includes('वातावरण') || q.includes('वन') || q.includes('खानी') || q.includes('नदीजन्य') || q.includes('गिट्टी')) navigate('/environment');
+    else if (q.includes('बजार') || q.includes('अनुगमन') || q.includes('उपभोक्ता') || q.includes('हाटबजार')) navigate('/market-inspection');
+    else if (q.includes('बालमैत्री') || q.includes('खेलकुद') || q.includes('cflg') || q.includes('खेलाडी')) navigate('/cflg-sports');
+    else if (q.includes('सुनुवाइ') || q.includes('सुनुवाई') || q.includes('सामाजिक परीक्षण') || q.includes('पारदर्शिता')) navigate('/social-audit');
     else navigate('/citizen-portal');
   };
 
@@ -275,7 +281,7 @@ export const Home: React.FC = () => {
               LIVE · पाँचपोखरी थाङपाल गाउँपालिका · एकीकृत डिजिटल ट्विन
             </span>
             <span style={{ opacity: 0.35 }}>|</span>
-            <span style={{ color: '#a7f3d0', fontWeight: 700 }}>८ वडा · ३३ विषयगत क्षेत्र</span>
+            <span style={{ color: '#a7f3d0', fontWeight: 700 }}>८ वडा · ५९ डिजिटल मोड्युलहरू</span>
           </div>
 
           {/* Hero Heading */}

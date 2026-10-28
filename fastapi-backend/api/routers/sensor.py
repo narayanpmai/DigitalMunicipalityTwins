@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.sensor import Sensor
 from schemas.sensor import (
     SensorSchema,
@@ -83,49 +84,55 @@ DEFAULT_SENSORS = [
     },
 ]
 
-def seed_sensors_if_empty(db: Session):
-    count = db.query(Sensor).count()
-    if count == 0:
-        for s in DEFAULT_SENSORS:
-            db_s = Sensor(
-                id=str(uuid.uuid4()),
-                last_ping=datetime.utcnow(),
-                **s
-            )
-            db.add(db_s)
-        db.commit()
+def seed_sensors_if_empty(db: Session, ctx: TenantContext):
+    if ctx.is_all or "panchpokhari" in ctx.allowed_tenant_ids:
+        count = ctx.filter_query(db.query(Sensor), Sensor).count()
+        if count == 0:
+            for s in DEFAULT_SENSORS:
+                db_s = Sensor(
+                    id=str(uuid.uuid4()),
+                    tenant_id="panchpokhari",
+                    last_ping=datetime.utcnow(),
+                    **s
+                )
+                db.add(db_s)
+            db.commit()
 
 @router.get("", response_model=List[SensorSchema])
-def get_sensors(db: Session = Depends(get_db)):
-    seed_sensors_if_empty(db)
-    return db.query(Sensor).order_by(Sensor.name.asc()).all()
+def get_sensors(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    seed_sensors_if_empty(db, ctx)
+    return ctx.filter_query(db.query(Sensor), Sensor).order_by(Sensor.name.asc()).all()
 
 @router.get("/alerts", response_model=List[SensorSchema])
-def get_alerts(db: Session = Depends(get_db)):
-    seed_sensors_if_empty(db)
-    return db.query(Sensor).filter(
+def get_alerts(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    seed_sensors_if_empty(db, ctx)
+    return ctx.filter_query(db.query(Sensor), Sensor).filter(
         or_(Sensor.status == "Warning", Sensor.status == "Critical")
     ).all()
 
 @router.get("/dhm-sensors")
-async def get_dhm_sensors():
+async def get_dhm_sensors(
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """नेपाल सरकार (DHM) को जल तथा मौसम विज्ञान विभागको API बाट लाइभ डाटा ल्याउने"""
-    
-    # Since DHM public APIs are sometimes heavily rate-limited or require specific CORS,
-    # we simulate the fetch with our internal stations as a fallback/wrapper for the frontend.
-    # In a production environment, this would use `httpx.AsyncClient().get("https://dhm.gov.np/api/...")`
-    
     current_time = datetime.utcnow()
+    stations = DEFAULT_SENSORS if (ctx.is_all or "panchpokhari" in ctx.allowed_tenant_ids) else []
     
     return {
         "status": "success",
         "source": "Department of Hydrology and Meteorology, Nepal (DHM)",
         "last_updated": current_time.isoformat(),
         "summary": {
-            "total_stations": len(DEFAULT_SENSORS),
-            "river_stations": sum(1 for s in DEFAULT_SENSORS if s["type"] == "river_level"),
-            "rain_stations": sum(1 for s in DEFAULT_SENSORS if s["type"] == "rain_gauge"),
-            "landslide_stations": sum(1 for s in DEFAULT_SENSORS if s["type"] == "landslide_motion")
+            "total_stations": len(stations),
+            "river_stations": sum(1 for s in stations if s["type"] == "river_level"),
+            "rain_stations": sum(1 for s in stations if s["type"] == "rain_gauge"),
+            "landslide_stations": sum(1 for s in stations if s["type"] == "landslide_motion")
         },
         "data": [
             {
@@ -143,21 +150,30 @@ async def get_dhm_sensors():
                 "status": "Warning" if s["last_value"] >= s["danger_threshold"] * 0.8 else "Normal",
                 "is_dhm_synced": True
             }
-            for s in DEFAULT_SENSORS
+            for s in stations
         ]
     }
 
 @router.get("/{id}", response_model=SensorSchema)
-def get_sensor(id: str, db: Session = Depends(get_db)):
-    sensor = db.query(Sensor).filter(Sensor.id == id).first()
+def get_sensor(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    sensor = ctx.filter_query(db.query(Sensor), Sensor).filter(Sensor.id == id).first()
     if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
     return sensor
 
 @router.post("", response_model=SensorSchema)
-def create_sensor(data: SensorCreate, db: Session = Depends(get_db)):
+def create_sensor(
+    data: SensorCreate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     db_s = Sensor(
         id=str(uuid.uuid4()),
+        tenant_id=ctx.effective_tenant_id,
         last_ping=datetime.utcnow(),
         **data.dict()
     )
@@ -167,8 +183,13 @@ def create_sensor(data: SensorCreate, db: Session = Depends(get_db)):
     return db_s
 
 @router.put("/{id}", response_model=SensorSchema)
-def update_sensor(id: str, data: SensorUpdate, db: Session = Depends(get_db)):
-    sensor = db.query(Sensor).filter(Sensor.id == id).first()
+def update_sensor(
+    id: str,
+    data: SensorUpdate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    sensor = ctx.filter_query(db.query(Sensor), Sensor).filter(Sensor.id == id).first()
     if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
         
@@ -181,8 +202,12 @@ def update_sensor(id: str, data: SensorUpdate, db: Session = Depends(get_db)):
     return sensor
 
 @router.delete("/{id}")
-def delete_sensor(id: str, db: Session = Depends(get_db)):
-    sensor = db.query(Sensor).filter(Sensor.id == id).first()
+def delete_sensor(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    sensor = ctx.filter_query(db.query(Sensor), Sensor).filter(Sensor.id == id).first()
     if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
         
@@ -191,11 +216,16 @@ def delete_sensor(id: str, db: Session = Depends(get_db)):
     return {"success": True, "message": "Sensor deleted successfully"}
 
 @router.post("/telemetry", response_model=SensorSchema)
-def push_telemetry(payload: TelemetryPayload, db: Session = Depends(get_db)):
-    sensor = db.query(Sensor).filter(Sensor.sensor_id == payload.sensorId).first()
+def push_telemetry(
+    payload: TelemetryPayload,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    sensor = ctx.filter_query(db.query(Sensor), Sensor).filter(Sensor.sensor_id == payload.sensorId).first()
     if not sensor:
         sensor = Sensor(
             id=str(uuid.uuid4()),
+            tenant_id=ctx.effective_tenant_id,
             sensor_id=payload.sensorId,
             name=f"IoT Sensor {payload.sensorId}",
             type="river_level",

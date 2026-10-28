@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
+import { useFiscalYear } from '../../context/FiscalYearContext';
 import {
   Search,
   Bell,
@@ -37,6 +38,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ isPublic = false }) => {
   const { settings, tenantId } = useTenant();
   const { user, logout } = useAuth();
+  const { fiscalYears, activeFiscalYear, setActiveFiscalYear } = useFiscalYear();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [portalMenuOpen, setPortalMenuOpen] = useState(false);
@@ -234,6 +236,57 @@ export const Navbar: React.FC<NavbarProps> = ({ isPublic = false }) => {
             <span>वि.सं. {nepaliParts[0]}/{nepaliParts[1]}/{nepaliParts[2]}</span>
           </div>
         )}
+
+        {/* Global Fiscal Year (आर्थिक वर्ष) Selector */}
+        <div
+          className="dt-hide-on-mobile"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '0.2rem 0.5rem 0.2rem 0.65rem',
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '8px',
+            fontSize: '0.775rem',
+            color: '#15803d',
+            fontWeight: 600,
+            flexShrink: 0,
+            boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+          }}
+          title="सक्रिय आर्थिक वर्ष छनोट गर्नुहोस्"
+        >
+          <Coins size={13} color="#16a34a" />
+          <span style={{ whiteSpace: 'nowrap', color: '#166534', fontWeight: 700 }}>आ.व.</span>
+          <select
+            value={activeFiscalYear}
+            onChange={(e) => setActiveFiscalYear(e.target.value)}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#15803d',
+              fontWeight: 700,
+              fontSize: '0.775rem',
+              outline: 'none',
+              cursor: 'pointer',
+              padding: '2px 0',
+            }}
+          >
+            {activeFiscalYear && !fiscalYears.some((f) => f.name === activeFiscalYear) && (
+              <option value={activeFiscalYear} style={{ color: '#0f172a', fontWeight: 700 }}>
+                {activeFiscalYear} (चालू)
+              </option>
+            )}
+            {fiscalYears.map((fy) => {
+              const isCurr = fy.name === activeFiscalYear;
+              return (
+                <option key={fy.id || fy.name} value={fy.name} style={{ color: '#0f172a', fontWeight: isCurr ? 700 : 500 }}>
+                  {fy.name} {isCurr ? '(चालू)' : ''}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </div>
 
       {/* ── Right: Actions ──────────────────────────────────── */}

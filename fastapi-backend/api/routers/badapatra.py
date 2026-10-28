@@ -1,6 +1,10 @@
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from fastapi.responses import StreamingResponse
 from typing import Optional, List, Dict, Any
+from sqlalchemy.orm import Session
+from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
+from models.municipality import MunicipalityProfile
 import os
 import json
 import re
@@ -170,8 +174,19 @@ def persist_to_disk():
         pass
 
 @router.get("/summary", response_model=BadapatraSummaryResponse)
-def get_summary():
+def get_summary(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     data = get_data_bundle()
+    prof = db.query(MunicipalityProfile).filter(MunicipalityProfile.tenant_id.in_(ctx.allowed_tenant_ids)).first()
+    if prof and prof.name_np:
+        palika_name = prof.name_np
+    elif "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        palika_name = "पाँचपोखरी थाङपाल गाउँपालिका"
+    else:
+        palika_name = f"{ctx.effective_tenant_id.capitalize()} पालिका"
+
     total = len(data["wardServices"]) + len(data["palikaServices"])
     stats = {
         "totalServices": total,
@@ -182,7 +197,7 @@ def get_summary():
     }
     return BadapatraSummaryResponse(
         success=True,
-        municipality=data.get("municipality", "पाँचपोखरी थाङपाल गाउँपालिका"),
+        municipality=palika_name,
         sourceUrl=data.get("sourceUrl") or data.get("portalUrl"),
         lastSync=data.get("fetchedAt") or data.get("lastSync"),
         stats=stats

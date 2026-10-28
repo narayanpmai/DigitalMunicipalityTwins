@@ -56,6 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('p5_role');
     localStorage.removeItem('p5_email');
     localStorage.removeItem('p5_name');
+    localStorage.removeItem('tenant_id');
+    localStorage.removeItem('active_palika');
     sessionStorage.clear();
     setUser(null);
   }, []);

@@ -6,6 +6,10 @@ from core.database import get_db
 from core.tenant import TenantContext, get_tenant_context
 from models.demographics import Household, DemographicCategory, DemographicIndicator, DemographicValue
 from schemas.demographics import HouseholdResponse, DashboardStats
+from models.user import User, UserRole
+from api.routers.auth import require_roles
+
+ADMIN_ROLES = (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN, UserRole.CAO, UserRole.ADMIN)
 
 router = APIRouter(
     prefix="/api/v1/demographics",
@@ -232,15 +236,21 @@ def get_map_points(
 # ─── Sync GPS ─────────────────────────────────────────────────────────────────
 
 @router.post("/households/sync-gps")
-def sync_gps(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def sync_gps(
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     count = ctx.filter_query(db.query(Household), Household).filter(Household.gps_lat.isnot(None)).count()
     return {"message": "GPS sync complete", "count": count}
 
 # ─── Bulk import ──────────────────────────────────────────────────────────────
 
 @router.post("/households/bulk-import")
+@router.post("/households-bulk-import")
 def bulk_import(
     payload: Dict[str, Any] = Body(...),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
 ):
@@ -249,7 +259,8 @@ def bulk_import(
         households = payload.get("households", [])
         
         if replace_all:
-            if ctx.is_all:
+            is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+            if ctx.is_all and is_super:
                 db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
             else:
                 db.query(Household).filter(Household.tenant_id.in_(ctx.allowed_tenant_ids)).delete(synchronize_session=False)
@@ -322,8 +333,13 @@ def bulk_import(
 # ─── Clear all ────────────────────────────────────────────────────────────────
 
 @router.post("/households-clear-all")
-def clear_all(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
-    if ctx.is_all:
+def clear_all(
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    is_super = current_user.role in (UserRole.SUPER_ADMIN, UserRole.IT_ADMIN) or current_user.tenant_id in ("all", "*")
+    if ctx.is_all and is_super:
         count = db.query(Household).count()
         db.execute(text("TRUNCATE TABLE household_registries CASCADE"))
     else:
@@ -569,7 +585,13 @@ def get_household(id: str, db: Session = Depends(get_db), ctx: TenantContext = D
     return household
 
 @router.put("/households/{id}")
-def update_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def update_household(
+    id: str,
+    payload: Any = Body(...),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
@@ -590,7 +612,13 @@ def update_household(id: str, payload: Any = Body(...), db: Session = Depends(ge
     return hh
 
 @router.put("/households/{id}/verify")
-def verify_household(id: str, payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def verify_household(
+    id: str,
+    payload: Any = Body(...),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
@@ -602,7 +630,12 @@ def verify_household(id: str, payload: Any = Body(...), db: Session = Depends(ge
     return hh
 
 @router.delete("/households/{id}")
-def delete_household(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def delete_household(
+    id: str,
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     hh = ctx.filter_query(db.query(Household), Household).filter(Household.id == id).first()
     if not hh:
         raise HTTPException(status_code=404, detail="Household not found")
@@ -611,7 +644,12 @@ def delete_household(id: str, db: Session = Depends(get_db), ctx: TenantContext 
     return {"message": "Household deleted"}
 
 @router.post("/households")
-def create_household(payload: Any = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+def create_household(
+    payload: Any = Body(...),
+    current_user: User = Depends(require_roles(*ADMIN_ROLES)),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     data = payload if isinstance(payload, dict) else {}
     hh = Household(**{k: v for k, v in data.items() if hasattr(Household, k)})
     hh.tenant_id = ctx.effective_tenant_id

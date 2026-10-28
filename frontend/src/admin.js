@@ -7,11 +7,44 @@ import organizationsJson from './organizations-data.json';
 
 const API_BASE = import.meta.env?.VITE_API_URL || '/api/v1';
 
+// Helper to get active municipal tenant ID safely
+export function getActiveTenantId() {
+  try {
+    const storedUser = localStorage.getItem('p5_user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const userTenant = parsed?.tenantSubdomain || parsed?.tenant_subdomain || parsed?.tenantId || parsed?.tenant_id || parsed?.subdomain;
+      if (userTenant && userTenant !== 'all' && !['www', 'app', 'admin', 'localhost', '103'].includes(String(userTenant).toLowerCase())) {
+        return userTenant;
+      }
+    }
+  } catch(e) {}
+
+  const stored = localStorage.getItem('tenant_id');
+  if (stored && stored !== 'all' && stored !== '' && !['www', 'app', 'admin', 'localhost', '103'].includes(String(stored).toLowerCase())) {
+    return stored;
+  }
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // Do not parse IP addresses (e.g. 103.140.0.154) as tenant subdomains
+    if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      const parts = hostname.split('.');
+      if (parts.length > 2 && !['www', 'app', 'admin', 'localhost'].includes(parts[0].toLowerCase())) {
+        return parts[0];
+      }
+    }
+  }
+
+  return 'panchpokhari';
+}
+window.getActiveTenantId = getActiveTenantId;
+
 // Override global fetch to automatically inject x-tenant-id and valid Bearer token
 const originalFetch = window.fetch;
 window.fetch = async function() {
   let [resource, config] = arguments;
-  const tenantId = localStorage.getItem('tenant_id') || 'panchpokhari';
+  const tenantId = getActiveTenantId();
   if (!config) config = {};
   if (!config.headers) config.headers = {};
 
@@ -47,31 +80,10 @@ window.fetch = async function() {
 
   let response = await originalFetch(resource, config);
 
-  // If response is 401 Unauthorized, perform silent background login and retry once
+  // If response is 401 Unauthorized, handle session expiration gracefully
   if (response.status === 401 && typeof resource === 'string' && !resource.includes('/auth/login')) {
-    try {
-      const reLogin = await originalFetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'super_admin@p5digital.local', password: 'Admin@P5Digital2024!' })
-      });
-      if (reLogin.ok) {
-        const d = await reLogin.json();
-        const newToken = d.accessToken;
-        if (newToken) {
-          localStorage.setItem('p5_token', newToken);
-          authToken = newToken;
-          if (config.headers instanceof Headers) {
-            config.headers.set('Authorization', `Bearer ${newToken}`);
-          } else {
-            config.headers['Authorization'] = `Bearer ${newToken}`;
-          }
-          response = await originalFetch(resource, config);
-        }
-      }
-    } catch (e) {
-      console.warn('Auto-reauth failed', e);
-    }
+    authToken = null;
+    localStorage.removeItem('p5_token');
   }
 
   // Intercept response.json to safely handle non-JSON / HTML error pages (e.g. 404/502)
@@ -1210,6 +1222,8 @@ window.logout = function() {
   localStorage.removeItem('p5_role');
   localStorage.removeItem('p5_email');
   localStorage.removeItem('p5_name');
+  localStorage.removeItem('tenant_id');
+  localStorage.removeItem('active_palika');
   sessionStorage.clear();
   window.location.href = '/index.html';
 };
@@ -9056,10 +9070,15 @@ window.downloadReport = async function(type) {
 
 // ── Logout Function ───────────────────────────────────────────────
 window.logout = function() {
+  authToken = null;
   localStorage.removeItem('p5_token');
+  localStorage.removeItem('p5_user');
   localStorage.removeItem('p5_role');
   localStorage.removeItem('p5_email');
   localStorage.removeItem('p5_name');
+  localStorage.removeItem('tenant_id');
+  localStorage.removeItem('active_palika');
+  sessionStorage.clear();
   window.location.href = '/login.html';
 };
 
@@ -9130,27 +9149,6 @@ window.submitCsvUpload = async function(e) {
 (async function initAdminAuth() {
   let storedToken = localStorage.getItem('p5_token');
   let role = localStorage.getItem('p5_role');
-  
-  if (!storedToken || !role) {
-    try {
-      const res = await originalFetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'super_admin@p5digital.local', password: 'Admin@P5Digital2024!' })
-      });
-      if (res.ok) {
-        const d = await res.json();
-        storedToken = d.accessToken;
-        role = d.user?.role || 'super_admin';
-        localStorage.setItem('p5_token', storedToken);
-        localStorage.setItem('p5_role', role);
-        localStorage.setItem('p5_email', 'super_admin@p5digital.local');
-        localStorage.setItem('p5_name', 'Super Admin');
-      }
-    } catch(e) {
-      console.warn('Auto-login attempt failed', e);
-    }
-  }
 
   if (storedToken && role) {
     authToken = storedToken;
@@ -10211,7 +10209,7 @@ window.loadMuseumSystem = async function() {
   }
 
   try {
-    const tenantId = '8c556300-613d-41fa-b324-e661d3570eef';
+    const tenantId = getActiveTenantId();
     const headers = {
       'x-tenant-id': tenantId
     };
@@ -10450,7 +10448,7 @@ window.saveMuseumAsset = async function(e) {
     model3dUrl: document.getElementById('musModel3dUrl').value.trim() || undefined,
     latitude: document.getElementById('musLatitude').value ? parseFloat(document.getElementById('musLatitude').value) : undefined,
     longitude: document.getElementById('musLongitude').value ? parseFloat(document.getElementById('musLongitude').value) : undefined,
-    tenant_id: '8c556300-613d-41fa-b324-e661d3570eef'
+    tenant_id: getActiveTenantId()
   };
 
   const method = id ? 'PUT' : 'POST';
@@ -10459,7 +10457,7 @@ window.saveMuseumAsset = async function(e) {
   try {
     const headers = {
       'Content-Type': 'application/json',
-      'x-tenant-id': '8c556300-613d-41fa-b324-e661d3570eef'
+      'x-tenant-id': getActiveTenantId()
     };
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
@@ -10642,7 +10640,7 @@ window.printMuseumCatalogSheet = function() {
 window.deleteMuseumAsset = async function(id) {
   if (!confirm('के तपाईं साँच्चै यो सङ्ग्रहालय सामग्री मेटाउन चाहनुहुन्छ?')) return;
   try {
-    const headers = { 'x-tenant-id': '8c556300-613d-41fa-b324-e661d3570eef' };
+    const headers = { 'x-tenant-id': getActiveTenantId() };
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
     const res = await fetch(`${API_BASE}/heritage/museum/${id}`, {

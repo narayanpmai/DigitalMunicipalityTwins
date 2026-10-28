@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.building_permit import BuildingPermit
 from schemas.building_permit import (
     BuildingPermitSchema,
@@ -468,15 +469,19 @@ SEED_PERMITS = [
 ]
 
 
-def _get_permits(db: Session) -> List[dict]:
-    """Try DB first, fall back to seed data."""
+def _get_permits(db: Session, ctx: TenantContext) -> List[dict]:
+    """Try DB first, fall back to seed data only for panchpokhari."""
     try:
-        results = db.query(BuildingPermit).limit(200).all()
+        q = db.query(BuildingPermit)
+        q = ctx.filter_query(q, BuildingPermit)
+        results = q.limit(500).all()
         if results:
             return [_model_to_dict(r) for r in results]
     except Exception:
         pass
-    return SEED_PERMITS
+    if "panchpokhari" in ctx.allowed_tenant_ids:
+        return SEED_PERMITS
+    return []
 
 
 def _model_to_dict(p: BuildingPermit) -> dict:
@@ -607,9 +612,10 @@ def get_building_permits(
     building_class: Optional[str] = Query(None, alias="buildingClass"),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """भवन अनुमति सूची — List all building permits with optional filters."""
-    records = _get_permits(db)
+    records = _get_permits(db, ctx)
 
     if status:
         records = [r for r in records if r.get('status') == status]
@@ -631,9 +637,12 @@ def get_building_permits(
 
 
 @router.get("/stats")
-def get_building_permit_stats(db: Session = Depends(get_db)):
+def get_building_permit_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """भवन अनुमति तथ्यांक — Summary stats for dashboard."""
-    records = _get_permits(db)
+    records = _get_permits(db, ctx)
 
     final_completed = [r for r in records if 'भवन निर्माण सम्पन्न प्रमाणपत्र' in (r.get('status') or '')]
     partial_completed = [r for r in records if 'आंशिक निर्माण सम्पन्न' in (r.get('status') or '')]
@@ -664,12 +673,28 @@ def get_building_permit_stats(db: Session = Depends(get_db)):
 def create_building_permit(
     permit: BuildingPermitCreate,
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """नयाँ नक्सा पास दरखास्त — Submit a new building permit application per Guidance 2082."""
     year = datetime.now().year
     bs_year = year + 56
     seq = str(uuid.uuid4().hex[:4]).upper()
-    app_no = f"पाँ.था./नक्सा/२०{str(bs_year)[-2:]}-{seq}"
+
+    palika_prefix = "पाँ.था."
+    if "gaushala" in ctx.allowed_tenant_ids:
+        palika_prefix = "गौ.न."
+    elif "melamchi" in ctx.allowed_tenant_ids:
+        palika_prefix = "मे.न."
+    elif "benighat" in ctx.allowed_tenant_ids or "benighatrorang" in ctx.allowed_tenant_ids:
+        palika_prefix = "बे.रो."
+    elif "galchhi" in ctx.allowed_tenant_ids:
+        palika_prefix = "गलछी"
+    elif "khadadevi" in ctx.allowed_tenant_ids:
+        palika_prefix = "खाँ.दे."
+    elif "helambu" in ctx.allowed_tenant_ids:
+        palika_prefix = "हे.गा."
+
+    app_no = f"{palika_prefix}/नक्सा/२०{str(bs_year)[-2:]}-{seq}"
 
     # Calculate fee
     plinth = float(permit.plinth_area_sqft or 0)
@@ -717,6 +742,7 @@ def create_building_permit(
     try:
         db_permit = BuildingPermit(
             id=new_id,
+            tenant_id=ctx.effective_tenant_id,
             application_no=app_no,
             applicant_name=permit.applicant_name,
             applicant_phone=permit.applicant_phone,
@@ -808,15 +834,21 @@ def create_building_permit(
 
 
 @router.get("/{id}", response_model=dict)
-def get_building_permit(id: str, db: Session = Depends(get_db)):
+def get_building_permit(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     """एकल भवन अनुमति विवरण — Get full detail of a single permit."""
-    for s in SEED_PERMITS:
-        if s['id'] == id or s['applicationNo'] == id:
-            return s
+    if "panchpokhari" in ctx.allowed_tenant_ids:
+        for s in SEED_PERMITS:
+            if s['id'] == id or s['applicationNo'] == id:
+                return s
     try:
-        permit = db.query(BuildingPermit).filter(
+        q = db.query(BuildingPermit).filter(
             (BuildingPermit.id == id) | (BuildingPermit.application_no == id)
-        ).first()
+        )
+        permit = ctx.filter_query(q, BuildingPermit).first()
         if permit:
             return _model_to_dict(permit)
     except Exception:
@@ -829,6 +861,7 @@ def advance_permit_stage(
     id: str,
     body: dict = Body(...),
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
     """
     कार्यप्रवाह अग्रसर — Advance a permit to the next workflow stage (Guidance 2082 compatible).
@@ -854,7 +887,8 @@ def advance_permit_stage(
     }
 
     try:
-        permit = db.query(BuildingPermit).filter(BuildingPermit.id == id).first()
+        q = db.query(BuildingPermit).filter(BuildingPermit.id == id)
+        permit = ctx.filter_query(q, BuildingPermit).first()
         if permit:
             permit.status = next_status
             existing_approvals = permit.approvals or []

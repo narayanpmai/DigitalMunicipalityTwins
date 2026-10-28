@@ -7,6 +7,7 @@ import uuid
 import json
 
 from core.database import get_db
+from core.tenant import get_tenant_context, TenantContext
 from models.demographics import Household
 from models.agriculture import (
     AgricultureFarmer,
@@ -56,8 +57,12 @@ def safe_date(val: Optional[str]) -> Optional[date]:
 
 @router.get("")
 @router.get("/")
-def get_crop_records(ward: Optional[int] = None, db: Session = Depends(get_db)):
-    query = db.query(AgricultureData).filter(AgricultureData.deleted_at.is_(None))
+def get_crop_records(
+    ward: Optional[int] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    query = ctx.filter_query(db.query(AgricultureData).filter(AgricultureData.deleted_at.is_(None)), AgricultureData)
     if ward and ward > 0:
         query = query.filter(AgricultureData.ward_number == ward)
     crops = query.order_by(AgricultureData.ward_number.asc(), AgricultureData.crop_name.asc()).all()
@@ -66,10 +71,15 @@ def get_crop_records(ward: Optional[int] = None, db: Session = Depends(get_db)):
 
 @router.post("")
 @router.post("/")
-def create_crop_record(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_crop_record(
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     crop_id = uuid.uuid4()
     new_crop = AgricultureData(
         id=crop_id,
+        tenant_id=ctx.effective_tenant_id,
         ward_number=int(payload.get("wardNo") or payload.get("wardNumber") or 1),
         crop_name=payload.get("cropName", "नयाँ बाली"),
         crop_type=payload.get("category") or payload.get("cropType") or "cereal",
@@ -86,13 +96,18 @@ def create_crop_record(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/{crop_id}")
-def update_crop_record(crop_id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def update_crop_record(
+    crop_id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
         cid = uuid.UUID(crop_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid crop UUID")
 
-    crop = db.query(AgricultureData).filter(AgricultureData.id == cid).first()
+    crop = ctx.filter_query(db.query(AgricultureData).filter(AgricultureData.id == cid), AgricultureData).first()
     if not crop:
         raise HTTPException(status_code=404, detail="Crop record not found")
 
@@ -114,13 +129,17 @@ def update_crop_record(crop_id: str, payload: Dict[str, Any], db: Session = Depe
 
 
 @router.delete("/{crop_id}")
-def delete_crop_record(crop_id: str, db: Session = Depends(get_db)):
+def delete_crop_record(
+    crop_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
         cid = uuid.UUID(crop_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid crop UUID")
 
-    crop = db.query(AgricultureData).filter(AgricultureData.id == cid).first()
+    crop = ctx.filter_query(db.query(AgricultureData).filter(AgricultureData.id == cid), AgricultureData).first()
     if not crop:
         raise HTTPException(status_code=404, detail="Crop record not found")
 
@@ -200,9 +219,10 @@ def get_farmers(
     ward: Optional[int] = None,
     category: Optional[str] = None,
     search: Optional[str] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None)), AgricultureFarmer)
     if ward and ward > 0:
         query = query.filter(AgricultureFarmer.ward_number == ward)
     if category and category.strip() and category != "सबै वर्ग":
@@ -221,8 +241,11 @@ def get_farmers(
 
 
 @router.get("/farmers/summary")
-def get_farmer_summary(db: Session = Depends(get_db)):
-    farmers = db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None)).all()
+def get_farmer_summary(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    farmers = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None)), AgricultureFarmer).all()
     total_farmers = len(farmers)
     total_land = sum(float(f.land_area_ropani or 0) for f in farmers)
     cards_issued = len([f for f in farmers if f.soil_health_card and len(str(f.soil_health_card)) > 10])
@@ -253,46 +276,42 @@ def get_farmer_summary(db: Session = Depends(get_db)):
         wards[w] = wards.get(w, 0) + 1
     by_ward = [{"ward": k, "count": v} for k, v in sorted(wards.items())]
 
+    is_p5 = any(k in (ctx.tenant_id or "").lower() for k in ("panchpokhari", "f07c2bcc"))
     return {
         "totalRegisteredFarmers": total_farmers,
         "totalLandRopani": round(total_land, 1),
-        "totalSubsidiesDisbursedNPR": total_subsidy or 4850000,
+        "totalSubsidiesDisbursedNPR": total_subsidy or (4850000 if is_p5 else 0),
         "soilHealthCardsIssued": cards_issued,
-        "byCategory": by_category if by_category else [
-            {"category": "साना किसान (२-१० रोपनी)", "count": 210},
-            {"category": "व्यावसायिक किसान (> १० रोपनी)", "count": 65},
-            {"category": "सिमान्तकृत/अति साना (< २ रोपनी)", "count": 45}
-        ],
-        "byWard": by_ward if by_ward else [
-            {"ward": 1, "count": 38},
-            {"ward": 2, "count": 45},
-            {"ward": 3, "count": 62},
-            {"ward": 4, "count": 41},
-            {"ward": 5, "count": 35},
-            {"ward": 6, "count": 39},
-            {"ward": 7, "count": 32},
-            {"ward": 8, "count": 28},
-        ]
+        "byCategory": by_category,
+        "byWard": by_ward
     }
 
 
 @router.get("/farmers/{farmer_id}")
-def get_farmer_by_id(farmer_id: str, db: Session = Depends(get_db)):
+def get_farmer_by_id(
+    farmer_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     farmer = None
     try:
         fid = uuid.UUID(farmer_id)
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid), AgricultureFarmer).first()
     except ValueError:
         pass
     if not farmer:
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id), AgricultureFarmer).first()
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
     return farmer.to_dict()
 
 
 @router.post("/farmers")
-def register_farmer(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def register_farmer(
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     farmer_uuid = uuid.uuid4()
     code = f"KMP-2081-{uuid.uuid4().hex[:4].upper()}"
 
@@ -306,6 +325,7 @@ def register_farmer(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
     db_farmer = AgricultureFarmer(
         id=farmer_uuid,
+        tenant_id=ctx.effective_tenant_id,
         farmer_id=payload.get("farmerId") or code,
         full_name=payload.get("fullName", "नयाँ कृषक"),
         gender=payload.get("gender", "पुरुष"),
@@ -334,15 +354,20 @@ def register_farmer(payload: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/farmers/{farmer_id}")
-def update_farmer(farmer_id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def update_farmer(
+    farmer_id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     farmer = None
     try:
         fid = uuid.UUID(farmer_id)
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid), AgricultureFarmer).first()
     except ValueError:
         pass
     if not farmer:
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id), AgricultureFarmer).first()
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
 
@@ -374,15 +399,19 @@ def update_farmer(farmer_id: str, payload: Dict[str, Any], db: Session = Depends
 
 
 @router.delete("/farmers/{farmer_id}")
-def delete_farmer(farmer_id: str, db: Session = Depends(get_db)):
+def delete_farmer(
+    farmer_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     farmer = None
     try:
         fid = uuid.UUID(farmer_id)
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid), AgricultureFarmer).first()
     except ValueError:
         pass
     if not farmer:
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id), AgricultureFarmer).first()
     if not farmer:
         raise HTTPException(status_code=404, detail="Farmer not found")
 
@@ -392,13 +421,22 @@ def delete_farmer(farmer_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/farmers/{farmer_id}/subsidy")
-def disburse_farmer_subsidy(farmer_id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def disburse_farmer_subsidy(
+    farmer_id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     farmer = None
     try:
         fid = uuid.UUID(farmer_id)
-        farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid).first()
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.id == fid), AgricultureFarmer).first()
     except ValueError:
         pass
+    if not farmer:
+        farmer = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id), AgricultureFarmer).first()
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer not found")
     if not farmer:
         farmer = db.query(AgricultureFarmer).filter(AgricultureFarmer.farmer_id == farmer_id).first()
     if not farmer:
@@ -460,10 +498,13 @@ def update_farmer_soil_card(farmer_id: str, payload: Dict[str, Any], db: Session
 
 
 @router.get("/subsidies/all")
-def get_all_subsidies(db: Session = Depends(get_db)):
+def get_all_subsidies(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     results = []
     # 1. From AgricultureFarmer
-    farmers = db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None)).all()
+    farmers = ctx.filter_query(db.query(AgricultureFarmer).filter(AgricultureFarmer.deleted_at.is_(None)), AgricultureFarmer).all()
     for f in farmers:
         if f.subsidies_history:
             try:
@@ -487,11 +528,11 @@ def get_all_subsidies(db: Session = Depends(get_db)):
                 pass
 
     # 2. From AgricultureProfile
-    profiles = db.query(AgricultureProfile).all()
+    profiles = ctx.filter_query(db.query(AgricultureProfile), AgricultureProfile).all()
     hh_ids = [p.household_id for p in profiles if p.household_id]
     hh_map = {}
     if hh_ids:
-        households = db.query(Household).filter(Household.id.in_(hh_ids)).all()
+        households = ctx.filter_query(db.query(Household).filter(Household.id.in_(hh_ids)), Household).all()
         hh_map = {h.id: h for h in households}
 
     for p in profiles:
@@ -516,12 +557,16 @@ def get_all_subsidies(db: Session = Depends(get_db)):
 
 
 @router.get("/households/search")
-def search_households_for_profile(q: str = Query("", description="खोज शब्द"), db: Session = Depends(get_db)):
+def search_households_for_profile(
+    q: str = Query("", description="खोज शब्द"),
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     if not q or not q.strip():
         return []
     s = f"%{q.strip()}%"
-    households = db.query(Household).filter(
-        Household.deleted_at.is_(None),
+    base_q = ctx.filter_query(db.query(Household).filter(Household.deleted_at.is_(None)), Household)
+    households = base_q.filter(
         (
             (Household.household_name.ilike(s)) |
             (Household.matrix_house_no.ilike(s)) |
@@ -546,14 +591,18 @@ def search_households_for_profile(q: str = Query("", description="खोज श�
 
 
 @router.get("/profiles/{household_id}")
-def get_agriculture_profile(household_id: str, db: Session = Depends(get_db)):
+def get_agriculture_profile(
+    household_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
         hid = uuid.UUID(household_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid household UUID format")
 
-    profile = db.query(AgricultureProfile).filter(AgricultureProfile.household_id == hid).first()
-    hh = db.query(Household).filter(Household.id == hid).first()
+    profile = ctx.filter_query(db.query(AgricultureProfile).filter(AgricultureProfile.household_id == hid), AgricultureProfile).first()
+    hh = ctx.filter_query(db.query(Household).filter(Household.id == hid), Household).first()
     hh_dict = None
     if hh:
         hh_dict = {
@@ -583,16 +632,22 @@ def get_agriculture_profile(household_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/profiles/{household_id}")
-def save_agriculture_profile(household_id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def save_agriculture_profile(
+    household_id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
         hid = uuid.UUID(household_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid household UUID format")
 
-    profile = db.query(AgricultureProfile).filter(AgricultureProfile.household_id == hid).first()
+    profile = ctx.filter_query(db.query(AgricultureProfile).filter(AgricultureProfile.household_id == hid), AgricultureProfile).first()
     if not profile:
         profile = AgricultureProfile(
             id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
             household_id=hid,
             created_at=datetime.utcnow()
         )
@@ -997,18 +1052,22 @@ def distribute_vet_medicine(payload: VetDistributionCreate, db: Session = Depend
 # ==========================================
 
 @router.get("/vet-ai-records")
-def get_vet_ai_records(ward: Optional[int] = None, db: Session = Depends(get_db)):
+def get_vet_ai_records(
+    ward: Optional[int] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
-        query = db.query(VetAiRecord)
-        if db.query(VetAiRecord).count() == 0:
+        query = ctx.filter_query(db.query(VetAiRecord), VetAiRecord)
+        if query.count() == 0 and any(k in (ctx.tenant_id or "").lower() for k in ("panchpokhari", "f07c2bcc")):
             seeds = [
-                VetAiRecord(id='AI-2081-01', farmer_name='सुवास तामाङ', contact_phone='9841234567', ward_number=3, animal_type='गाई (Cow)', breed='होलिस्टिन फ्रिजियन (HF 75%)', straw_number='NLDB-HF-9812', ai_date_bs='२०८१/०६/१०', expected_calving_date_bs='२०८२/०३/१८', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='सफल (Confirmed)', remarks='पहिलो प्रयासमै गर्भधारण सफल', created_at=datetime.utcnow()),
-                VetAiRecord(id='AI-2081-02', farmer_name='पासाङ ल्हामु शेर्पा', contact_phone='9861987654', ward_number=1, animal_type='चौँरी (Chauri)', breed='अल्पाइन याक क्रस', straw_number='YAK-ST-4421', ai_date_bs='२०८१/०५/२४', expected_calving_date_bs='२०८२/०२/२८', technician_name='सोनाम लामा (जेटीए)', status='निरीक्षण बाँकी (Pending)', remarks='गर्भ परीक्षण बाँकी', created_at=datetime.utcnow()),
-                VetAiRecord(id='AI-2081-03', farmer_name='केशव पराजुली', contact_phone='9851123456', ward_number=6, animal_type='भैंसी (Buffalo)', breed='मुर्रा नश्ल (Murrah)', straw_number='MUR-BUF-119', ai_date_bs='२०८१/०६/०२', expected_calving_date_bs='२०८२/०४/१५', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='पुनः गर्भाधान आवश्यक (Repeat)', remarks='दोस्रो पटक आवश्यक', created_at=datetime.utcnow())
+                VetAiRecord(id='AI-2081-01', tenant_id="panchpokhari", farmer_name='सुवास तामाङ', contact_phone='9841234567', ward_number=3, animal_type='गाई (Cow)', breed='होलिस्टिन फ्रिजियन (HF 75%)', straw_number='NLDB-HF-9812', ai_date_bs='२०८१/०६/१०', expected_calving_date_bs='२०८२/०३/१८', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='सफल (Confirmed)', remarks='पहिलो प्रयासमै गर्भधारण सफल', created_at=datetime.utcnow()),
+                VetAiRecord(id='AI-2081-02', tenant_id="panchpokhari", farmer_name='पासाङ ल्हामु शेर्पा', contact_phone='9861987654', ward_number=1, animal_type='चौँरी (Chauri)', breed='अल्पाइन याक क्रस', straw_number='YAK-ST-4421', ai_date_bs='२०८१/०५/२४', expected_calving_date_bs='२०८२/०२/२८', technician_name='सोनाम लामा (जेटीए)', status='निरीक्षण बाँकी (Pending)', remarks='गर्भ परीक्षण बाँकी', created_at=datetime.utcnow()),
+                VetAiRecord(id='AI-2081-03', tenant_id="panchpokhari", farmer_name='केशव पराजुली', contact_phone='9851123456', ward_number=6, animal_type='भैंसी (Buffalo)', breed='मुर्रा नश्ल (Murrah)', straw_number='MUR-BUF-119', ai_date_bs='२०८१/०६/०२', expected_calving_date_bs='२०८२/०४/१५', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='पुनः गर्भाधान आवश्यक (Repeat)', remarks='दोस्रो पटक आवश्यक', created_at=datetime.utcnow())
             ]
             db.add_all(seeds)
             db.commit()
-            query = db.query(VetAiRecord)
+            query = ctx.filter_query(db.query(VetAiRecord), VetAiRecord)
         if ward:
             query = query.filter(VetAiRecord.ward_number == ward)
         records = query.order_by(desc(VetAiRecord.created_at)).all()
@@ -1019,10 +1078,15 @@ def get_vet_ai_records(ward: Optional[int] = None, db: Session = Depends(get_db)
 
 
 @router.post("/vet-ai-records")
-def create_vet_ai_record(payload: VetAiRecordCreate, db: Session = Depends(get_db)):
+def create_vet_ai_record(
+    payload: VetAiRecordCreate,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     record_id = payload.id or f"AI-2081-{uuid.uuid4().hex[:4].upper()}"
     new_rec = VetAiRecord(
         id=record_id,
+        tenant_id=ctx.effective_tenant_id,
         farmer_name=payload.farmerName,
         contact_phone=payload.contactPhone,
         ward_number=payload.wardNumber,
@@ -1043,8 +1107,13 @@ def create_vet_ai_record(payload: VetAiRecordCreate, db: Session = Depends(get_d
 
 
 @router.put("/vet-ai-records/{id}")
-def update_vet_ai_record(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    rec = db.query(VetAiRecord).filter(VetAiRecord.id == id).first()
+def update_vet_ai_record(
+    id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetAiRecord).filter(VetAiRecord.id == id), VetAiRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="AI Record not found")
 
@@ -1074,8 +1143,12 @@ def update_vet_ai_record(id: str, payload: Dict[str, Any], db: Session = Depends
 
 
 @router.delete("/vet-ai-records/{id}")
-def delete_vet_ai_record(id: str, db: Session = Depends(get_db)):
-    rec = db.query(VetAiRecord).filter(VetAiRecord.id == id).first()
+def delete_vet_ai_record(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetAiRecord).filter(VetAiRecord.id == id), VetAiRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="AI Record not found")
     db.delete(rec)
@@ -1088,19 +1161,23 @@ def delete_vet_ai_record(id: str, db: Session = Depends(get_db)):
 # ==========================================
 
 @router.get("/vet-vaccinations")
-def get_vet_vaccinations(ward: Optional[int] = None, db: Session = Depends(get_db)):
+def get_vet_vaccinations(
+    ward: Optional[int] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
-        query = db.query(VetVaccinationRecord)
-        if db.query(VetVaccinationRecord).count() == 0:
+        query = ctx.filter_query(db.query(VetVaccinationRecord), VetVaccinationRecord)
+        if query.count() == 0 and any(k in (ctx.tenant_id or "").lower() for k in ("panchpokhari", "f07c2bcc")):
             seeds = [
-                VetVaccinationRecord(id='VAC-2081-101', vaccine_name='पीपीआर (PPR) विरुद्धको खोप', ear_tag_number='NP-PKT-81-00214', animal_type='बाख्रा (Goat)', farmer_name='दलबहादुर तामाङ', ward_number=3, vaccinated_date_bs='२०८१/०६/१२', booster_due_date_bs='२०८२/०६/१२', batch_number='PPR-2024-B9', technician_name='गोविन्द अधिकारी (भेटेरिनरी जेटीए)', status='सम्पन्न (Completed)', created_at=datetime.utcnow()),
-                VetVaccinationRecord(id='VAC-2081-102', vaccine_name='खोरेत (FMD) विरुद्धको खोप', ear_tag_number='NP-PKT-81-00892', animal_type='गाई (Cow)', farmer_name='माया गुरुङ', ward_number=2, vaccinated_date_bs='२०८१/०५/१८', booster_due_date_bs='२०८१/११/१८', batch_number='FMD-2024-C1', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='बूस्टर बाँकी (Booster Due)', created_at=datetime.utcnow()),
-                VetVaccinationRecord(id='VAC-2081-103', vaccine_name='रेबिज (Anti-Rabies) खोप', ear_tag_number='NP-PKT-81-01140', animal_type='कुकुर (Canine)', farmer_name='सुन्दर श्रेष्ठ', ward_number=5, vaccinated_date_bs='२०८१/०६/०५', booster_due_date_bs='२०८२/०६/०५', batch_number='RAB-2024-A3', technician_name='गोविन्द अधिकारी (भेटेरिनरी जेटीए)', status='सम्पन्न (Completed)', created_at=datetime.utcnow()),
-                VetVaccinationRecord(id='VAC-2081-104', vaccine_name='लम्पि स्किन (LSD) खोप', ear_tag_number='NP-PKT-81-00431', animal_type='भैंसी (Buffalo)', farmer_name='गोपाल पण्डित', ward_number=7, vaccinated_date_bs='२०८१/०६/०१', booster_due_date_bs='२०८२/०६/०१', batch_number='LSD-2024-X4', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='सम्पन्न (Completed)', created_at=datetime.utcnow())
+                VetVaccinationRecord(id='VAC-2081-101', tenant_id="panchpokhari", vaccine_name='पीपीआर (PPR) विरुद्धको खोप', ear_tag_number='NP-PKT-81-00214', animal_type='बाख्रा (Goat)', farmer_name='दलबहादुर तामाङ', ward_number=3, vaccinated_date_bs='२०८१/०६/१२', booster_due_date_bs='२०८२/०६/१२', batch_number='PPR-2024-B9', technician_name='गोविन्द अधिकारी (भेटेरिनरी जेटीए)', status='सम्पन्न (Completed)', created_at=datetime.utcnow()),
+                VetVaccinationRecord(id='VAC-2081-102', tenant_id="panchpokhari", vaccine_name='खोरेत (FMD) विरुद्धको खोप', ear_tag_number='NP-PKT-81-00892', animal_type='गाई (Cow)', farmer_name='माया गुरुङ', ward_number=2, vaccinated_date_bs='२०८१/०५/१८', booster_due_date_bs='२०८१/११/१८', batch_number='FMD-2024-C1', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='बूस्टर बाँकी (Booster Due)', created_at=datetime.utcnow()),
+                VetVaccinationRecord(id='VAC-2081-103', tenant_id="panchpokhari", vaccine_name='रेबिज (Anti-Rabies) खोप', ear_tag_number='NP-PKT-81-01140', animal_type='कुकुर (Canine)', farmer_name='सुन्दर श्रेष्ठ', ward_number=5, vaccinated_date_bs='२०८१/०६/०५', booster_due_date_bs='२०८२/०६/०५', batch_number='RAB-2024-A3', technician_name='गोविन्द अधिकारी (भेटेरिनरी जेटीए)', status='सम्पन्न (Completed)', created_at=datetime.utcnow()),
+                VetVaccinationRecord(id='VAC-2081-104', tenant_id="panchpokhari", vaccine_name='लम्पि स्किन (LSD) खोप', ear_tag_number='NP-PKT-81-00431', animal_type='भैंसी (Buffalo)', farmer_name='गोपाल पण्डित', ward_number=7, vaccinated_date_bs='२०८१/०६/०१', booster_due_date_bs='२०८२/०६/०१', batch_number='LSD-2024-X4', technician_name='रामेश्वर थापा (पशु प्राविधिक)', status='सम्पन्न (Completed)', created_at=datetime.utcnow())
             ]
             db.add_all(seeds)
             db.commit()
-            query = db.query(VetVaccinationRecord)
+            query = ctx.filter_query(db.query(VetVaccinationRecord), VetVaccinationRecord)
         if ward:
             query = query.filter(VetVaccinationRecord.ward_number == ward)
         records = query.order_by(desc(VetVaccinationRecord.created_at)).all()
@@ -1111,10 +1188,15 @@ def get_vet_vaccinations(ward: Optional[int] = None, db: Session = Depends(get_d
 
 
 @router.post("/vet-vaccinations")
-def create_vet_vaccination(payload: VetVaccinationRecordCreate, db: Session = Depends(get_db)):
+def create_vet_vaccination(
+    payload: VetVaccinationRecordCreate,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     record_id = payload.id or f"VAC-2081-{uuid.uuid4().hex[:4].upper()}"
     new_rec = VetVaccinationRecord(
         id=record_id,
+        tenant_id=ctx.effective_tenant_id,
         vaccine_name=payload.vaccineName,
         ear_tag_number=payload.earTagNumber,
         animal_type=payload.animalType,
@@ -1134,8 +1216,13 @@ def create_vet_vaccination(payload: VetVaccinationRecordCreate, db: Session = De
 
 
 @router.put("/vet-vaccinations/{id}")
-def update_vet_vaccination(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    rec = db.query(VetVaccinationRecord).filter(VetVaccinationRecord.id == id).first()
+def update_vet_vaccination(
+    id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetVaccinationRecord).filter(VetVaccinationRecord.id == id), VetVaccinationRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Vaccination Record not found")
 
@@ -1167,8 +1254,12 @@ def update_vet_vaccination(id: str, payload: Dict[str, Any], db: Session = Depen
 
 
 @router.delete("/vet-vaccinations/{id}")
-def delete_vet_vaccination(id: str, db: Session = Depends(get_db)):
-    rec = db.query(VetVaccinationRecord).filter(VetVaccinationRecord.id == id).first()
+def delete_vet_vaccination(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetVaccinationRecord).filter(VetVaccinationRecord.id == id), VetVaccinationRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Vaccination Record not found")
     db.delete(rec)
@@ -1181,17 +1272,21 @@ def delete_vet_vaccination(id: str, db: Session = Depends(get_db)):
 # ==========================================
 
 @router.get("/vet-diagnoses")
-def get_vet_diagnoses(ward: Optional[int] = None, db: Session = Depends(get_db)):
+def get_vet_diagnoses(
+    ward: Optional[int] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
-        query = db.query(VetDiagnosisRecord)
-        if db.query(VetDiagnosisRecord).count() == 0:
+        query = ctx.filter_query(db.query(VetDiagnosisRecord), VetDiagnosisRecord)
+        if query.count() == 0 and any(k in (ctx.tenant_id or "").lower() for k in ("panchpokhari", "f07c2bcc")):
             seeds = [
-                VetDiagnosisRecord(id='DX-2081-501', farmer_name='हरिप्रसाद दाहाल', ward_number=2, animal_type='गाई (Cow)', symptoms='उच्च ज्वरो, दानापानी नखाने, दुध उत्पादनमा भारी गिरावट', suspected_disease='थुनेलो (Mastitis)', prescribed_medicine='इन्ट्राम्यामारी ट्युब + एन्टिबायोटिक पेन्सिलिन', dosage_instructions='बिहान-बेलुका थुन सफा गरी ट्युब चढाउने', doctor_technician='रामेश्वर थापा (पशु प्राविधिक)', date_bs='२०८१/०६/०८', follow_up_date_bs='२०८१/०६/१५', status='निको भएको (Recovered)', created_at=datetime.utcnow()),
-                VetDiagnosisRecord(id='DX-2081-502', farmer_name='पेम्बा दोर्जे तामाङ', ward_number=1, animal_type='चौँरी (Chauri)', symptoms='पेट फुल्ने, छटपटाउने, सास फेर्न गाह्रो', suspected_disease='टिम्प्यानी (Bloat / Tympany)', prescribed_medicine='ब्लोटोसिल (Bloatosil) + तरल प्याराफिन', dosage_instructions='तत्काल १०० मिलि मुखबाट खुवाउने', doctor_technician='डा. सञ्जय श्रेष्ठ (पशु चिकित्सक)', date_bs='२०८१/०६/१४', follow_up_date_bs='२०८१/०६/१६', status='उपचार जारी (Under Treatment)', created_at=datetime.utcnow())
+                VetDiagnosisRecord(id='DX-2081-501', tenant_id="panchpokhari", farmer_name='हरिप्रसाद दाहाल', ward_number=2, animal_type='गाई (Cow)', symptoms='उच्च ज्वरो, दानापानी नखाने, दुध उत्पादनमा भारी गिरावट', suspected_disease='थुनेलो (Mastitis)', prescribed_medicine='इन्ट्राम्यामारी ट्युब + एन्टिबायोटिक पेन्सिलिन', dosage_instructions='बिहान-बेलुका थुन सफा गरी ट्युब चढाउने', doctor_technician='रामेश्वर थापा (पशु प्राविधिक)', date_bs='२०८१/०६/०८', follow_up_date_bs='२०८१/०६/१५', status='निको भएको (Recovered)', created_at=datetime.utcnow()),
+                VetDiagnosisRecord(id='DX-2081-502', tenant_id="panchpokhari", farmer_name='पेम्बा दोर्जे तामाङ', ward_number=1, animal_type='चौँरी (Chauri)', symptoms='पेट फुल्ने, छटपटाउने, सास फेर्न गाह्रो', suspected_disease='टिम्प्यानी (Bloat / Tympany)', prescribed_medicine='ब्लोटोसिल (Bloatosil) + तरल प्याराफिन', dosage_instructions='तत्काल १०० मिलि मुखबाट खुवाउने', doctor_technician='डा. सञ्जय श्रेष्ठ (पशु चिकित्सक)', date_bs='२०८१/०६/१४', follow_up_date_bs='२०८१/०६/१६', status='उपचार जारी (Under Treatment)', created_at=datetime.utcnow())
             ]
             db.add_all(seeds)
             db.commit()
-            query = db.query(VetDiagnosisRecord)
+            query = ctx.filter_query(db.query(VetDiagnosisRecord), VetDiagnosisRecord)
         if ward:
             query = query.filter(VetDiagnosisRecord.ward_number == ward)
         records = query.order_by(desc(VetDiagnosisRecord.created_at)).all()
@@ -1202,10 +1297,15 @@ def get_vet_diagnoses(ward: Optional[int] = None, db: Session = Depends(get_db))
 
 
 @router.post("/vet-diagnoses")
-def create_vet_diagnosis(payload: VetDiagnosisRecordCreate, db: Session = Depends(get_db)):
+def create_vet_diagnosis(
+    payload: VetDiagnosisRecordCreate,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     record_id = payload.id or f"DX-2081-{uuid.uuid4().hex[:4].upper()}"
     new_rec = VetDiagnosisRecord(
         id=record_id,
+        tenant_id=ctx.effective_tenant_id,
         farmer_name=payload.farmerName,
         ward_number=payload.wardNumber,
         animal_type=payload.animalType,
@@ -1226,8 +1326,13 @@ def create_vet_diagnosis(payload: VetDiagnosisRecordCreate, db: Session = Depend
 
 
 @router.put("/vet-diagnoses/{id}")
-def update_vet_diagnosis(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    rec = db.query(VetDiagnosisRecord).filter(VetDiagnosisRecord.id == id).first()
+def update_vet_diagnosis(
+    id: str,
+    payload: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetDiagnosisRecord).filter(VetDiagnosisRecord.id == id), VetDiagnosisRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Diagnosis Record not found")
 
@@ -1259,8 +1364,12 @@ def update_vet_diagnosis(id: str, payload: Dict[str, Any], db: Session = Depends
 
 
 @router.delete("/vet-diagnoses/{id}")
-def delete_vet_diagnosis(id: str, db: Session = Depends(get_db)):
-    rec = db.query(VetDiagnosisRecord).filter(VetDiagnosisRecord.id == id).first()
+def delete_vet_diagnosis(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    rec = ctx.filter_query(db.query(VetDiagnosisRecord).filter(VetDiagnosisRecord.id == id), VetDiagnosisRecord).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Diagnosis Record not found")
     db.delete(rec)

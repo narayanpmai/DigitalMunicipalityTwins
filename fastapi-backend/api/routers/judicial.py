@@ -1,13 +1,14 @@
 """
 Judicial Committee API Router (न्यायिक समिति)
-Municipal Digital Twins v2.0 — Panchpokhari Thangpal
-Provides complete case registry, cause lists, hearings, settlements, and mediator directory
+Municipal Digital Twins v2.0
+Provides complete case registry, cause lists, hearings, settlements, and mediator directory with strict Multi-Tenant Scoping.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import get_tenant_context, TenantContext
 from models.judicial import JudicialCase, JudicialMediator, JudicialCauseList
 import uuid
 from datetime import datetime
@@ -25,8 +26,11 @@ def get_judicial_cases_stats():
 
 # ── 1. JUDICIAL STATS ───────────────────────────────────────────────────────
 @router.get("/stats")
-def get_judicial_stats(db: Session = Depends(get_db)):
-    cases = db.query(JudicialCase).filter(JudicialCase.deleted_at.is_(None)).all()
+def get_judicial_stats(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    cases = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.deleted_at.is_(None)), JudicialCase).all()
     total_cases = len(cases)
 
     decided = sum(1 for c in cases if (c.status and 'फैसला' in c.status) or c.final_settlement)
@@ -34,7 +38,7 @@ def get_judicial_stats(db: Session = Depends(get_db)):
     in_reconciliation = sum(1 for c in cases if c.status and 'मेलमिलाप' in c.status)
     new_reg = total_cases - decided
 
-    total_mediators = db.query(JudicialMediator).filter(JudicialMediator.status == 'active').count()
+    total_mediators = ctx.filter_query(db.query(JudicialMediator).filter(JudicialMediator.status == 'active'), JudicialMediator).count()
 
     resolution_rate = round((decided / max(total_cases, 1)) * 100) if total_cases > 0 else 0
 
@@ -45,7 +49,7 @@ def get_judicial_stats(db: Session = Depends(get_db)):
         "inReconciliation": in_reconciliation,
         "newRegistered": new_reg,
         "resolutionRate": resolution_rate,
-        "totalMediators": total_mediators or 3,
+        "totalMediators": total_mediators,
     }
 
 
@@ -57,9 +61,10 @@ def get_judicial_cases(
     status: Optional[str] = Query(None),
     disputeType: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(JudicialCase).filter(JudicialCase.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.deleted_at.is_(None)), JudicialCase)
 
     if ward and ward > 0:
         query = query.filter(JudicialCase.ward_number == ward)
@@ -84,19 +89,23 @@ def get_judicial_cases(
 
 
 @router.get("/cases/{case_id}")
-def get_judicial_case(case_id: str, db: Session = Depends(get_db)):
+def get_judicial_case(
+    case_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     case = None
     try:
         u_id = uuid.UUID(case_id)
-        case = db.query(JudicialCase).filter(JudicialCase.id == u_id, JudicialCase.deleted_at.is_(None)).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.id == u_id, JudicialCase.deleted_at.is_(None)), JudicialCase).first()
     except ValueError:
         pass
 
     if not case:
-        case = db.query(JudicialCase).filter(
+        case = ctx.filter_query(db.query(JudicialCase).filter(
             JudicialCase.case_no == case_id,
             JudicialCase.deleted_at.is_(None)
-        ).first()
+        ), JudicialCase).first()
 
     if not case:
         raise HTTPException(status_code=404, detail="न्यायिक उजुरी फेला परेन।")
@@ -106,7 +115,11 @@ def get_judicial_case(case_id: str, db: Session = Depends(get_db)):
 
 @router.post("/cases", status_code=status.HTTP_201_CREATED)
 @router.post("/cases/", status_code=status.HTTP_201_CREATED)
-def create_judicial_case(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_judicial_case(
+    data: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     title = data.get("title")
     complainant_name = data.get("complainantName") or data.get("complainant_name")
     respondent_name = data.get("respondentName") or data.get("respondent_name")
@@ -116,11 +129,26 @@ def create_judicial_case(data: Dict[str, Any], db: Session = Depends(get_db)):
 
     try:
         ward = int(data.get("wardNumber") or data.get("ward_number") or 1)
-        count = db.query(JudicialCase).count() + 1
-        case_no = data.get("caseNo") or data.get("case_no") or f"न्या.वि.-०{ward}/२०८१-०{count:02d}"
+        count = ctx.filter_query(db.query(JudicialCase), JudicialCase).count() + 1
+        
+        # Palika prefix
+        t_id = (ctx.tenant_id or "").lower()
+        if "gaushala" in t_id:
+            prefix = f"गौ.न्या.-०{ward}/२०८१-०{count:02d}"
+        elif "melamchi" in t_id:
+            prefix = f"मे.न्या.-०{ward}/२०८१-०{count:02d}"
+        elif "khadadevi" in t_id:
+            prefix = f"खाँ.न्या.-०{ward}/२०८१-०{count:02d}"
+        elif "benighat" in t_id:
+            prefix = f"बे.न्या.-०{ward}/२०८१-०{count:02d}"
+        else:
+            prefix = f"न्या.वि.-०{ward}/२०८१-०{count:02d}"
+
+        case_no = data.get("caseNo") or data.get("case_no") or prefix
 
         case = JudicialCase(
             id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
             case_no=case_no,
             title=title,
             dispute_type=data.get("disputeType") or data.get("dispute_type") or "साँध सिमाना / जग्गा विवाद (Boundary Dispute)",
@@ -154,16 +182,21 @@ def create_judicial_case(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/cases/{case_id}")
-def update_judicial_case(case_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_judicial_case(
+    case_id: str,
+    data: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     case = None
     try:
         u_id = uuid.UUID(case_id)
-        case = db.query(JudicialCase).filter(JudicialCase.id == u_id, JudicialCase.deleted_at.is_(None)).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.id == u_id, JudicialCase.deleted_at.is_(None)), JudicialCase).first()
     except ValueError:
         pass
 
     if not case:
-        case = db.query(JudicialCase).filter(JudicialCase.case_no == case_id, JudicialCase.deleted_at.is_(None)).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.case_no == case_id, JudicialCase.deleted_at.is_(None)), JudicialCase).first()
 
     if not case:
         raise HTTPException(status_code=404, detail="न्यायिक उजुरी फेला परेन।")
@@ -204,13 +237,17 @@ def update_judicial_case(case_id: str, data: Dict[str, Any], db: Session = Depen
 
 
 @router.delete("/cases/{case_id}")
-def delete_judicial_case(case_id: str, db: Session = Depends(get_db)):
+def delete_judicial_case(
+    case_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     case = None
     try:
         u_id = uuid.UUID(case_id)
-        case = db.query(JudicialCase).filter(JudicialCase.id == u_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.id == u_id), JudicialCase).first()
     except ValueError:
-        case = db.query(JudicialCase).filter(JudicialCase.case_no == case_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.case_no == case_id), JudicialCase).first()
 
     if not case:
         raise HTTPException(status_code=404, detail="उजुरी फेला परेन।")
@@ -222,13 +259,18 @@ def delete_judicial_case(case_id: str, db: Session = Depends(get_db)):
 
 # ── 3. BENCH HEARINGS (इजलास सुनुवाइ) ──────────────────────────────────────
 @router.post("/cases/{case_id}/hearings")
-def add_case_hearing(case_id: str, hearing: Dict[str, Any], db: Session = Depends(get_db)):
+def add_case_hearing(
+    case_id: str,
+    hearing: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     case = None
     try:
         u_id = uuid.UUID(case_id)
-        case = db.query(JudicialCase).filter(JudicialCase.id == u_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.id == u_id), JudicialCase).first()
     except ValueError:
-        case = db.query(JudicialCase).filter(JudicialCase.case_no == case_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.case_no == case_id), JudicialCase).first()
 
     if not case:
         raise HTTPException(status_code=404, detail="उजुरी फेला परेन।")
@@ -265,13 +307,18 @@ def add_case_hearing(case_id: str, hearing: Dict[str, Any], db: Session = Depend
 
 # ── 4. SETTLEMENT / VERDICT (मिलापत्र तथा फैसला) ───────────────────────────
 @router.post("/cases/{case_id}/settlement")
-def finalize_case_settlement(case_id: str, settlement: Dict[str, Any], db: Session = Depends(get_db)):
+def finalize_case_settlement(
+    case_id: str,
+    settlement: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     case = None
     try:
         u_id = uuid.UUID(case_id)
-        case = db.query(JudicialCase).filter(JudicialCase.id == u_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.id == u_id), JudicialCase).first()
     except ValueError:
-        case = db.query(JudicialCase).filter(JudicialCase.case_no == case_id).first()
+        case = ctx.filter_query(db.query(JudicialCase).filter(JudicialCase.case_no == case_id), JudicialCase).first()
 
     if not case:
         raise HTTPException(status_code=404, detail="उजुरी फेला परेन।")
@@ -294,10 +341,12 @@ def finalize_case_settlement(case_id: str, settlement: Dict[str, Any], db: Sessi
 
 # ── 5. MEDIATORS DIRECTORY (सूचीकृत मेलमिलापकर्ता) ─────────────────────────
 @router.get("/mediators")
-def get_mediators(db: Session = Depends(get_db)):
-    mediators = db.query(JudicialMediator).filter(JudicialMediator.status == 'active').all()
-    if not mediators:
-        # Seed default 3 mediators for Panchpokhari Thangpal
+def get_mediators(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    mediators = ctx.filter_query(db.query(JudicialMediator).filter(JudicialMediator.status == 'active'), JudicialMediator).all()
+    if not mediators and any(k in (ctx.tenant_id or "").lower() for k in ("panchpokhari", "f07c2bcc")):
         sample_mediators = [
             ("MED-P5-01", "अधिवक्ता कुल प्रसाद सापकोटा", 3, "९८५१२३४५६७", "kul.sapkota@gmail.com", "मेलमिलाप परिषद् नेपाल (४८ घण्टे तालिम)", "MC-NP-२०७९-१४२", "साँध सिमाना तथा जग्गा विवाद", 2, 14),
             ("MED-P5-02", "सुनिता लामा शेर्पा", 2, "९८४१२२३३८८", "sunita.lama@gmail.com", "न्याय परिषद् तथा स्थानीय शासन सबलीकरण", "MC-NP-२०८०-०८९", "पारिवारिक, घरेलु तथा महिला सम्बन्धी विवाद", 1, 19),
@@ -307,6 +356,7 @@ def get_mediators(db: Session = Depends(get_db)):
         for code, name, ward, phone, email, inst, cert, spec, act, res in sample_mediators:
             m = JudicialMediator(
                 id=uuid.uuid4(),
+                tenant_id="panchpokhari",
                 mediator_code=code,
                 full_name=name,
                 ward_no=ward,
@@ -328,16 +378,22 @@ def get_mediators(db: Session = Depends(get_db)):
 
 
 @router.post("/mediators", status_code=status.HTTP_201_CREATED)
-def create_mediator(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_mediator(
+    data: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     full_name = data.get("fullName") or data.get("full_name")
     if not full_name:
         raise HTTPException(status_code=400, detail="मेलमिलापकर्ताको नाम अनिवार्य छ।")
 
     try:
-        count = db.query(JudicialMediator).count() + 1
+        count = ctx.filter_query(db.query(JudicialMediator), JudicialMediator).count() + 1
+        code_prefix = "MED-GS-" if "gaushala" in (ctx.tenant_id or "").lower() else ("MED-ML-" if "melamchi" in (ctx.tenant_id or "").lower() else f"MED-P5-")
         mediator = JudicialMediator(
             id=uuid.uuid4(),
-            mediator_code=data.get("mediatorCode") or f"MED-P5-{count:02d}",
+            tenant_id=ctx.effective_tenant_id,
+            mediator_code=data.get("mediatorCode") or f"{code_prefix}{count:02d}",
             full_name=full_name,
             ward_no=int(data.get("wardNo") or data.get("ward_no") or 1),
             phone=data.get("phone"),
@@ -362,44 +418,27 @@ def create_mediator(data: Dict[str, Any], db: Session = Depends(get_db)):
 @router.get("/cause-list")
 def get_cause_list(
     date: Optional[str] = Query(None),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(JudicialCauseList)
+    query = ctx.filter_query(db.query(JudicialCauseList), JudicialCauseList)
     if date:
         query = query.filter(JudicialCauseList.bench_date_bs == date)
 
     items = query.order_by(JudicialCauseList.bench_date_bs.desc(), JudicialCauseList.bench_time).all()
-    if not items:
-        # Default cause list items from existing cases
-        cases = db.query(JudicialCase).filter(JudicialCase.deleted_at.is_(None)).limit(2).all()
-        seed_list = []
-        for idx, c in enumerate(cases):
-            item = JudicialCauseList(
-                id=uuid.uuid4(),
-                bench_date_bs="२०८१-०६-०५",
-                bench_time=f"दिउँसो ०{idx+1}:०० बजे",
-                case_id=str(c.id),
-                case_no=c.case_no,
-                parties=f"{c.complainant_name} विरुद्ध {c.respondent_name}",
-                dispute_type=c.dispute_type,
-                stage="मेलमिलाप छलफल" if idx == 0 else "प्रारम्भिक सुनुवाइ",
-                bench_presided_by="उपाध्यक्ष (संयोजक)",
-                bench_members=["सदस्य-१ (कार्यपालिका सदस्य)", "सदस्य-२ (कार्यपालिका सदस्य)"],
-                status="scheduled"
-            )
-            db.add(item)
-            seed_list.append(item)
-        db.commit()
-        return [i.to_dict() for i in seed_list]
-
     return [i.to_dict() for i in items]
 
 
 @router.post("/cause-list", status_code=status.HTTP_201_CREATED)
-def create_cause_list_item(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_cause_list_item(
+    data: Dict[str, Any],
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     try:
         item = JudicialCauseList(
             id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
             bench_date_bs=data.get("benchDateBs") or data.get("bench_date_bs") or "२०८१-०६-०५",
             bench_time=data.get("benchTime") or data.get("bench_time") or "दिउँसो ०१:०० बजे",
             case_id=str(data.get("caseId") or ""),

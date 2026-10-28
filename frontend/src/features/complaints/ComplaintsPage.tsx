@@ -20,7 +20,10 @@ import {
   Check,
   Radio,
   Map,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportComplaintsData } from '../../utils/exportUtils';
 
 export const ComplaintsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -262,6 +265,45 @@ export const ComplaintsPage: React.FC = () => {
           >
             <Smartphone size={16} />
             <span>WhatsApp & Live Chat कन्सोल</span>
+          </button>
+
+          <button
+            onClick={() => exportComplaintsData(filteredComplaints, 'xlsx')}
+            className="dt-btn"
+            style={{
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(16,185,129,0.25)',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+            title="हालको खोज/फिल्टर अनुसार गुनासो लगत एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} />
+            <span>एक्सेल (.xlsx) निर्यात</span>
+          </button>
+
+          <button
+            onClick={() => exportComplaintsData(filteredComplaints, 'csv')}
+            className="dt-btn"
+            style={{
+              backgroundColor: '#ffffff',
+              color: '#334155',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: '1px solid #cbd5e1',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={15} />
+            <span>CSV</span>
           </button>
 
           <button

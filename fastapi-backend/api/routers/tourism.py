@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.tourism import Destination, Hotel, TouristLog, TourPackage, LocalProduct, Reservation
 import uuid
 from datetime import datetime
@@ -473,15 +474,15 @@ def _norm_log(log: Any) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @router.get("/stats")
-def get_tourism_stats(db: Session = Depends(get_db)):
+def get_tourism_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Return high-level tourism KPIs and registry counts"""
     try:
-        dest_count = db.query(Destination).count()
-        hotel_count = db.query(Hotel).count()
-        pkg_count = db.query(TourPackage).count()
-        prod_count = db.query(LocalProduct).count()
-        res_count = db.query(Reservation).count()
-        log_count = db.query(TouristLog).count()
+        dest_count = ctx.filter_query(db.query(Destination), Destination).count()
+        hotel_count = ctx.filter_query(db.query(Hotel), Hotel).count()
+        pkg_count = ctx.filter_query(db.query(TourPackage), TourPackage).count()
+        prod_count = ctx.filter_query(db.query(LocalProduct), LocalProduct).count()
+        res_count = ctx.filter_query(db.query(Reservation), Reservation).count()
+        log_count = ctx.filter_query(db.query(TouristLog), TouristLog).count()
         if dest_count > 0:
             return {
                 "totalDestinations": dest_count,
@@ -494,23 +495,32 @@ def get_tourism_stats(db: Session = Depends(get_db)):
     except Exception:
         pass
 
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return {
+            "totalDestinations": len(INITIAL_DESTINATIONS),
+            "totalHotels": len(INITIAL_HOTELS) + 28,
+            "totalPackages": len(INITIAL_PACKAGES) + 6,
+            "totalProducts": len(INITIAL_LOCAL_PRODUCTS) + 12,
+            "totalReservations": len(INITIAL_RESERVATIONS) + 11,
+            "totalTourists": len(INITIAL_TOURIST_LOGS) + 920,
+        }
     return {
-        "totalDestinations": len(INITIAL_DESTINATIONS),
-        "totalHotels": len(INITIAL_HOTELS) + 28,
-        "totalPackages": len(INITIAL_PACKAGES) + 6,
-        "totalProducts": len(INITIAL_LOCAL_PRODUCTS) + 12,
-        "totalReservations": len(INITIAL_RESERVATIONS) + 11,
-        "totalTourists": len(INITIAL_TOURIST_LOGS) + 920,
+        "totalDestinations": 0,
+        "totalHotels": 0,
+        "totalPackages": 0,
+        "totalProducts": 0,
+        "totalReservations": 0,
+        "totalTourists": 0,
     }
 
 
 # ── DESTINATIONS ─────────────────────────────────────────────────────────────
 @router.get("/destinations")
 @router.get("/destinations/")
-def get_destinations(wardNo: Optional[int] = None, category: Optional[str] = None, db: Session = Depends(get_db)):
+def get_destinations(wardNo: Optional[int] = None, category: Optional[str] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get list of tourist destinations in Panchpokhari"""
     try:
-        q = db.query(Destination)
+        q = ctx.filter_query(db.query(Destination), Destination)
         if wardNo: q = q.filter(Destination.ward_no == wardNo)
         if category: q = q.filter(Destination.category == category)
         res = q.all()
@@ -519,17 +529,19 @@ def get_destinations(wardNo: Optional[int] = None, category: Optional[str] = Non
     except Exception:
         pass
 
-    results = INITIAL_DESTINATIONS
-    if wardNo: results = [d for d in results if d.get("wardNo") == wardNo or d.get("ward_no") == wardNo]
-    if category: results = [d for d in results if d.get("category") == category]
-    return results
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        results = INITIAL_DESTINATIONS
+        if wardNo: results = [d for d in results if d.get("wardNo") == wardNo or d.get("ward_no") == wardNo]
+        if category: results = [d for d in results if d.get("category") == category]
+        return results
+    return []
 
 
 @router.get("/destinations/{id}")
-def get_destination_by_id(id: str, db: Session = Depends(get_db)):
+def get_destination_by_id(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get single destination by ID"""
     try:
-        dest = db.query(Destination).filter(Destination.id == id).first()
+        dest = ctx.filter_query(db.query(Destination), Destination).filter(Destination.id == id).first()
         if dest: return _norm_dest(dest)
     except Exception:
         pass
@@ -540,11 +552,12 @@ def get_destination_by_id(id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/destinations", status_code=status.HTTP_201_CREATED)
-def create_destination(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_destination(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a new tourist destination"""
     dest_id = data.get("id") or f"dest-{int(datetime.utcnow().timestamp())}"
     try:
         db_dest = Destination(
+            tenant_id=ctx.effective_tenant_id,
             id=dest_id,
             name=data.get("name", "नयाँ गन्तव्य"),
             name_en=data.get("nameEn") or data.get("name_en"),
@@ -570,10 +583,10 @@ def create_destination(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/destinations/{id}")
-def update_destination(id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_destination(id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Update destination details"""
     try:
-        dest = db.query(Destination).filter(Destination.id == id).first()
+        dest = ctx.filter_query(db.query(Destination), Destination).filter(Destination.id == id).first()
         if dest:
             if "name" in data: dest.name = data["name"]
             if "nameEn" in data: dest.name_en = data["nameEn"]
@@ -606,10 +619,10 @@ def update_destination(id: str, data: Dict[str, Any], db: Session = Depends(get_
 
 
 @router.delete("/destinations/{id}")
-def delete_destination(id: str, db: Session = Depends(get_db)):
+def delete_destination(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Delete a destination"""
     try:
-        dest = db.query(Destination).filter(Destination.id == id).first()
+        dest = ctx.filter_query(db.query(Destination), Destination).filter(Destination.id == id).first()
         if dest:
             db.delete(dest)
             db.commit()
@@ -625,10 +638,10 @@ def delete_destination(id: str, db: Session = Depends(get_db)):
 # ── HOTELS & HOMESTAYS ───────────────────────────────────────────────────────
 @router.get("/hotels")
 @router.get("/hotels/")
-def get_hotels(wardNo: Optional[int] = None, homestayType: Optional[str] = None, db: Session = Depends(get_db)):
+def get_hotels(wardNo: Optional[int] = None, homestayType: Optional[str] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get registered hotels and homestays"""
     try:
-        q = db.query(Hotel)
+        q = ctx.filter_query(db.query(Hotel), Hotel)
         if wardNo: q = q.filter(Hotel.ward_no == wardNo)
         if homestayType: q = q.filter(Hotel.homestay_type == homestayType)
         res = q.all()
@@ -637,18 +650,21 @@ def get_hotels(wardNo: Optional[int] = None, homestayType: Optional[str] = None,
     except Exception:
         pass
 
-    results = INITIAL_HOTELS
-    if wardNo: results = [h for h in results if h.get("wardNo") == wardNo or h.get("ward_no") == wardNo]
-    if homestayType: results = [h for h in results if h.get("homestayType") == homestayType or h.get("homestay_type") == homestayType]
-    return results
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        results = INITIAL_HOTELS
+        if wardNo: results = [h for h in results if h.get("wardNo") == wardNo or h.get("ward_no") == wardNo]
+        if homestayType: results = [h for h in results if h.get("homestayType") == homestayType or h.get("homestay_type") == homestayType]
+        return results
+    return []
 
 
 @router.post("/hotels", status_code=status.HTTP_201_CREATED)
-def create_hotel(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_hotel(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a new hotel or community homestay"""
     ht_id = data.get("id") or f"ht-{int(datetime.utcnow().timestamp())}"
     try:
         db_hotel = Hotel(
+            tenant_id=ctx.effective_tenant_id,
             id=ht_id,
             name=data.get("name", "नयाँ होमस्टे/होटल"),
             type=data.get("type", "homestay"),
@@ -680,10 +696,10 @@ def create_hotel(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/hotels/{id}")
-def update_hotel(id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_hotel(id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Update hotel / homestay information"""
     try:
-        hotel = db.query(Hotel).filter(Hotel.id == id).first()
+        hotel = ctx.filter_query(db.query(Hotel), Hotel).filter(Hotel.id == id).first()
         if hotel:
             for k, v in data.items():
                 if hasattr(hotel, k): setattr(hotel, k, v)
@@ -700,10 +716,10 @@ def update_hotel(id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.delete("/hotels/{id}")
-def delete_hotel(id: str, db: Session = Depends(get_db)):
+def delete_hotel(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Delete hotel record"""
     try:
-        hotel = db.query(Hotel).filter(Hotel.id == id).first()
+        hotel = ctx.filter_query(db.query(Hotel), Hotel).filter(Hotel.id == id).first()
         if hotel:
             db.delete(hotel)
             db.commit()
@@ -719,10 +735,10 @@ def delete_hotel(id: str, db: Session = Depends(get_db)):
 # ── TOURIST LOGS & SAFETY TRACKING ──────────────────────────────────────────
 @router.get("/logs")
 @router.get("/logs/")
-def get_tourist_logs(country: Optional[str] = None, db: Session = Depends(get_db)):
+def get_tourist_logs(country: Optional[str] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get tourist log entries and permits"""
     try:
-        q = db.query(TouristLog)
+        q = ctx.filter_query(db.query(TouristLog), TouristLog)
         if country: q = q.filter(TouristLog.country == country)
         res = q.all()
         if res and len(res) > 0:
@@ -730,19 +746,22 @@ def get_tourist_logs(country: Optional[str] = None, db: Session = Depends(get_db
     except Exception:
         pass
 
-    results = INITIAL_TOURIST_LOGS
-    if country: results = [l for l in results if l.get("country") == country]
-    return results
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        results = INITIAL_TOURIST_LOGS
+        if country: results = [l for l in results if l.get("country") == country]
+        return results
+    return []
 
 
 @router.post("/logs", status_code=status.HTTP_201_CREATED)
-def create_tourist_log(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_tourist_log(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Issue a tourist permit and register trek safety entry"""
     log_id = data.get("id") or f"log-{int(datetime.utcnow().timestamp())}"
     cntry = data.get("country", "Nepal")
     default_fee = 100.0 if cntry.lower() == "nepal" else 2000.0
     try:
         db_log = TouristLog(
+            tenant_id=ctx.effective_tenant_id,
             id=log_id,
             tourist_name=data.get("touristName") or data.get("tourist_name") or "पर्यटक",
             country=cntry,
@@ -772,10 +791,10 @@ def create_tourist_log(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/logs/{id}")
-def update_tourist_log(id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_tourist_log(id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Update tourist log details"""
     try:
-        log = db.query(TouristLog).filter(TouristLog.id == id).first()
+        log = ctx.filter_query(db.query(TouristLog), TouristLog).filter(TouristLog.id == id).first()
         if log:
             for k, v in data.items():
                 if hasattr(log, k): setattr(log, k, v)
@@ -792,10 +811,10 @@ def update_tourist_log(id: str, data: Dict[str, Any], db: Session = Depends(get_
 
 
 @router.delete("/logs/{id}")
-def delete_tourist_log(id: str, db: Session = Depends(get_db)):
+def delete_tourist_log(id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Delete tourist log"""
     try:
-        log = db.query(TouristLog).filter(TouristLog.id == id).first()
+        log = ctx.filter_query(db.query(TouristLog), TouristLog).filter(TouristLog.id == id).first()
         if log:
             db.delete(log)
             db.commit()
@@ -810,10 +829,10 @@ def delete_tourist_log(id: str, db: Session = Depends(get_db)):
 
 # ── TOUR PACKAGES ────────────────────────────────────────────────────────────
 @router.get("/packages")
-def get_packages(db: Session = Depends(get_db)):
+def get_packages(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get active tour packages"""
     try:
-        res = db.query(TourPackage).all()
+        res = ctx.filter_query(db.query(TourPackage), TourPackage).all()
         if res and len(res) > 0:
             return [{
                 "id": p.id,
@@ -831,15 +850,18 @@ def get_packages(db: Session = Depends(get_db)):
             } for p in res]
     except Exception:
         pass
-    return INITIAL_PACKAGES
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return INITIAL_PACKAGES
+    return []
 
 
 @router.post("/packages", status_code=status.HTTP_201_CREATED)
-def create_package(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_package(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Create a new tour package"""
     pkg_id = data.get("id") or f"pkg-{int(datetime.utcnow().timestamp())}"
     try:
         db_pkg = TourPackage(
+            tenant_id=ctx.effective_tenant_id,
             id=pkg_id,
             title=data.get("title", "नयाँ प्याकेज"),
             title_en=data.get("titleEn") or data.get("title_en"),
@@ -870,10 +892,10 @@ def create_package(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 # ── LOCAL PRODUCTS ───────────────────────────────────────────────────────────
 @router.get("/local-products")
-def get_local_products(db: Session = Depends(get_db)):
+def get_local_products(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get local authentic products, handicrafts, and agro items"""
     try:
-        res = db.query(LocalProduct).all()
+        res = ctx.filter_query(db.query(LocalProduct), LocalProduct).all()
         if res and len(res) > 0:
             return [{
                 "id": p.id,
@@ -890,15 +912,18 @@ def get_local_products(db: Session = Depends(get_db)):
             } for p in res]
     except Exception:
         pass
-    return INITIAL_LOCAL_PRODUCTS
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return INITIAL_LOCAL_PRODUCTS
+    return []
 
 
 @router.post("/local-products", status_code=status.HTTP_201_CREATED)
-def create_local_product(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_local_product(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a local souvenir or agro product"""
     prod_id = data.get("id") or f"prod-{int(datetime.utcnow().timestamp())}"
     try:
         db_prod = LocalProduct(
+            tenant_id=ctx.effective_tenant_id,
             id=prod_id,
             name=data.get("name", "नयाँ उत्पादन"),
             name_en=data.get("nameEn") or data.get("name_en"),
@@ -928,10 +953,10 @@ def create_local_product(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 # ── RESERVATIONS ─────────────────────────────────────────────────────────────
 @router.get("/reservations")
-def get_reservations(db: Session = Depends(get_db)):
+def get_reservations(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get list of reservations"""
     try:
-        res = db.query(Reservation).all()
+        res = ctx.filter_query(db.query(Reservation), Reservation).all()
         if res and len(res) > 0:
             return [{
                 "id": r.id,
@@ -949,15 +974,18 @@ def get_reservations(db: Session = Depends(get_db)):
             } for r in res]
     except Exception:
         pass
-    return INITIAL_RESERVATIONS
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        return INITIAL_RESERVATIONS
+    return []
 
 
 @router.post("/reservations", status_code=status.HTTP_201_CREATED)
-def create_reservation(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_reservation(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Create a new hotel or package reservation"""
     res_id = data.get("id") or f"res-{int(datetime.utcnow().timestamp())}"
     try:
         db_res = Reservation(
+            tenant_id=ctx.effective_tenant_id,
             id=res_id,
             guest_name=data.get("guestName") or data.get("guest_name") or "पाहुना",
             phone=data.get("phone", "९८००००००००"),
@@ -985,11 +1013,11 @@ def create_reservation(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.patch("/reservations/{id}/status")
-def update_reservation_status(id: str, payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_reservation_status(id: str, payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Update reservation booking status"""
     new_status = payload.get("status", "confirmed")
     try:
-        res = db.query(Reservation).filter(Reservation.id == id).first()
+        res = ctx.filter_query(db.query(Reservation), Reservation).filter(Reservation.id == id).first()
         if res:
             res.status = new_status
             db.commit()

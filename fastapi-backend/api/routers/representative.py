@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, 
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.representative import Representative
 from schemas.representative import RepresentativeSchema, RepresentativeCreate, RepresentativeUpdate
 import uuid, os, shutil
@@ -20,17 +21,10 @@ def get_representatives(
     is_current: Optional[bool] = Query(None, description="Filter by current term status"),
     tenant_id: Optional[str] = Query(None),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    eff_tenant = (tenant_id or x_tenant_id or "").strip().lower()
-    query = db.query(Representative)
-    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "all", "digitaltwin", "localhost", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
-        if eff_tenant in ["gaushala", "gaushalamun", "gaushala_municipality"]:
-            query = query.filter(Representative.tenant_id == "gaushala")
-        else:
-            query = query.filter(Representative.tenant_id == eff_tenant)
-    else:
-        query = query.filter((Representative.tenant_id == "panchpokhari") | (Representative.tenant_id == None))
+    query = ctx.filter_query(db.query(Representative), Representative)
 
     if ward_no is not None:
         query = query.filter(Representative.ward_no == ward_no)
@@ -40,23 +34,34 @@ def get_representatives(
     return query.order_by(nulls_first(Representative.ward_no.asc()), Representative.designation.asc(), Representative.name.asc()).all()
 
 @router.get("/{id}", response_model=RepresentativeSchema)
-def get_representative(id: str, db: Session = Depends(get_db)):
-    rep = db.query(Representative).filter(Representative.id == id).first()
+def get_representative(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
     return rep
 
 @router.post("", response_model=RepresentativeSchema)
-def create_representative(data: RepresentativeCreate, db: Session = Depends(get_db)):
+def create_representative(
+    data: RepresentativeCreate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    dump = data.model_dump(exclude_unset=True)
+    if not dump.get("tenant_id"):
+        dump["tenant_id"] = ctx.effective_tenant_id
     db_rep = Representative(
         id=str(uuid.uuid4()),
-        **data.model_dump(exclude_unset=True)
+        **dump
     )
     db.add(db_rep)
     if db_rep.ward_no and "वडा अध्यक्ष" in (db_rep.designation or ""):
         try:
             from models.ward import Ward
-            ward = db.query(Ward).filter(Ward.ward_number == db_rep.ward_no).first()
+            ward = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == db_rep.ward_no).first()
             if ward:
                 ward.ward_chair_name = db_rep.name
                 ward.chairperson = db_rep.name
@@ -71,8 +76,13 @@ def create_representative(data: RepresentativeCreate, db: Session = Depends(get_
     return db_rep
 
 @router.put("/{id}", response_model=RepresentativeSchema)
-def update_representative(id: str, data: RepresentativeUpdate, db: Session = Depends(get_db)):
-    rep = db.query(Representative).filter(Representative.id == id).first()
+def update_representative(
+    id: str,
+    data: RepresentativeUpdate,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
 
@@ -80,11 +90,11 @@ def update_representative(id: str, data: RepresentativeUpdate, db: Session = Dep
     for key, value in update_data.items():
         setattr(rep, key, value)
 
-    # Sync to Ward table if representative is assigned to a ward
+    # Sync to Ward table if representative is assigned to a ward (within same municipality)
     if rep.ward_no:
         try:
             from models.ward import Ward
-            ward = db.query(Ward).filter(Ward.ward_number == rep.ward_no).first()
+            ward = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == rep.ward_no).first()
             if ward:
                 ward.ward_chair_name = rep.name
                 ward.chairperson = rep.name
@@ -100,8 +110,12 @@ def update_representative(id: str, data: RepresentativeUpdate, db: Session = Dep
     return rep
 
 @router.delete("/{id}")
-def delete_representative(id: str, db: Session = Depends(get_db)):
-    rep = db.query(Representative).filter(Representative.id == id).first()
+def delete_representative(
+    id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
 

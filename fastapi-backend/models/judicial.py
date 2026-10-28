@@ -91,6 +91,7 @@ class JudicialMediator(Base):
     __tablename__ = 'judicial_mediators'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     mediator_code = Column(String, unique=True, name='mediatorCode')
     full_name = Column(String, nullable=False, name='fullName')
@@ -128,6 +129,7 @@ class JudicialCauseList(Base):
     __tablename__ = 'judicial_cause_list'
     __table_args__ = {'extend_existing': True}
 
+    tenant_id = Column(String, nullable=True, name='tenant_id')
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     bench_date_bs = Column(String, nullable=False, name='benchDateBs')
     bench_time = Column(String, nullable=True, name='benchTime')

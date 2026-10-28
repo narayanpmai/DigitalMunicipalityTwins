@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as XLSX from 'xlsx';
 import { projectsApi } from '../../api/projects';
 import type { Project } from '../../api/projects';
+import { useFiscalYear } from '../../context/FiscalYearContext';
 import {
   FolderGit2,
   CheckCircle2,
@@ -77,8 +78,10 @@ export const ProjectsPage: React.FC = () => {
     | 'gis_map'
   >('dashboard');
 
+  const { fiscalYears, activeFiscalYear } = useFiscalYear();
+
   // Filter states matching the screenshot
-  const [filterFiscalYear, setFilterFiscalYear] = useState<string>('all');
+  const [filterFiscalYear, setFilterFiscalYear] = useState<string>(activeFiscalYear || 'all');
   const [filterLevel, setFilterLevel] = useState<string>('all');
   const [filterBudgetSource, setFilterBudgetSource] = useState<string>('all');
   const [filterProjectName, setFilterProjectName] = useState<string>('');
@@ -671,9 +674,11 @@ export const ProjectsPage: React.FC = () => {
                 style={{ width: '100%', padding: '0.45rem', borderRadius: '6px', border: '1.5px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', outline: 'none', color: '#0f172a', fontSize: '0.825rem' }}
               >
                 <option value="all">सबै आर्थिक वर्ष</option>
-                <option value="०८२/०८३">०८२/०८३</option>
-                <option value="२०८१/०८२">२०८१/०८२</option>
-                <option value="२०८०/०८१">२०८०/०८१</option>
+                {fiscalYears.map((fy) => (
+                  <option key={fy.id} value={fy.name}>
+                    {fy.name} {fy.isCurrent ? '(चालु)' : ''}
+                  </option>
+                ))}
               </select>
             </div>
 

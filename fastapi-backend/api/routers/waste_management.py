@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.waste_management import (
     WasteVehicle,
     WasteRate,
@@ -371,12 +372,12 @@ def _norm_worker(w: Any) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @router.get("/dashboard-stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Return high-level solid waste management dashboard statistics"""
     try:
-        total_veh = db.query(WasteVehicle).count()
-        active_veh = db.query(WasteVehicle).filter(WasteVehicle.status == 'active').count()
-        wallets = db.query(WasteWallet).all()
+        total_veh = ctx.filter_query(db.query(WasteVehicle), WasteVehicle).count()
+        active_veh = ctx.filter_query(db.query(WasteVehicle), WasteVehicle).filter(WasteVehicle.status == 'active').count()
+        wallets = ctx.filter_query(db.query(WasteWallet), WasteWallet).all()
         total_payouts = sum([float(w.total_earned or 0) for w in wallets]) if wallets else 385000
         recycled_kg = round(total_payouts / 18.0) if total_payouts else 21200
         total_collected = recycled_kg + 12000
@@ -399,10 +400,10 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/schedules")
-def get_schedules(wardNo: Optional[int] = None, db: Session = Depends(get_db)):
+def get_schedules(wardNo: Optional[int] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get collection route schedules with optional ward filtering"""
     try:
-        q = db.query(WasteSchedule)
+        q = ctx.filter_query(db.query(WasteSchedule), WasteSchedule)
         if wardNo:
             q = q.filter(WasteSchedule.ward_no == wardNo)
         res = q.all()
@@ -411,6 +412,8 @@ def get_schedules(wardNo: Optional[int] = None, db: Session = Depends(get_db)):
     except Exception:
         pass
 
+    if not ("panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all):
+        return []
     results = INITIAL_SCHEDULES
     if wardNo:
         results = [s for s in results if s.get("wardNo") == wardNo or s.get("ward_no") == wardNo]
@@ -418,11 +421,12 @@ def get_schedules(wardNo: Optional[int] = None, db: Session = Depends(get_db)):
 
 
 @router.post("/schedules", status_code=status.HTTP_201_CREATED)
-def create_schedule(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_schedule(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Create a new collection schedule"""
     sch_id = data.get("id") or f"sch-{int(datetime.utcnow().timestamp())}"
     try:
         db_sch = WasteSchedule(
+            tenant_id=ctx.effective_tenant_id,
             id=sch_id,
             ward_no=int(data.get("wardNo") or data.get("ward_no") or 1),
             route_code=data.get("routeCode") or data.get("route_code") or f"RT-0{data.get('wardNo') or 1}-X",
@@ -453,10 +457,10 @@ def create_schedule(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/disposal-sites")
-def get_disposal_sites(db: Session = Depends(get_db)):
+def get_disposal_sites(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get all waste disposal, composting, and recycling sites"""
     try:
-        res = db.query(DisposalSite).all()
+        res = ctx.filter_query(db.query(DisposalSite), DisposalSite).all()
         if res and len(res) > 0:
             return [_norm_site(s) for s in res]
     except Exception:
@@ -465,11 +469,12 @@ def get_disposal_sites(db: Session = Depends(get_db)):
 
 
 @router.post("/disposal-sites", status_code=status.HTTP_201_CREATED)
-def create_disposal_site(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_disposal_site(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a new waste processing or disposal facility"""
     site_id = data.get("id") or f"site-{int(datetime.utcnow().timestamp())}"
     try:
         db_site = DisposalSite(
+            tenant_id=ctx.effective_tenant_id,
             id=site_id,
             site_name=data.get("siteName") or data.get("site_name") or "नयाँ फोहोर प्रशोधन केन्द्र",
             site_type=data.get("siteType") or data.get("site_type") or "compost_plant",
@@ -500,10 +505,10 @@ def create_disposal_site(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/workers")
-def get_sanitation_workers(wardNo: Optional[int] = None, role: Optional[str] = None, db: Session = Depends(get_db)):
+def get_sanitation_workers(wardNo: Optional[int] = None, role: Optional[str] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get registered sanitation workers, drivers, and composting staff"""
     try:
-        q = db.query(SanitationWorker)
+        q = ctx.filter_query(db.query(SanitationWorker), SanitationWorker)
         if wardNo:
             q = q.filter(SanitationWorker.ward_no == wardNo)
         if role:
@@ -514,6 +519,8 @@ def get_sanitation_workers(wardNo: Optional[int] = None, role: Optional[str] = N
     except Exception:
         pass
 
+    if not ("panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all):
+        return []
     results = INITIAL_SANITATION_WORKERS
     if wardNo:
         results = [w for w in results if w.get("wardNo") == wardNo or w.get("ward_no") == wardNo]
@@ -523,11 +530,12 @@ def get_sanitation_workers(wardNo: Optional[int] = None, role: Optional[str] = N
 
 
 @router.post("/workers", status_code=status.HTTP_201_CREATED)
-def create_sanitation_worker(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_sanitation_worker(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Register a new sanitation personnel record"""
     wrk_id = data.get("id") or f"wrk-{int(datetime.utcnow().timestamp())}"
     try:
         db_wrk = SanitationWorker(
+            tenant_id=ctx.effective_tenant_id,
             id=wrk_id,
             worker_code=data.get("workerCode") or data.get("worker_code") or f"P5-SAN-0{len(INITIAL_SANITATION_WORKERS)+1}",
             full_name=data.get("fullName") or data.get("full_name") or "सरसफाइ कर्मचारी",
@@ -559,10 +567,10 @@ def create_sanitation_worker(data: Dict[str, Any], db: Session = Depends(get_db)
 
 
 @router.get("/wallets")
-def get_waste_wallets(db: Session = Depends(get_db)):
+def get_waste_wallets(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get households enrolled in 'Cash from Trash' incentive wallet"""
     try:
-        res = db.query(WasteWallet).all()
+        res = ctx.filter_query(db.query(WasteWallet), WasteWallet).all()
         if res and len(res) > 0:
             names = ["दावा लामा", "सुमित्रा श्रेष्ठ", "रामेश्वर खतिवडा", "पेम्बा शेर्पा", "हरि माया दनुवार"]
             return [w.to_dict(household_name=names[idx % len(names)], ward=(idx % 7) + 1) for idx, w in enumerate(res)]
@@ -572,10 +580,10 @@ def get_waste_wallets(db: Session = Depends(get_db)):
 
 
 @router.get("/rates")
-def get_waste_rates(db: Session = Depends(get_db)):
+def get_waste_rates(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get municipal buyback rates per kg for segregated recyclables"""
     try:
-        rates = db.query(WasteRate).filter(WasteRate.is_active == True).all()
+        rates = ctx.filter_query(db.query(WasteRate), WasteRate).filter(WasteRate.is_active == True).all()
         if rates and len(rates) > 0:
             return [r.to_dict() for r in rates]
     except Exception:
@@ -584,10 +592,10 @@ def get_waste_rates(db: Session = Depends(get_db)):
 
 
 @router.get("/alerts")
-def get_waste_alerts(status_filter: Optional[str] = Query(None, alias="status"), db: Session = Depends(get_db)):
+def get_waste_alerts(status_filter: Optional[str] = Query(None, alias="status"), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get community alerts and grievances regarding solid waste"""
     try:
-        q = db.query(WasteAlert)
+        q = ctx.filter_query(db.query(WasteAlert), WasteAlert)
         if status_filter and status_filter != 'all':
             q = q.filter(WasteAlert.status == status_filter)
         res = q.order_by(WasteAlert.created_at.desc()).all()
@@ -596,6 +604,8 @@ def get_waste_alerts(status_filter: Optional[str] = Query(None, alias="status"),
     except Exception:
         pass
 
+    if not ("panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all):
+        return []
     results = INITIAL_ALERTS
     if status_filter and status_filter != 'all':
         results = [a for a in results if a.get("status") == status_filter]
@@ -603,11 +613,12 @@ def get_waste_alerts(status_filter: Optional[str] = Query(None, alias="status"),
 
 
 @router.post("/alerts", status_code=status.HTTP_201_CREATED)
-def create_waste_alert(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_waste_alert(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Submit a community waste alert or grievance"""
     alert_uuid = uuid.uuid4()
     try:
         db_alert = WasteAlert(
+            tenant_id=ctx.effective_tenant_id,
             id=alert_uuid,
             reporter_id=uuid.uuid4(),
             issue_type=data.get("issue") or data.get("issueType") or "फोहोर व्यवस्थापन गुनासो",
@@ -635,7 +646,7 @@ def create_waste_alert(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.patch("/alerts/{id}/status")
-def update_alert_status(id: str, payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_alert_status(id: str, payload: Dict[str, Any] = Body(...), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Update status of a waste grievance ticket (pending, in-progress, resolved)"""
     new_status = payload.get("status", "resolved")
     try:
@@ -646,7 +657,7 @@ def update_alert_status(id: str, payload: Dict[str, Any] = Body(...), db: Sessio
             pass
 
         if alert_uuid:
-            db_alert = db.query(WasteAlert).filter(WasteAlert.id == alert_uuid).first()
+            db_alert = ctx.filter_query(db.query(WasteAlert), WasteAlert).filter(WasteAlert.id == alert_uuid).first()
             if db_alert:
                 db_alert.status = new_status
                 db.commit()
@@ -664,10 +675,10 @@ def update_alert_status(id: str, payload: Dict[str, Any] = Body(...), db: Sessio
 
 @router.get("/vehicles/live")
 @router.get("/vehicles")
-def get_live_vehicles(db: Session = Depends(get_db)):
+def get_live_vehicles(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get live GPS tracking coordinates of municipal waste collection fleet"""
     try:
-        vehicles = db.query(WasteVehicle).all()
+        vehicles = ctx.filter_query(db.query(WasteVehicle), WasteVehicle).all()
         if vehicles and len(vehicles) > 0:
             return [v.to_dict() for v in vehicles]
     except Exception:
@@ -676,10 +687,10 @@ def get_live_vehicles(db: Session = Depends(get_db)):
 
 
 @router.get("/transactions")
-def get_waste_transactions(db: Session = Depends(get_db)):
+def get_waste_transactions(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Get recyclables buyback deposit transactions"""
     try:
-        res = db.query(WasteTransaction).order_by(WasteTransaction.created_at.desc()).limit(100).all()
+        res = ctx.filter_query(db.query(WasteTransaction), WasteTransaction).order_by(WasteTransaction.created_at.desc()).limit(100).all()
         if res:
             return [{
                 "id": t.id,
@@ -703,11 +714,12 @@ def get_waste_transactions(db: Session = Depends(get_db)):
 
 
 @router.post("/transactions", status_code=status.HTTP_201_CREATED)
-def create_waste_transaction(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_waste_transaction(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Create a new waste buyback transaction"""
     tx_id = str(uuid.uuid4())
     try:
         db_tx = WasteTransaction(
+            tenant_id=ctx.effective_tenant_id,
             id=tx_id,
             household_id=data.get("household_id") or data.get("householdId") or "P5-HH-0000",
             waste_rate_id=data.get("waste_rate_id") or data.get("wasteRateId"),

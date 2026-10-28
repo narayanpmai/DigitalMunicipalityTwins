@@ -38,6 +38,11 @@ import {
   ChevronRight,
   Filter,
   CloudRain,
+  Gavel,
+  Droplets,
+  Trees,
+  Store,
+  Trophy,
 } from 'lucide-react';
 
 export interface ModuleItem {
@@ -66,7 +71,7 @@ export const SECTOR_DOMAINS: SectorDomain[] = [
     id: 'command',
     title: 'मुख्य नियन्त्रण कक्ष (Command & Intelligence)',
     shortTitle: 'कमान्ड र नियन्त्रण',
-    count: 6,
+    count: 7,
     color: '#f59e0b',
     icon: <LayoutDashboard size={18} />,
   },
@@ -106,7 +111,7 @@ export const SECTOR_DOMAINS: SectorDomain[] = [
     id: 'infrastructure',
     title: 'भौतिक पूर्वाधार, नक्सा तथा सम्पत्ति (Infrastructure & Twin)',
     shortTitle: 'पूर्वाधार र ३डी ट्विन',
-    count: 5,
+    count: 7,
     color: '#06b6d4',
     icon: <Layers size={18} />,
   },
@@ -121,8 +126,8 @@ export const SECTOR_DOMAINS: SectorDomain[] = [
   {
     id: 'social',
     title: 'सामाजिक विकास तथा सेवा क्षेत्र (Social & Sectoral)',
-    shortTitle: 'सामाजिक विकास (१३)',
-    count: 13,
+    shortTitle: 'सामाजिक विकास (१६)',
+    count: 16,
     color: '#ec4899',
     icon: <HeartHandshake size={18} />,
   },
@@ -205,6 +210,17 @@ export const ALL_53_MODULES: ModuleItem[] = [
     description: 'पाँचपोखरी थाङपाल गाउँपालिकाको वास्तविक समयको मौसम तथा वर्षा मापन जानकारी।',
     icon: <CloudRain size={22} color="#3b82f6" />,
     path: '/citizen-portal?tab=weather',
+    isStaffOnly: false,
+  },
+  {
+    id: 'cmd-social-audit',
+    title: 'सुशासन तथा सामाजिक परीक्षण (Social Audit)',
+    category: 'command',
+    badge: 'Social Audit',
+    badgeColor: '#0284c7',
+    description: 'योजनागत सामाजिक परीक्षण, त्रैमासिक सार्वजनिक सुनुवाइ, नागरिक सन्तुष्टि मापन तथा सुशासन पारदर्शिता।',
+    icon: <Gavel size={22} color="#0284c7" />,
+    path: '/social-audit',
     isStaffOnly: false,
   },
 
@@ -483,6 +499,28 @@ export const ALL_53_MODULES: ModuleItem[] = [
     path: '/waste-management',
     isStaffOnly: false,
   },
+  {
+    id: 'infra-wash-twin',
+    title: 'खानेपानी, स्वच्छता तथा महसुल (WASH Twin)',
+    category: 'infrastructure',
+    badge: 'WASH Twin',
+    badgeColor: '#06b6d4',
+    description: 'खानेपानी आयोजनाहरू, मुहान संरक्षण, उपभोक्ता समिति, पानीको गुणस्तर (E.Coli/Turbidity) तथा धारा जडान लगत।',
+    icon: <Droplets size={22} color="#06b6d4" />,
+    path: '/wash',
+    isStaffOnly: false,
+  },
+  {
+    id: 'infra-roads-mtmp',
+    title: 'सडक सञ्जाल तथा यातायात (Roads & MTMP)',
+    category: 'infrastructure',
+    badge: 'MTMP 360',
+    badgeColor: '#0f766e',
+    description: 'पालिका सडक गुरुयोजना (MTMP), कालोपत्रे/ग्राभेल लगत, आरसीसी तथा झोलुङ्गे पुल र सार्वजनिक यातायात रुट।',
+    icon: <Compass size={22} color="#0f766e" />,
+    path: '/roads',
+    isStaffOnly: false,
+  },
 
   // ── 7. आर्थिक प्रशासन तथा राजस्व (Revenue & Cooperatives) - 2 ──────────────
   {
@@ -626,6 +664,39 @@ export const ALL_53_MODULES: ModuleItem[] = [
     path: '/social-inclusion',
     isStaffOnly: false,
   },
+  {
+    id: 'soc-environment-mining',
+    title: 'वातावरण, वन तथा नदीजन्य स्रोत नियमन',
+    category: 'social',
+    badge: 'Mining & Green',
+    badgeColor: '#16a34a',
+    description: 'ढुङ्गा-गिट्टी-बालुवा उत्खनन नियमन, IEE वातावरणीय परीक्षण, सामुदायिक वन अभिलेख तथा वृक्षारोपण ट्विन।',
+    icon: <Trees size={22} color="#16a34a" />,
+    path: '/environment',
+    isStaffOnly: false,
+  },
+  {
+    id: 'soc-market-inspection',
+    title: 'बजार अनुगमन तथा उपभोक्ता हित संरक्षण',
+    category: 'social',
+    badge: 'Consumer 360',
+    badgeColor: '#ea580c',
+    description: 'संयुक्त बजार अनुगमन, उपभोग्य मिति तथा मूल्यसूची जाँच, जरिवाना/कारबाही अभिलेख र हाटबजार व्यवस्थापन।',
+    icon: <Store size={22} color="#ea580c" />,
+    path: '/market-inspection',
+    isStaffOnly: false,
+  },
+  {
+    id: 'soc-cflg-sports',
+    title: 'बालमैत्री स्थानीय शासन (CFLG) र खेलकुद',
+    category: 'social',
+    badge: 'CFLG & Sports',
+    badgeColor: '#7c3aed',
+    description: 'बालमैत्री ५१ राष्ट्रिय सूचक प्रगति, बाल सहभागिता, वडास्तरीय खेलमैदान पूर्वाधार तथा पालिकास्तरीय खेलकुद प्रतियोगिता।',
+    icon: <Trophy size={22} color="#7c3aed" />,
+    path: '/cflg-sports',
+    isStaffOnly: false,
+  },
 
   // ── 9. सुरक्षा, अधिकार तथा प्रणाली नियन्त्रण (Security & Admin) - 4 ─────────
   {
@@ -669,6 +740,8 @@ export const ALL_53_MODULES: ModuleItem[] = [
     isStaffOnly: true,
   },
 ];
+
+export const ALL_59_MODULES: ModuleItem[] = ALL_53_MODULES;
 
 export const PublicModulesDirectory: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -755,7 +828,7 @@ export const PublicModulesDirectory: React.FC = () => {
               lineHeight: 1.25,
             }}
           >
-            पालिकाका सम्पूर्ण <span style={{ color: '#38bdf8' }}>५३ वटै डिजिटल मोड्युलहरू</span>
+            पालिकाका सम्पूर्ण <span style={{ color: '#38bdf8' }}>५९ वटै डिजिटल मोड्युलहरू</span>
           </h2>
 
           <p

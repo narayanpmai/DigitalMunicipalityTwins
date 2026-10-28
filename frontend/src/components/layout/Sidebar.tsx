@@ -49,6 +49,10 @@ import {
   Activity,
   ShieldAlert,
   HardHat,
+  CalendarRange,
+  Droplets,
+  Trees,
+  Trophy,
 } from 'lucide-react';
 
 // ── Dark Sidebar Design Tokens ──────────────────────────────────────
@@ -72,6 +76,7 @@ interface NavItem {
   badge?: string;
   badgeColor?: string;
   roles?: string[];
+  featureId?: string;
   comingSoon?: boolean;
 }
 
@@ -90,6 +95,7 @@ export const adminNavSections: NavSection[] = [
         icon: <LayoutDashboard size={16} style={{ color: '#f59e0b' }} />,
         badge: 'Unified BI & Ops',
         badgeColor: '#f59e0b',
+        featureId: 'f_dashboard',
       },
       {
         label: 'एआई पालिका सहायक',
@@ -97,21 +103,25 @@ export const adminNavSections: NavSection[] = [
         icon: <Bot size={16} style={{ color: '#ec4899' }} />,
         badge: 'AI Copilot',
         badgeColor: '#ec4899',
+        featureId: 'f_ai',
       },
       {
         label: 'पालिका डिजिटल प्रोफाइल',
         path: '/app/profile',
         icon: <Building2 size={16} />,
+        featureId: 'f_executive',
       },
       {
         label: 'प्रगति तथा अनुगमन प्रतिवेदन',
         path: '/app/progress-reports',
         icon: <TrendingUp size={16} />,
+        featureId: 'f_progress',
       },
       {
         label: 'कार्यक्रम क्यालेन्डर',
         path: '/app/event-calendar',
         icon: <Calendar size={16} />,
+        featureId: 'f_dashboard',
       },
     ],
   },
@@ -124,17 +134,20 @@ export const adminNavSections: NavSection[] = [
         icon: <Database size={16} style={{ color: '#0ea5e9' }} />,
         badge: 'Core MDM',
         badgeColor: '#0ea5e9',
+        featureId: 'f_mdm',
         roles: ['super_admin', 'admin', 'it_admin', 'planning_officer', 'data_entry'],
       },
       {
         label: 'घरधुरी तथा जनसांख्यिकी ३६०',
         path: '/app/demographics',
         icon: <Home size={16} />,
+        featureId: 'f_master',
       },
       {
         label: 'खुला तथ्याङ्क (Open Data)',
         path: '/app/open-data',
         icon: <Database size={16} />,
+        featureId: 'f_master',
       },
     ],
   },
@@ -147,6 +160,7 @@ export const adminNavSections: NavSection[] = [
         icon: <Inbox size={16} style={{ color: '#a855f7' }} />,
         badge: 'Tippani',
         badgeColor: '#a855f7',
+        featureId: 'f_eoffice',
       },
       {
         label: 'दर्ता तथा चलानी अभिलेख',
@@ -154,6 +168,7 @@ export const adminNavSections: NavSection[] = [
         icon: <FileText size={16} style={{ color: '#10b981' }} />,
         badge: 'Registry',
         badgeColor: '#10b981',
+        featureId: 'f_darta',
       },
       {
         label: 'डिजिटल दस्ताबेज तथा OCR अभिलेख',
@@ -161,6 +176,7 @@ export const adminNavSections: NavSection[] = [
         icon: <BookOpen size={16} style={{ color: '#06b6d4' }} />,
         badge: 'OCR & Acts',
         badgeColor: '#06b6d4',
+        featureId: 'f_eoffice',
       },
       {
         label: 'कर्मचारी व्यवस्थापन (HRMS)',
@@ -172,32 +188,45 @@ export const adminNavSections: NavSection[] = [
         label: 'कार्यभार व्यवस्थापन (Tasks)',
         path: '/app/tasks',
         icon: <ClipboardList size={16} />,
+        roles: ['super_admin', 'admin', 'cao', 'it_admin'],
       },
       {
         label: 'न्यायिक समिति व्यवस्थापन',
         path: '/app/judicial',
         icon: <Scale size={16} />,
+        roles: ['super_admin', 'admin', 'cao'],
       },
       {
         label: 'बैठक तथा कार्यपालिका निर्णय',
         path: '/app/meetings',
         icon: <Gavel size={16} />,
+        roles: ['super_admin', 'admin', 'cao'],
       },
       {
         label: 'जनप्रतिनिधि व्यवस्थापन',
         path: '/app/representatives',
         icon: <Users size={16} />,
+        featureId: 'f_master',
       },
       {
         label: 'संघ-संस्थाहरू (NGO/CBO)',
         path: '/app/organizations',
         icon: <Building2 size={16} />,
+        featureId: 'f_master',
       },
       {
         label: 'सूचना प्रविधि शाखा (IT Branch)',
         path: '/app/it-branch',
         icon: <MonitorCheck size={16} />,
         roles: ['super_admin', 'admin', 'it_admin'],
+      },
+      {
+        label: 'सुशासन तथा सामाजिक परीक्षण',
+        path: '/app/social-audit',
+        icon: <Gavel size={16} style={{ color: '#38bdf8' }} />,
+        badge: 'Social Audit',
+        badgeColor: '#0284c7',
+        roles: ['super_admin', 'admin', 'cao', 'planning_officer'],
       },
     ],
   },
@@ -210,6 +239,7 @@ export const adminNavSections: NavSection[] = [
         icon: <UserCircle size={16} style={{ color: '#38bdf8' }} />,
         badge: 'C360 & MDM',
         badgeColor: '#0284c7',
+        featureId: 'f_master',
       },
       {
         label: 'अनलाइन डिजिटल सिफारिस (४०+)',
@@ -217,26 +247,31 @@ export const adminNavSections: NavSection[] = [
         icon: <FileCheck size={16} style={{ color: '#22c55e' }} />,
         badge: '४०+ सिफारिस',
         badgeColor: '#22c55e',
+        featureId: 'f_digital_sifaris',
       },
       {
         label: 'नागरिक सेवा पोर्टल ३६०',
         path: '/app/citizen-portal',
         icon: <Users size={16} />,
+        featureId: 'f_portal',
       },
       {
         label: 'डिजिटल नागरिक बडापत्र',
         path: '/app/badapatra',
         icon: <FileText size={16} />,
+        featureId: 'f_charter',
       },
       {
         label: 'प्रमाणपत्र प्रमाणीकरण (QR)',
         path: '/app/verify-certificate',
         icon: <QrCode size={16} />,
+        featureId: 'f_digital_sifaris',
       },
       {
         label: 'नागरिक गुनासो व्यवस्थापन',
         path: '/app/complaints',
         icon: <AlertTriangle size={16} />,
+        featureId: 'f_grievance',
       },
       {
         label: 'व्यवसाय दर्ता तथा इजाजत',
@@ -244,11 +279,13 @@ export const adminNavSections: NavSection[] = [
         icon: <Briefcase size={16} style={{ color: '#10b981' }} />,
         badge: 'नवीकरण/निरीक्षण',
         badgeColor: '#10b981',
+        featureId: 'f_business',
       },
       {
         label: 'अनलाइन दरखास्त (e-Recruit)',
         path: '/app/recruitment',
         icon: <FileCheck size={16} />,
+        roles: ['super_admin', 'admin', 'cao'],
       },
     ],
   },
@@ -261,22 +298,26 @@ export const adminNavSections: NavSection[] = [
         icon: <FolderGit2 size={16} style={{ color: '#eab308' }} />,
         badge: 'PPIS/360',
         badgeColor: '#eab308',
+        featureId: 'f_project_lifecycle',
         roles: ['super_admin', 'admin', 'cao', 'planning_officer', 'engineer', 'accountant'],
       },
       {
         label: 'वार्षिक योजना तथा कार्यक्रम',
         path: '/app/projects',
         icon: <FolderGit2 size={16} />,
+        featureId: 'f_planning',
       },
       {
         label: 'बजेट तथा वित्तीय पारदर्शिता',
         path: '/app/budget-tracker',
         icon: <BarChart3 size={16} />,
+        featureId: 'f_planning',
       },
       {
         label: 'ई-बोलपत्र तथा सार्वजनिक खरिद',
         path: '/app/procurement',
         icon: <FileText size={16} />,
+        featureId: 'f_planning',
         roles: ['super_admin', 'admin', 'cao', 'planning_officer', 'accountant'],
       },
     ],
@@ -290,6 +331,7 @@ export const adminNavSections: NavSection[] = [
         icon: <Layers size={16} style={{ color: '#06b6d4' }} />,
         badge: 'BIM/EBPS',
         badgeColor: '#06b6d4',
+        featureId: 'f_ebps',
         roles: ['super_admin', 'admin', 'cao', 'engineer'],
       },
       {
@@ -298,6 +340,7 @@ export const adminNavSections: NavSection[] = [
         icon: <HardHat size={16} style={{ color: '#f59e0b' }} />,
         badge: 'NEC/eBPS',
         badgeColor: '#f59e0b',
+        featureId: 'f_ebps',
         roles: ['super_admin', 'admin', 'cao', 'engineer', 'planning_officer'],
       },
       {
@@ -306,11 +349,13 @@ export const adminNavSections: NavSection[] = [
         icon: <MapPin size={16} style={{ color: '#6366f1' }} />,
         badge: '3D Twin',
         badgeColor: '#6366f1',
+        featureId: 'f_asset_twin',
       },
       {
         label: 'डिजिटल क्याडास्ट्रल नक्सा (GIS)',
         path: '/app/gis-map',
         icon: <Layers size={16} />,
+        featureId: 'f_gis',
       },
       {
         label: 'जग्गा वर्गीकरण (Land Classification)',
@@ -318,6 +363,7 @@ export const adminNavSections: NavSection[] = [
         icon: <Compass size={16} style={{ color: '#10b981' }} />,
         badge: 'भू-उपयोग',
         badgeColor: '#10b981',
+        featureId: 'f_gis',
       },
       {
         label: 'सार्वजनिक जिन्सी तथा सम्पत्ति (PAMS)',
@@ -329,6 +375,23 @@ export const adminNavSections: NavSection[] = [
         label: 'फोहोरमैला व्यवस्थापन ट्विन',
         path: '/app/waste-management',
         icon: <Trash2 size={16} />,
+        featureId: 'f_gis',
+      },
+      {
+        label: 'खानेपानी तथा स्वच्छता (WASH Twin)',
+        path: '/app/wash',
+        icon: <Droplets size={16} style={{ color: '#0284c7' }} />,
+        badge: 'WASH Twin',
+        badgeColor: '#0284c7',
+        featureId: 'f_gis',
+      },
+      {
+        label: 'सडक सञ्जाल तथा यातायात (Roads & MTMP)',
+        path: '/app/roads',
+        icon: <Compass size={16} style={{ color: '#0f766e' }} />,
+        badge: 'MTMP',
+        badgeColor: '#0f766e',
+        featureId: 'f_gis',
       },
     ],
   },
@@ -341,12 +404,14 @@ export const adminNavSections: NavSection[] = [
         icon: <TrendingUp size={16} style={{ color: '#f59e0b' }} />,
         badge: 'e-Tax',
         badgeColor: '#f59e0b',
+        featureId: 'f_revenue',
         roles: ['super_admin', 'admin', 'revenue_officer', 'cao', 'accountant'],
       },
       {
         label: 'सहकारी नियमन (COPOMIS)',
         path: '/app/cooperatives',
         icon: <Landmark size={16} />,
+        featureId: 'f_revenue',
       },
     ],
   },
@@ -357,66 +422,103 @@ export const adminNavSections: NavSection[] = [
         label: 'सामाजिक सुरक्षा तथा घटना दर्ता (SSIS)',
         path: '/app/vital-events',
         icon: <HeartHandshake size={16} />,
+        featureId: 'f_vital',
       },
       {
         label: 'रोजगार सेवा केन्द्र (ESC)',
         path: '/app/employment',
         icon: <Briefcase size={16} />,
+        roles: ['super_admin', 'admin', 'cao'],
       },
       {
         label: 'स्वास्थ्य सेवा व्यवस्थापन (HMIS)',
         path: '/app/health',
         icon: <HeartPulse size={16} />,
+        featureId: 'f_health',
       },
       {
         label: 'शिक्षा तथा विद्यालय व्यवस्थापन (IEMIS)',
         path: '/app/education',
         icon: <GraduationCap size={16} />,
+        featureId: 'f_education',
       },
       {
         label: 'कृषक प्रोफाइल तथा अनुदान',
         path: '/app/farmer-profile',
         icon: <UserCircle size={16} />,
+        featureId: 'f_agriculture',
       },
       {
         label: 'कृषि तथा पशुपन्छी व्यवस्थापन',
         path: '/app/agriculture',
         icon: <Sprout size={16} />,
+        featureId: 'f_agriculture',
       },
       {
         label: 'भेटेरिनरी तथा औषधि व्यवस्थापन',
         path: '/app/vet-medicine',
         icon: <Pill size={16} />,
+        featureId: 'f_agriculture',
       },
       {
         label: 'विपद् जोखिम व्यवस्थापन',
         path: '/app/disaster',
         icon: <AlertTriangle size={16} />,
+        featureId: 'f_disaster',
       },
       {
         label: 'पर्यटन तथा सम्पदा डिजिटल ट्विन',
         path: '/app/tourism',
         icon: <Compass size={16} />,
+        featureId: 'f_tourism',
       },
       {
         label: 'डिजिटल पुस्तकालय',
         path: '/app/library',
         icon: <BookOpen size={16} />,
+        featureId: 'f_library',
       },
       {
         label: 'सांस्कृतिक सङ्ग्रहालय',
         path: '/app/museum',
         icon: <Landmark size={16} />,
+        featureId: 'f_museum',
       },
       {
         label: 'कानुन तथा ऐन संगालो',
         path: '/app/legal-repository',
         icon: <BookMarked size={16} />,
+        featureId: 'f_eoffice',
       },
       {
         label: 'सामाजिक समावेशीकरण',
         path: '/app/social-inclusion',
         icon: <HeartHandshake size={16} />,
+        featureId: 'f_vital',
+      },
+      {
+        label: 'वातावरण तथा नदीजन्य खानी नियमन',
+        path: '/app/environment',
+        icon: <Trees size={16} style={{ color: '#16a34a' }} />,
+        badge: 'IEE/वन',
+        badgeColor: '#16a34a',
+        featureId: 'f_agriculture',
+      },
+      {
+        label: 'बजार अनुगमन तथा उपभोक्ता हित',
+        path: '/app/market-inspection',
+        icon: <Store size={16} style={{ color: '#b45309' }} />,
+        badge: 'अनुगमन',
+        badgeColor: '#b45309',
+        featureId: 'f_business',
+      },
+      {
+        label: 'बालमैत्री स्थानीय शासन (CFLG) र खेलकुद',
+        path: '/app/cflg-sports',
+        icon: <Trophy size={16} style={{ color: '#7c3aed' }} />,
+        badge: 'CFLG',
+        badgeColor: '#7c3aed',
+        featureId: 'f_vital',
       },
     ],
   },
@@ -446,9 +548,18 @@ export const adminNavSections: NavSection[] = [
         roles: ['super_admin', 'admin', 'it_admin'],
       },
       {
+        label: 'आर्थिक वर्ष व्यवस्थापन',
+        path: '/app/admin?tab=fiscal-year',
+        icon: <CalendarRange size={16} style={{ color: '#2563eb' }} />,
+        badge: 'FY Setup',
+        badgeColor: '#2563eb',
+        roles: ['super_admin', 'admin', 'cao', 'it_admin', 'accountant'],
+      },
+      {
         label: 'मद्दत तथा प्रयोगकर्ता पुस्तिका',
         path: '/app/faq-help',
         icon: <HelpCircle size={16} />,
+        roles: ['super_admin', 'admin', 'cao', 'it_admin'],
       },
       {
         label: 'सुपर एडमिन कन्सोल',
@@ -504,6 +615,13 @@ export const publicNavSections: NavSection[] = [
         icon: <Bot size={16} style={{ color: '#ec4899' }} />,
         badge: 'AI Copilot',
         badgeColor: '#ec4899',
+      },
+      {
+        label: 'सुशासन तथा सामाजिक परीक्षण',
+        path: '/social-audit',
+        icon: <Gavel size={16} style={{ color: '#38bdf8' }} />,
+        badge: 'Social Audit',
+        badgeColor: '#0284c7',
       },
     ],
   },
@@ -592,6 +710,20 @@ export const publicNavSections: NavSection[] = [
         label: 'फोहोरमैला व्यवस्थापन ट्विन',
         path: '/waste-management',
         icon: <Trash2 size={16} />,
+      },
+      {
+        label: 'खानेपानी तथा स्वच्छता (WASH Twin)',
+        path: '/wash',
+        icon: <Droplets size={16} style={{ color: '#0284c7' }} />,
+        badge: 'WASH Twin',
+        badgeColor: '#0284c7',
+      },
+      {
+        label: 'सडक सञ्जाल तथा यातायात (Roads & MTMP)',
+        path: '/roads',
+        icon: <Compass size={16} style={{ color: '#0f766e' }} />,
+        badge: 'MTMP',
+        badgeColor: '#0f766e',
       },
     ],
   },
@@ -683,6 +815,27 @@ export const publicNavSections: NavSection[] = [
         icon: <HeartHandshake size={16} />,
       },
       {
+        label: 'वातावरण तथा नदीजन्य खानी नियमन',
+        path: '/environment',
+        icon: <Trees size={16} style={{ color: '#16a34a' }} />,
+        badge: 'IEE/वन',
+        badgeColor: '#16a34a',
+      },
+      {
+        label: 'बजार अनुगमन तथा उपभोक्ता हित',
+        path: '/market-inspection',
+        icon: <Store size={16} style={{ color: '#b45309' }} />,
+        badge: 'अनुगमन',
+        badgeColor: '#b45309',
+      },
+      {
+        label: 'बालमैत्री स्थानीय शासन (CFLG) र खेलकुद',
+        path: '/cflg-sports',
+        icon: <Trophy size={16} style={{ color: '#7c3aed' }} />,
+        badge: 'CFLG',
+        badgeColor: '#7c3aed',
+      },
+      {
         label: 'संघ-संस्थाहरू (NGO/CBO)',
         path: '/organizations',
         icon: <Building2 size={16} />,
@@ -714,6 +867,8 @@ export const publicNavSections: NavSection[] = [
 
 import { useAuth } from '../../context/AuthContext';
 import { useTenant } from '../../context/TenantContext';
+import { useQuery } from '@tanstack/react-query';
+import { usersApi, type Role as ApiRole } from '../../api/users';
 
 interface SidebarProps {
   isPublic?: boolean;
@@ -725,6 +880,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
   const { user } = useAuth();
   const { settings, currentTenant, tenantId } = useTenant();
   const palikaName = settings?.palika_name || currentTenant?.name_np || 'डिजिटल ट्विन';
+
+  // Load dynamic RBAC roles & permissions (from API & synced with localStorage)
+  const { data: dbRoles = [] } = useQuery<ApiRole[]>({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      try {
+        const roles = await usersApi.getRoles();
+        if (Array.isArray(roles) && roles.length > 0) {
+          try {
+            localStorage.setItem('p5_role_permissions', JSON.stringify(roles));
+          } catch {}
+          return roles;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch roles from API, reading cache:', err);
+      }
+      try {
+        const cached = localStorage.getItem('p5_role_permissions');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+      return [];
+    },
+    enabled: !isPublic && !!user,
+    staleTime: 30 * 1000,
+  });
 
   const tenantBadge = useMemo(() => {
     const sub = (currentTenant?.subdomain || tenantId || '').toLowerCase();
@@ -744,16 +924,58 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
     const userRole = user?.role || 'admin';
     const isSuper = userRole === 'super_admin' || userRole === 'it_admin' || userRole === 'admin';
 
+    // Find permissions for current role from dbRoles or cached matrix
+    let rolePermissions: string[] | null = null;
+    if (!isSuper) {
+      const activeRoleObj = dbRoles.find((r) => r.name === userRole);
+      if (activeRoleObj && Array.isArray(activeRoleObj.permissions)) {
+        rolePermissions = activeRoleObj.permissions;
+      } else {
+        try {
+          const cached = localStorage.getItem('p5_role_permissions');
+          if (cached) {
+            const list = JSON.parse(cached);
+            const found = list.find((r: any) => r.name === userRole);
+            if (found && Array.isArray(found.permissions)) {
+              rolePermissions = found.permissions;
+            }
+          }
+        } catch {}
+      }
+    }
+
     return adminNavSections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => {
-          if (!item.roles || item.roles.length === 0 || isSuper) return true;
-          return item.roles.includes(userRole);
+          // Super admin and Palika Admin can see all modules
+          if (isSuper) {
+            if (item.roles && !item.roles.includes(userRole)) {
+              if (item.roles.includes('super_admin') && !item.roles.includes('admin') && userRole !== 'super_admin') {
+                return false;
+              }
+            }
+            return true;
+          }
+
+          // If role-restricted admin item (e.g. HRMS, IT Branch, Admin Console)
+          if (item.roles && item.roles.length > 0) {
+            if (!item.roles.includes(userRole)) return false;
+          }
+
+          // If linked to an RBAC Matrix feature: STRICT FILTERING!
+          // Only show if the role explicitly has this feature checked in the matrix!
+          if (item.featureId) {
+            if (!rolePermissions || !rolePermissions.includes(item.featureId)) {
+              return false;
+            }
+          }
+
+          return true;
         }),
       }))
       .filter((section) => section.items.length > 0);
-  }, [isPublic, user?.role]);
+  }, [isPublic, user?.role, dbRoles]);
 
   // Track expanded state for sections (all open by default, expandable/collapsible)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {

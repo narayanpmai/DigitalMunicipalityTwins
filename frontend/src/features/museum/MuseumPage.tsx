@@ -33,7 +33,10 @@ import {
   Music,
   Film,
   Box,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportMuseumAssetsData } from '../../utils/exportUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sectoralApi } from '../../api/sectoral';
 import { api } from '../../api/client';
@@ -410,6 +413,53 @@ export const MuseumPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={() => exportMuseumAssetsData(filteredItems, 'xlsx')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '10px 16px',
+              borderRadius: '12px',
+              border: '1px solid #16a34a',
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.15s ease',
+            }}
+            title="हालको क्याटलगलाई एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} />
+            <span>एक्सेल (.xlsx) निर्यात</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => exportMuseumAssetsData(filteredItems, 'csv')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.25)',
+              backgroundColor: 'rgba(255,255,255,0.12)',
+              color: '#ffffff',
+              fontSize: '0.86rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={15} />
+            <span>CSV</span>
+          </button>
+
           <button
             type="button"
             onClick={handleOpenNewModal}

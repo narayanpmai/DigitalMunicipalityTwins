@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { sectoralApi } from '../../../api/sectoral';
+import { api } from '../../../api/client';
 
 export interface ProjectExcelImportModalProps {
   isOpen: boolean;
@@ -161,32 +162,42 @@ export const ProjectExcelImportModal: React.FC<ProjectExcelImportModalProps> = (
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    let successCount = 0;
-    let failCount = 0;
-
-    for (const item of parsedRows) {
-      try {
-        await sectoralApi.createProject(item);
-        successCount++;
-      } catch (err) {
-        console.error('Save error on project:', item, err);
-        failCount++;
-      }
-    }
-
-    setIsProcessing(false);
-
-    if (successCount > 0) {
-      setSuccessMsg(
-        `सफलतापूर्वक ${successCount} वटा विकास आयोजनाहरू डेटाबेसमा सुरक्षित गरियो! ${
-          failCount > 0 ? `(${failCount} वटा असफल भयो)` : ''
-        }`
-      );
+    try {
+      // High-performance atomic bulk import endpoint
+      const res: any = await api.post('/projects/bulk-import', parsedRows);
+      const count = res?.count || parsedRows.length;
+      setSuccessMsg(`सफलतापूर्वक ${count} वटा विकास आयोजनाहरू डेटाबेसमा सुरक्षित गरियो!`);
       setParsedRows([]);
       setFileName('');
       onSuccess();
-    } else {
-      setErrorMsg('आयोजनाहरू सुरक्षित गर्न सकिएन। कृपया नेटवर्क वा सर्भर लगहरू जाँच्नुहोस्।');
+    } catch (bulkErr: any) {
+      console.warn('Bulk endpoint failed, falling back to individual inserts...', bulkErr);
+      let successCount = 0;
+      let failCount = 0;
+      for (const item of parsedRows) {
+        try {
+          await sectoralApi.createProject(item);
+          successCount++;
+        } catch (err) {
+          console.error('Save error on project:', item, err);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        setSuccessMsg(
+          `सफलतापूर्वक ${successCount} वटा विकास आयोजनाहरू डेटाबेसमा सुरक्षित गरियो! ${
+            failCount > 0 ? `(${failCount} वटा असफल भयो)` : ''
+          }`
+        );
+        setParsedRows([]);
+        setFileName('');
+        onSuccess();
+      } else {
+        setErrorMsg('आयोजनाहरू सुरक्षित गर्न सकिएन। कृपया नेटवर्क वा सर्भर लगहरू जाँच्नुहोस्।');
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
 

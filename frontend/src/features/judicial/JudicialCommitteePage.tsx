@@ -33,8 +33,11 @@ import {
   FileCheck,
   Sparkles,
   BookOpen,
-  Filter
+  Filter,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportJudicialCasesData } from '../../utils/exportUtils';
 
 const DISPUTE_TYPES = [
   'साँध सिमाना / जग्गा विवाद (Boundary Dispute)',
@@ -341,6 +344,49 @@ export const JudicialCommitteePage: React.FC = () => {
             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
           >
             <Printer size={16} /> दैनिक पेशी सूची (Cause List)
+          </button>
+
+          <button
+            onClick={() => exportJudicialCasesData(filteredCases, 'xlsx')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.7rem 1.15rem',
+              background: '#10b981',
+              border: '1px solid #059669',
+              borderRadius: '10px',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+              transition: 'all 0.2s ease',
+            }}
+            title="वर्तमान खोज तथा फिल्टर अनुसार न्यायिक मुद्दा लगत एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} /> मुद्दा लगत Excel (.xlsx)
+          </button>
+
+          <button
+            onClick={() => exportJudicialCasesData(filteredCases, 'csv')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.7rem 0.95rem',
+              background: 'rgba(255,255,255,0.14)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: '10px',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              transition: 'all 0.2s ease',
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={15} /> CSV
           </button>
 
           <button

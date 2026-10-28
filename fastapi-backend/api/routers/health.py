@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.health import (
     HealthFacility, PatientRecord, IpdAdmission, LabTestRecord,
     HealthPrescription, HealthDischargeSummary, HealthDhis2Report,
@@ -53,30 +54,31 @@ def now_dt() -> datetime:
 @router.get("/institutions")
 def get_health_facilities(
     ward: Optional[int] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthFacility).filter(HealthFacility.deleted_at == None)
+    q = ctx.filter_query(db.query(HealthFacility), HealthFacility).filter(HealthFacility.deleted_at == None)
     if ward:
         q = q.filter(HealthFacility.ward_number == ward)
     return q.order_by(HealthFacility.order_no).all()
 
 @router.get("/institutions/stats")
-def get_health_institutions_stats(db: Session = Depends(get_db)):
-    total = db.query(HealthFacility).filter(HealthFacility.deleted_at == None).count()
+def get_health_institutions_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    total = ctx.filter_query(db.query(HealthFacility), HealthFacility).filter(HealthFacility.deleted_at == None).count()
     return {"total": total}
 
 
 @router.get("/facilities/{facility_id}")
-def get_facility(facility_id: str, db: Session = Depends(get_db)):
-    f = db.query(HealthFacility).filter(HealthFacility.id == facility_id).first()
+def get_facility(facility_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    f = ctx.filter_query(db.query(HealthFacility), HealthFacility).filter(HealthFacility.id == facility_id).first()
     if not f:
         raise HTTPException(status_code=404, detail="Facility not found")
     return f
 
 
 @router.post("/facilities", status_code=201)
-def create_health_facility(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_health_facility(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     facility = HealthFacility(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         name=data.get("name", "") or data.get("nameNepali", ""),
         name_en=data.get("nameEn") or data.get("nameEnglish"),
@@ -101,8 +103,8 @@ def create_health_facility(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/facilities/{facility_id}")
-def update_health_facility(facility_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    f = db.query(HealthFacility).filter(HealthFacility.id == facility_id).first()
+def update_health_facility(facility_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    f = ctx.filter_query(db.query(HealthFacility), HealthFacility).filter(HealthFacility.id == facility_id).first()
     if not f:
         raise HTTPException(status_code=404, detail="Facility not found")
     for key, value in data.items():
@@ -123,8 +125,8 @@ def update_health_facility(facility_id: str, data: Dict[str, Any], db: Session =
 
 
 @router.delete("/facilities/{facility_id}")
-def delete_health_facility(facility_id: str, db: Session = Depends(get_db)):
-    f = db.query(HealthFacility).filter(HealthFacility.id == facility_id).first()
+def delete_health_facility(facility_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    f = ctx.filter_query(db.query(HealthFacility), HealthFacility).filter(HealthFacility.id == facility_id).first()
     if not f:
         raise HTTPException(status_code=404, detail="Facility not found")
     f.deleted_at = now_dt()
@@ -137,16 +139,17 @@ def delete_health_facility(facility_id: str, db: Session = Depends(get_db)):
 # ════════════════════════════════════════════════════════════════════════════════
 
 @router.get("/ambulances")
-def get_ambulances(ward: Optional[int] = Query(None), db: Session = Depends(get_db)):
-    q = db.query(AmbulanceContact).filter(AmbulanceContact.deleted_at == None)
+def get_ambulances(ward: Optional[int] = Query(None), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    q = ctx.filter_query(db.query(AmbulanceContact), AmbulanceContact).filter(AmbulanceContact.deleted_at == None)
     if ward:
         q = q.filter(AmbulanceContact.ward_number == ward)
     return q.order_by(AmbulanceContact.created_at.desc()).all()
 
 
 @router.post("/ambulances", status_code=201)
-def create_ambulance(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_ambulance(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     amb = AmbulanceContact(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         driver_name=data.get("driverName", ""),
         vehicle_number=data.get("vehicleNumber", ""),
@@ -163,8 +166,8 @@ def create_ambulance(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/ambulances/{amb_id}")
-def update_ambulance(amb_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    amb = db.query(AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
+def update_ambulance(amb_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    amb = ctx.filter_query(db.query(AmbulanceContact), AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
     if not amb:
         raise HTTPException(status_code=404, detail="Ambulance not found")
     field_map = {
@@ -183,8 +186,8 @@ def update_ambulance(amb_id: str, data: Dict[str, Any], db: Session = Depends(ge
 
 
 @router.patch("/ambulances/{amb_id}/toggle-status")
-def toggle_ambulance_status(amb_id: str, db: Session = Depends(get_db)):
-    amb = db.query(AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
+def toggle_ambulance_status(amb_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    amb = ctx.filter_query(db.query(AmbulanceContact), AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
     if not amb:
         raise HTTPException(status_code=404, detail="Ambulance not found")
     amb.is_available = not amb.is_available
@@ -195,8 +198,8 @@ def toggle_ambulance_status(amb_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/ambulances/{amb_id}")
-def delete_ambulance(amb_id: str, db: Session = Depends(get_db)):
-    amb = db.query(AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
+def delete_ambulance(amb_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    amb = ctx.filter_query(db.query(AmbulanceContact), AmbulanceContact).filter(AmbulanceContact.id == amb_id).first()
     if not amb:
         raise HTTPException(status_code=404, detail="Ambulance not found")
     amb.deleted_at = now_dt()
@@ -215,9 +218,9 @@ def get_patients(
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     limit: int = Query(200),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(PatientRecord)
+    q = ctx.filter_query(db.query(PatientRecord), PatientRecord)
     if ward:
         q = q.filter(PatientRecord.ward_number == ward)
     if department and department != "all":
@@ -234,17 +237,17 @@ def get_patients(
 
 
 @router.get("/patients/{patient_no}/full-history")
-def get_patient_full_history(patient_no: str, db: Session = Depends(get_db)):
-    patient = db.query(PatientRecord).filter(PatientRecord.patient_no == patient_no).first()
+def get_patient_full_history(patient_no: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    patient = ctx.filter_query(db.query(PatientRecord), PatientRecord).filter(PatientRecord.patient_no == patient_no).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    prescriptions = db.query(HealthPrescription).filter(
+    prescriptions = ctx.filter_query(db.query(HealthPrescription), HealthPrescription).filter(
         HealthPrescription.patient_no == patient_no
     ).order_by(HealthPrescription.created_at.desc()).all()
-    lab_tests = db.query(LabTestRecord).filter(
+    lab_tests = ctx.filter_query(db.query(LabTestRecord), LabTestRecord).filter(
         LabTestRecord.patient_no == patient_no
     ).order_by(LabTestRecord.created_at.desc()).all()
-    admissions = db.query(IpdAdmission).filter(
+    admissions = ctx.filter_query(db.query(IpdAdmission), IpdAdmission).filter(
         IpdAdmission.patient_no == patient_no
     ).order_by(IpdAdmission.created_at.desc()).all()
     return {
@@ -257,10 +260,11 @@ def get_patient_full_history(patient_no: str, db: Session = Depends(get_db)):
 
 
 @router.post("/patients", status_code=201)
-def create_patient(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_patient(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     count = db.query(func.count(PatientRecord.id)).scalar() or 0
     patient_no = f"PPK-{datetime.utcnow().strftime('%y%m%d')}-{str(count + 1).zfill(4)}"
     patient = PatientRecord(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         patient_no=data.get("patientNo") or patient_no,
         first_name=data.get("firstName", ""),
@@ -294,8 +298,8 @@ def create_patient(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/patients/{patient_id}")
-def update_patient(patient_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    p = db.query(PatientRecord).filter(PatientRecord.id == patient_id).first()
+def update_patient(patient_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    p = ctx.filter_query(db.query(PatientRecord), PatientRecord).filter(PatientRecord.id == patient_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Patient not found")
     field_map = {
@@ -327,9 +331,9 @@ def update_patient(patient_id: str, data: Dict[str, Any], db: Session = Depends(
 def get_ipd_admissions(
     status: Optional[str] = Query(None),
     ward: Optional[int] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(IpdAdmission)
+    q = ctx.filter_query(db.query(IpdAdmission), IpdAdmission)
     if status and status != "all":
         q = q.filter(IpdAdmission.status == status)
     if ward:
@@ -338,8 +342,9 @@ def get_ipd_admissions(
 
 
 @router.post("/ipd/admissions", status_code=201)
-def admit_patient(data: Dict[str, Any], db: Session = Depends(get_db)):
+def admit_patient(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     admission = IpdAdmission(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         patient_no=data.get("patientNo", ""),
         patient_name=data.get("patientName", ""),
@@ -359,8 +364,8 @@ def admit_patient(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/ipd/admissions/{admission_id}/discharge")
-def discharge_patient(admission_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    admission = db.query(IpdAdmission).filter(IpdAdmission.id == admission_id).first()
+def discharge_patient(admission_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    admission = ctx.filter_query(db.query(IpdAdmission), IpdAdmission).filter(IpdAdmission.id == admission_id).first()
     if not admission:
         raise HTTPException(status_code=404, detail="Admission not found")
     admission.status = "discharged"
@@ -373,8 +378,9 @@ def discharge_patient(admission_id: str, data: Dict[str, Any], db: Session = Dep
 
 
 @router.post("/ipd/discharge-summary", status_code=201)
-def create_discharge_summary(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_discharge_summary(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     ds = HealthDischargeSummary(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         admission_id=data.get("admissionId", ""),
         patient_no=data.get("patientNo", ""),
@@ -393,8 +399,8 @@ def create_discharge_summary(data: Dict[str, Any], db: Session = Depends(get_db)
 
 
 @router.get("/ipd/discharge-summary/{admission_id}")
-def get_discharge_summary(admission_id: str, db: Session = Depends(get_db)):
-    ds = db.query(HealthDischargeSummary).filter(
+def get_discharge_summary(admission_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    ds = ctx.filter_query(db.query(HealthDischargeSummary), HealthDischargeSummary).filter(
         HealthDischargeSummary.admission_id == admission_id
     ).first()
     if not ds:
@@ -410,9 +416,9 @@ def get_discharge_summary(admission_id: str, db: Session = Depends(get_db)):
 def get_lab_tests(
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(LabTestRecord)
+    q = ctx.filter_query(db.query(LabTestRecord), LabTestRecord)
     if status and status != "all":
         q = q.filter(LabTestRecord.status == status)
     if search:
@@ -424,8 +430,9 @@ def get_lab_tests(
 
 
 @router.post("/lab/tests", status_code=201)
-def create_lab_test(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_lab_test(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     lab = LabTestRecord(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         patient_no=data.get("patientNo", ""),
         patient_name=data.get("patientName", ""),
@@ -445,8 +452,8 @@ def create_lab_test(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/lab/tests/{test_id}")
-def update_lab_test(test_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    lab = db.query(LabTestRecord).filter(LabTestRecord.id == test_id).first()
+def update_lab_test(test_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    lab = ctx.filter_query(db.query(LabTestRecord), LabTestRecord).filter(LabTestRecord.id == test_id).first()
     if not lab:
         raise HTTPException(status_code=404, detail="Lab test not found")
     field_map = {
@@ -474,9 +481,9 @@ def update_lab_test(test_id: str, data: Dict[str, Any], db: Session = Depends(ge
 def get_prescriptions(
     status: Optional[str] = Query(None),
     patient_no: Optional[str] = Query(None, alias="patientNo"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthPrescription)
+    q = ctx.filter_query(db.query(HealthPrescription), HealthPrescription)
     if status and status != "all":
         q = q.filter(HealthPrescription.status == status)
     if patient_no:
@@ -485,8 +492,9 @@ def get_prescriptions(
 
 
 @router.post("/prescriptions", status_code=201)
-def create_prescription(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_prescription(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     rx = HealthPrescription(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         patient_no=data.get("patientNo", ""),
         patient_name=data.get("patientName", ""),
@@ -503,8 +511,8 @@ def create_prescription(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.post("/prescriptions/{rx_id}/dispense")
-def dispense_prescription(rx_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    rx = db.query(HealthPrescription).filter(HealthPrescription.id == rx_id).first()
+def dispense_prescription(rx_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    rx = ctx.filter_query(db.query(HealthPrescription), HealthPrescription).filter(HealthPrescription.id == rx_id).first()
     if not rx:
         raise HTTPException(status_code=404, detail="Prescription not found")
     rx.status = "dispensed"
@@ -525,9 +533,9 @@ def get_dhis2_reports(
     ward: Optional[int] = Query(None),
     month: Optional[str] = Query(None),
     fiscal_year: Optional[str] = Query(None, alias="fiscalYear"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthDhis2Report)
+    q = ctx.filter_query(db.query(HealthDhis2Report), HealthDhis2Report)
     if ward:
         q = q.filter(HealthDhis2Report.ward_number == ward)
     if month and month != "all":
@@ -538,8 +546,8 @@ def get_dhis2_reports(
 
 
 @router.get("/dhis2/summary")
-def get_dhis2_summary(db: Session = Depends(get_db)):
-    reports = db.query(HealthDhis2Report).all()
+def get_dhis2_summary(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    reports = ctx.filter_query(db.query(HealthDhis2Report), HealthDhis2Report).all()
     total = len(reports)
     synced = sum(1 for r in reports if r.sync_status == "synced")
     pending = sum(1 for r in reports if r.sync_status == "pending")
@@ -563,7 +571,7 @@ def auto_calculate_dhis2(
     fiscal_year: Optional[str] = Query(None, alias="fiscalYear"),
     month: Optional[str] = Query(None),
     ward: Optional[int] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
     opd_count = db.query(func.count(PatientRecord.id)).scalar() or 0
     ipd_count = db.query(func.count(IpdAdmission.id)).filter(
@@ -591,8 +599,9 @@ def auto_calculate_dhis2(
 
 
 @router.post("/dhis2/reports", status_code=201)
-def create_dhis2_report(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_dhis2_report(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     report = HealthDhis2Report(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         fiscal_year=data.get("fiscalYear", ""),
         month_nepali=data.get("monthNepali", ""),
@@ -623,8 +632,8 @@ def create_dhis2_report(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/dhis2/reports/{report_id}")
-def update_dhis2_report(report_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    report = db.query(HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
+def update_dhis2_report(report_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    report = ctx.filter_query(db.query(HealthDhis2Report), HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     for k, v in data.items():
@@ -639,8 +648,8 @@ def update_dhis2_report(report_id: str, data: Dict[str, Any], db: Session = Depe
 
 
 @router.post("/dhis2/reports/{report_id}/sync")
-def sync_dhis2_report(report_id: str, db: Session = Depends(get_db)):
-    report = db.query(HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
+def sync_dhis2_report(report_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    report = ctx.filter_query(db.query(HealthDhis2Report), HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     report.sync_status = "synced"
@@ -652,8 +661,8 @@ def sync_dhis2_report(report_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/dhis2/reports/{report_id}")
-def delete_dhis2_report(report_id: str, db: Session = Depends(get_db)):
-    report = db.query(HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
+def delete_dhis2_report(report_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    report = ctx.filter_query(db.query(HealthDhis2Report), HealthDhis2Report).filter(HealthDhis2Report.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     db.delete(report)
@@ -670,9 +679,9 @@ def get_medicine_stock(
     ward: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(MedicineStockItem).filter(MedicineStockItem.deleted_at == None)
+    q = ctx.filter_query(db.query(MedicineStockItem), MedicineStockItem).filter(MedicineStockItem.deleted_at == None)
     if ward:
         q = q.filter(MedicineStockItem.ward_number == ward)
     if status and status != "all":
@@ -711,8 +720,9 @@ def get_medicine_stock(
 
 
 @router.post("/medicines", status_code=201)
-def create_medicine(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_medicine(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     med = MedicineStockItem(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         medicine_name=data.get("medicineName", ""),
         generic_name=data.get("genericName"),
@@ -733,8 +743,8 @@ def create_medicine(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/medicines/{med_id}")
-def update_medicine(med_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    med = db.query(MedicineStockItem).filter(MedicineStockItem.id == med_id).first()
+def update_medicine(med_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    med = ctx.filter_query(db.query(MedicineStockItem), MedicineStockItem).filter(MedicineStockItem.id == med_id).first()
     if not med:
         raise HTTPException(status_code=404, detail="Medicine not found")
     field_map = {
@@ -754,8 +764,8 @@ def update_medicine(med_id: str, data: Dict[str, Any], db: Session = Depends(get
 
 
 @router.delete("/medicines/{med_id}")
-def delete_medicine(med_id: str, db: Session = Depends(get_db)):
-    med = db.query(MedicineStockItem).filter(MedicineStockItem.id == med_id).first()
+def delete_medicine(med_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    med = ctx.filter_query(db.query(MedicineStockItem), MedicineStockItem).filter(MedicineStockItem.id == med_id).first()
     if not med:
         raise HTTPException(status_code=404, detail="Medicine not found")
     med.deleted_at = now_dt()
@@ -768,16 +778,17 @@ def delete_medicine(med_id: str, db: Session = Depends(get_db)):
 # ════════════════════════════════════════════════════════════════════════════════
 
 @router.get("/suppliers")
-def get_suppliers(search: Optional[str] = Query(None), db: Session = Depends(get_db)):
-    q = db.query(HealthSupplier).filter(HealthSupplier.deleted_at == None)
+def get_suppliers(search: Optional[str] = Query(None), db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    q = ctx.filter_query(db.query(HealthSupplier), HealthSupplier).filter(HealthSupplier.deleted_at == None)
     if search:
         q = q.filter(HealthSupplier.supplier_name.ilike(f"%{search}%"))
     return q.order_by(HealthSupplier.supplier_name).all()
 
 
 @router.post("/suppliers", status_code=201)
-def create_supplier(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_supplier(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     supplier = HealthSupplier(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         supplier_name=data.get("supplierName", ""),
         contact_person=data.get("contactPerson"),
@@ -794,8 +805,8 @@ def create_supplier(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/suppliers/{sup_id}")
-def update_supplier(sup_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    supplier = db.query(HealthSupplier).filter(HealthSupplier.id == sup_id).first()
+def update_supplier(sup_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    supplier = ctx.filter_query(db.query(HealthSupplier), HealthSupplier).filter(HealthSupplier.id == sup_id).first()
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
     field_map = {
@@ -812,8 +823,8 @@ def update_supplier(sup_id: str, data: Dict[str, Any], db: Session = Depends(get
 
 
 @router.delete("/suppliers/{sup_id}")
-def delete_supplier(sup_id: str, db: Session = Depends(get_db)):
-    supplier = db.query(HealthSupplier).filter(HealthSupplier.id == sup_id).first()
+def delete_supplier(sup_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    supplier = ctx.filter_query(db.query(HealthSupplier), HealthSupplier).filter(HealthSupplier.id == sup_id).first()
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
     supplier.deleted_at = now_dt()
@@ -826,21 +837,22 @@ def delete_supplier(sup_id: str, db: Session = Depends(get_db)):
 # ════════════════════════════════════════════════════════════════════════════════
 
 @router.get("/purchases")
-def get_purchases(db: Session = Depends(get_db)):
-    return db.query(HealthPurchase).order_by(HealthPurchase.created_at.desc()).all()
+def get_purchases(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    return ctx.filter_query(db.query(HealthPurchase), HealthPurchase).order_by(HealthPurchase.created_at.desc()).all()
 
 
 @router.get("/purchases/{purchase_id}")
-def get_purchase_by_id(purchase_id: str, db: Session = Depends(get_db)):
-    p = db.query(HealthPurchase).filter(HealthPurchase.id == purchase_id).first()
+def get_purchase_by_id(purchase_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    p = ctx.filter_query(db.query(HealthPurchase), HealthPurchase).filter(HealthPurchase.id == purchase_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Purchase not found")
     return p
 
 
 @router.post("/purchases", status_code=201)
-def create_purchase(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_purchase(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     purchase = HealthPurchase(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         supplier_id=data.get("supplierId"),
         supplier_name=data.get("supplierName", ""),
@@ -866,9 +878,9 @@ def create_purchase(data: Dict[str, Any], db: Session = Depends(get_db)):
 def get_medicine_batches(
     medicine_name: Optional[str] = Query(None, alias="medicineName"),
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(MedicineBatch)
+    q = ctx.filter_query(db.query(MedicineBatch), MedicineBatch)
     if medicine_name:
         q = q.filter(MedicineBatch.medicine_name.ilike(f"%{medicine_name}%"))
     if status:
@@ -912,9 +924,9 @@ def get_medicine_batches(
 def get_pos_sales(
     ward: Optional[int] = Query(None),
     is_insured: Optional[bool] = Query(None, alias="isInsured"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthPosSale)
+    q = ctx.filter_query(db.query(HealthPosSale), HealthPosSale)
     if ward:
         q = q.filter(HealthPosSale.ward_number == ward)
     if is_insured is not None:
@@ -926,12 +938,12 @@ def get_pos_sales(
 def search_pos_sale_by_bill(
     bill_no: Optional[str] = Query(None, description="Bill number"),
     q: Optional[str] = Query(None, description="Search query"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
     query_str = (bill_no or q or "").strip()
     if not query_str:
         raise HTTPException(status_code=400, detail="Bill number or search query required")
-    sale = db.query(HealthPosSale).filter(
+    sale = ctx.filter_query(db.query(HealthPosSale), HealthPosSale).filter(
         (HealthPosSale.bill_no.ilike(f"%{query_str}%")) | (HealthPosSale.id == query_str)
     ).first()
     if not sale:
@@ -985,18 +997,19 @@ def search_pos_sale_by_bill(
 
 
 @router.get("/pos/sales/{sale_id}")
-def get_pos_sale_by_id(sale_id: str, db: Session = Depends(get_db)):
-    s = db.query(HealthPosSale).filter(HealthPosSale.id == sale_id).first()
+def get_pos_sale_by_id(sale_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    s = ctx.filter_query(db.query(HealthPosSale), HealthPosSale).filter(HealthPosSale.id == sale_id).first()
     if not s:
         raise HTTPException(status_code=404, detail="Sale not found")
     return s
 
 
 @router.post("/pos/sales", status_code=201)
-def create_pos_sale(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_pos_sale(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     bill_no = data.get("billNumber") or data.get("billNo") or f"BILL-{datetime.utcnow().strftime('%y%m%d%H%M%S')}"
     total = float(data.get("totalAmount") or data.get("netAmount") or 0)
     sale = HealthPosSale(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         bill_no=bill_no,
         patient_no=data.get("patientNo"),
@@ -1024,16 +1037,16 @@ def create_pos_sale(data: Dict[str, Any], db: Session = Depends(get_db)):
 @router.get("/pos/returns")
 def get_pos_returns(
     ward: Optional[int] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthPosReturn)
+    q = ctx.filter_query(db.query(HealthPosReturn), HealthPosReturn)
     if ward:
         q = q.filter(HealthPosReturn.ward_number == ward)
     return q.order_by(HealthPosReturn.created_at.desc()).limit(100).all()
 
 
 @router.post("/pos/returns", status_code=201)
-def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     orig_bill = str(data.get("originalBillNo", "")).strip()
     if not orig_bill:
         raise HTTPException(status_code=400, detail="Original bill number is required")
@@ -1043,6 +1056,7 @@ def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db)):
     total_refund = float(data.get("totalRefundAmount", 0))
 
     ret = HealthPosReturn(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         return_no=return_no,
         original_bill_no=orig_bill,
@@ -1065,14 +1079,14 @@ def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db)):
         qty = int(item.get("quantity", 0))
 
         if med_name and qty > 0:
-            stock_item = db.query(MedicineStockItem).filter(
+            stock_item = ctx.filter_query(db.query(MedicineStockItem), MedicineStockItem).filter(
                 MedicineStockItem.medicine_name.ilike(med_name)
             ).first()
             if stock_item:
                 stock_item.stock_quantity = (stock_item.stock_quantity or 0) + qty
 
             if batch_no:
-                batch = db.query(MedicineBatch).filter(
+                batch = ctx.filter_query(db.query(MedicineBatch), MedicineBatch).filter(
                     MedicineBatch.medicine_name.ilike(med_name),
                     MedicineBatch.batch_no == batch_no
                 ).first()
@@ -1080,7 +1094,7 @@ def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db)):
                     batch.stock_quantity = (batch.stock_quantity or 0) + qty
 
     # Update original sale status
-    orig_sale = db.query(HealthPosSale).filter(
+    orig_sale = ctx.filter_query(db.query(HealthPosSale), HealthPosSale).filter(
         (HealthPosSale.bill_no == orig_bill) | (HealthPosSale.id == orig_bill)
     ).first()
     if orig_sale:
@@ -1099,17 +1113,17 @@ def create_pos_return(data: Dict[str, Any], db: Session = Depends(get_db)):
 @router.get("/insurance/claims")
 def get_insurance_claims(
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthInsuranceClaim)
+    q = ctx.filter_query(db.query(HealthInsuranceClaim), HealthInsuranceClaim)
     if status and status != "all":
         q = q.filter(HealthInsuranceClaim.claim_status == status)
     return q.order_by(HealthInsuranceClaim.created_at.desc()).limit(200).all()
 
 
 @router.get("/insurance/summary")
-def get_insurance_summary(db: Session = Depends(get_db)):
-    claims = db.query(HealthInsuranceClaim).all()
+def get_insurance_summary(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    claims = ctx.filter_query(db.query(HealthInsuranceClaim), HealthInsuranceClaim).all()
     return {
         "totalClaims": len(claims),
         "submittedCount": sum(1 for c in claims if c.claim_status == "submitted"),
@@ -1121,8 +1135,9 @@ def get_insurance_summary(db: Session = Depends(get_db)):
 
 
 @router.post("/insurance/claims", status_code=201)
-def create_insurance_claim(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_insurance_claim(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     claim = HealthInsuranceClaim(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         patient_no=data.get("patientNo", ""),
         patient_name=data.get("patientName", ""),
@@ -1142,8 +1157,8 @@ def create_insurance_claim(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/insurance/claims/{claim_id}")
-def update_insurance_claim(claim_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
-    claim = db.query(HealthInsuranceClaim).filter(HealthInsuranceClaim.id == claim_id).first()
+def update_insurance_claim(claim_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    claim = ctx.filter_query(db.query(HealthInsuranceClaim), HealthInsuranceClaim).filter(HealthInsuranceClaim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
     field_map = {
@@ -1172,9 +1187,9 @@ def get_stock_transfers(
     from_location: Optional[str] = Query(None),
     to_location: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    q = db.query(HealthStockTransfer)
+    q = ctx.filter_query(db.query(HealthStockTransfer), HealthStockTransfer)
     if type and type != "all":
         q = q.filter(HealthStockTransfer.transfer_type == type)
     if status and status != "all":
@@ -1197,10 +1212,10 @@ def get_stock_transfers(
 
 
 @router.get("/stock/transfers/stats")
-def get_stock_transfers_stats(db: Session = Depends(get_db)):
-    total = db.query(HealthStockTransfer).count()
-    completed = db.query(HealthStockTransfer).filter(HealthStockTransfer.status == "completed").count()
-    pending = db.query(HealthStockTransfer).filter(HealthStockTransfer.status.in_(["pending", "in_transit"])).count()
+def get_stock_transfers_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    total = ctx.filter_query(db.query(HealthStockTransfer), HealthStockTransfer).count()
+    completed = ctx.filter_query(db.query(HealthStockTransfer), HealthStockTransfer).filter(HealthStockTransfer.status == "completed").count()
+    pending = ctx.filter_query(db.query(HealthStockTransfer), HealthStockTransfer).filter(HealthStockTransfer.status.in_(["pending", "in_transit"])).count()
     total_qty = db.query(func.coalesce(func.sum(HealthStockTransfer.quantity), 0)).scalar() or 0
 
     types_breakdown = (
@@ -1219,21 +1234,22 @@ def get_stock_transfers_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/stock/transfers/{transfer_id}")
-def get_stock_transfer_by_id(transfer_id: str, db: Session = Depends(get_db)):
-    transfer = db.query(HealthStockTransfer).filter(HealthStockTransfer.id == transfer_id).first()
+def get_stock_transfer_by_id(transfer_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    transfer = ctx.filter_query(db.query(HealthStockTransfer), HealthStockTransfer).filter(HealthStockTransfer.id == transfer_id).first()
     if not transfer:
         raise HTTPException(status_code=404, detail="Stock transfer not found")
     return transfer.to_dict()
 
 
 @router.post("/stock/transfers", status_code=201)
-def create_stock_transfer(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_stock_transfer(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     transfer_no = (
         data.get("transferNo") or 
         data.get("transfer_no") or 
         f"TRF-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
     )
     transfer = HealthStockTransfer(
+        tenant_id=ctx.effective_tenant_id,
         id=generate_id(),
         transfer_no=transfer_no,
         transfer_type=data.get("transferType") or data.get("transfer_type", "internal_issue"),

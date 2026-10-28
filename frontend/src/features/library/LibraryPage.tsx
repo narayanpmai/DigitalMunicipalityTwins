@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sectoralApi } from '../../api/sectoral';
 import { api } from '../../api/client';
+import { useTenant } from '../../context/TenantContext';
 import type { LibraryBook, BorrowRecord } from '../../types/library';
 import { NepaliDatePicker } from '../../components/common/NepaliDatePicker';
 import { adToBs } from '../../utils/nepaliCalendar';
@@ -30,7 +31,10 @@ import {
   BookMarked,
   Info,
   Archive,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportLibraryBooksData } from '../../utils/exportUtils';
 import './LibraryPage.css';
 
 const CATEGORY_OPTIONS = [
@@ -56,6 +60,7 @@ const LANGUAGE_OPTIONS = [
 
 export const LibraryPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { tenantId, settings } = useTenant();
 
   // Navigation & Filtering
   const [activeTab, setActiveTab] = useState<'catalog' | 'circulation' | 'tracking'>('catalog');
@@ -125,22 +130,22 @@ export const LibraryPage: React.FC = () => {
 
   // Queries
   const { data: rawBooks = [], isLoading: isLoadingBooks } = useQuery({
-    queryKey: ['library-books'],
+    queryKey: ['library-books', tenantId],
     queryFn: () => sectoralApi.getLibraryBooks(),
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['library-stats'],
+    queryKey: ['library-stats', tenantId],
     queryFn: () => sectoralApi.getLibraryStats(),
   });
 
   const { data: rawBorrows = [], isLoading: isLoadingBorrows } = useQuery({
-    queryKey: ['library-borrows'],
+    queryKey: ['library-borrows', tenantId],
     queryFn: () => sectoralApi.getLibraryBorrows(),
   });
 
   const { data: rawCitizens = [], isLoading: isLoadingCitizens } = useQuery({
-    queryKey: ['library-citizens'],
+    queryKey: ['library-citizens', tenantId],
     queryFn: async () => {
       try {
         const res = await api.get('/citizens?status=VERIFIED');
@@ -214,10 +219,10 @@ export const LibraryPage: React.FC = () => {
 
   // Mutations
   const createBookMutation = useMutation({
-    mutationFn: (data: Partial<LibraryBook>) => sectoralApi.createLibraryBook(data),
+    mutationFn: (data: Partial<LibraryBook>) => sectoralApi.createLibraryBook({ ...data, tenant_id: tenantId } as any),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
-      queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['library-books', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-stats', tenantId] });
       setShowBookModal(false);
       setBookFormData(initialBookFormData);
     },
@@ -228,10 +233,10 @@ export const LibraryPage: React.FC = () => {
 
   const updateBookMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<LibraryBook> }) =>
-      sectoralApi.updateLibraryBook(id, data),
+      sectoralApi.updateLibraryBook(id, { ...data, tenant_id: tenantId } as any),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
-      queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['library-books', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-stats', tenantId] });
       setShowBookModal(false);
       setBookFormData(initialBookFormData);
     },
@@ -243,8 +248,8 @@ export const LibraryPage: React.FC = () => {
   const deleteBookMutation = useMutation({
     mutationFn: (id: string) => sectoralApi.deleteLibraryBook(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
-      queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['library-books', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-stats', tenantId] });
     },
     onError: (err: any) => {
       alert(`त्रुटि: ${err?.message || 'पुस्तक मेटाउन सकिएन'}`);
@@ -252,11 +257,11 @@ export const LibraryPage: React.FC = () => {
   });
 
   const issueBorrowMutation = useMutation({
-    mutationFn: (data: any) => sectoralApi.issueBookBorrow(data),
+    mutationFn: (data: any) => sectoralApi.issueBookBorrow({ ...data, tenant_id: tenantId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-borrows'] });
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
-      queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['library-borrows', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-books', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-stats', tenantId] });
       setShowIssueModal(false);
       setSelectedBookForIssue(null);
       setIssueFormData(initialIssueData);
@@ -269,9 +274,9 @@ export const LibraryPage: React.FC = () => {
   const returnBorrowMutation = useMutation({
     mutationFn: (borrowId: string) => sectoralApi.returnBookBorrow(borrowId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-borrows'] });
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
-      queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['library-borrows', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-books', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['library-stats', tenantId] });
     },
     onError: (err: any) => {
       alert(`त्रुटि: ${err?.message || 'पुस्तक फिर्ता रेकर्ड गर्न सकिएन'}`);
@@ -461,13 +466,58 @@ export const LibraryPage: React.FC = () => {
               सार्वजनिक डिजिटल तथा खुला पुस्तकालय
             </h1>
             <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '3px 0 0 0' }}>
-              पाँचपोखरी थाङपाल गाउँपालिका: पुस्तक सूचीकरण, र्याक व्यवस्थापन, ई-कक्षा तथा सापटी वितरण
+              {settings?.palika_name || (tenantId === 'khadadevi' ? 'खाँडादेवी गाउँपालिका' : 'पाँचपोखरी थाङपाल गाउँपालिका')}: पुस्तक सूचीकरण, र्याक व्यवस्थापन, ई-कक्षा तथा सापटी वितरण
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => exportLibraryBooksData(filteredBooks, 'xlsx')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              padding: '9px 16px',
+              borderRadius: '8px',
+              border: '1px solid #059669',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)',
+            }}
+            title="वर्तमान खोज तथा विधा अनुसार पुस्तक क्याटलग एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} />
+            <span>एक्सेल (.xlsx) निर्यात</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => exportLibraryBooksData(filteredBooks, 'csv')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              backgroundColor: '#ffffff',
+              color: '#334155',
+              padding: '9px 14px',
+              borderRadius: '8px',
+              border: '1.5px solid #cbd5e1',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={15} />
+            <span>CSV</span>
+          </button>
+
           <button
             type="button"
             onClick={() => handleOpenIssueModal()}

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, text
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.education import School, Student, Teacher, EducationAttendance, EducationNutrition, Assessment
 import uuid
 from datetime import datetime
@@ -19,8 +20,9 @@ router = APIRouter(
 
 
 @router.get('/schools/stats')
-def get_education_schools_stats():
-    return {'total': 0}
+def get_education_schools_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    total = ctx.filter_query(db.query(School), School).filter(School.deleted_at.is_(None)).count()
+    return {'total': total}
 
 
 # ── HELPER: Resolve School Map for Name Lookups ─────────────────────────────
@@ -34,9 +36,9 @@ def get_school_name_map(db: Session) -> Dict[str, str]:
 
 # ── 1. EDUCATION OVERVIEW STATS ─────────────────────────────────────────────
 @router.get("/overview")
-def get_education_overview(db: Session = Depends(get_db)):
+def get_education_overview(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """Comprehensive education statistics for Panchpokhari Thangpal"""
-    schools = db.query(School).filter(School.deleted_at.is_(None)).all()
+    schools = ctx.filter_query(db.query(School), School).filter(School.deleted_at.is_(None)).all()
     total_schools = len(schools)
 
     community_count = sum(1 for s in schools if (s.type or '').lower() in ['public', 'community', 'सामुदायिक'])
@@ -82,8 +84,21 @@ def get_education_overview(db: Session = Depends(get_db)):
             "totalTeachers": w_teachers
         })
 
+    is_p5 = "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all
+    if not is_p5 and total_schools == 0:
+        return {
+            "totalSchools": 0, "communitySchools": 0, "privateSchools": 0,
+            "secondaryCount": 0, "secondarySchools": 0, "basicCount": 0, "basicSchools": 0,
+            "totalStudents": 0, "boysCount": 0, "girlsCount": 0,
+            "totalTeachers": 0, "permanentTeachers": 0, "contractTeachers": 0,
+            "ptr": "0:1", "studentTeacherRatio": 0, "attendanceRate": "0%",
+            "mealsBeneficiaries": 0, "ictEnabledSchools": 0, "scienceLabSchools": 0,
+            "librarySchools": 0, "drinkingWaterSchools": 0, "electricitySchools": 0,
+            "systemStatus": "सक्रिय (Live)", "wardBreakdown": ward_breakdown
+        }
+
     return {
-        "totalSchools": total_schools or 28,
+        "totalSchools": total_schools or (28 if is_p5 else 0),
         "communitySchools": community_count,
         "privateSchools": private_count,
         "secondaryCount": secondary_count,
@@ -116,9 +131,9 @@ def get_schools(
     ward: Optional[int] = Query(None, description="वडा नम्बर अनुसार फिल्टर"),
     level: Optional[str] = Query(None, description="तह (secondary / basic)"),
     search: Optional[str] = Query(None, description="खोजी शब्द"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(School).filter(School.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(School), School).filter(School.deleted_at.is_(None))
 
     if ward and ward > 0:
         query = query.filter(School.ward_number == ward)
@@ -141,16 +156,16 @@ def get_schools(
 
 
 @router.get("/schools/{school_id}")
-def get_school_by_id(school_id: str, db: Session = Depends(get_db)):
+def get_school_by_id(school_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     school = None
     try:
         u_id = uuid.UUID(school_id)
-        school = db.query(School).filter(School.id == u_id, School.deleted_at.is_(None)).first()
+        school = ctx.filter_query(db.query(School), School).filter(School.id == u_id, School.deleted_at.is_(None)).first()
     except ValueError:
         pass
 
     if not school:
-        school = db.query(School).filter(
+        school = ctx.filter_query(db.query(School), School).filter(
             or_(School.emis_code == school_id, School.name == school_id),
             School.deleted_at.is_(None)
         ).first()
@@ -162,14 +177,15 @@ def get_school_by_id(school_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/schools", status_code=status.HTTP_201_CREATED)
-def create_school(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_school(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         name = data.get("name") or data.get("nameNepali")
         if not name:
             raise HTTPException(status_code=400, detail="विद्यालयको नाम अनिवार्य छ।")
 
         school = School(
-            id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
+        id=uuid.uuid4(),
             name=name,
             name_en=data.get("nameEn") or data.get("nameEnglish"),
             ward_number=int(data.get("wardNumber") or 1),
@@ -208,16 +224,16 @@ def create_school(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.put("/schools/{school_id}")
-def update_school(school_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+def update_school(school_id: str, data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     school = None
     try:
         u_id = uuid.UUID(school_id)
-        school = db.query(School).filter(School.id == u_id, School.deleted_at.is_(None)).first()
+        school = ctx.filter_query(db.query(School), School).filter(School.id == u_id, School.deleted_at.is_(None)).first()
     except ValueError:
         pass
 
     if not school:
-        school = db.query(School).filter(
+        school = ctx.filter_query(db.query(School), School).filter(
             or_(School.emis_code == school_id, School.name == school_id),
             School.deleted_at.is_(None)
         ).first()
@@ -283,16 +299,16 @@ def update_school(school_id: str, data: Dict[str, Any], db: Session = Depends(ge
 
 
 @router.delete("/schools/{school_id}")
-def delete_school(school_id: str, db: Session = Depends(get_db)):
+def delete_school(school_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     school = None
     try:
         u_id = uuid.UUID(school_id)
-        school = db.query(School).filter(School.id == u_id).first()
+        school = ctx.filter_query(db.query(School), School).filter(School.id == u_id).first()
     except ValueError:
         pass
 
     if not school:
-        school = db.query(School).filter(School.emis_code == school_id).first()
+        school = ctx.filter_query(db.query(School), School).filter(School.emis_code == school_id).first()
 
     if not school:
         raise HTTPException(status_code=404, detail="विद्यालय फेला परेन।")
@@ -310,9 +326,9 @@ def get_students(
     search: Optional[str] = Query(None),
     limit: int = 100,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Student).filter(Student.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(Student), Student).filter(Student.deleted_at.is_(None))
     if schoolId:
         query = query.filter(Student.school_id == schoolId)
     if classGrade and classGrade != 'all':
@@ -335,8 +351,8 @@ def get_students(
 
 
 @router.get("/schools/{school_id}/students")
-def get_school_students_nested(school_id: str, db: Session = Depends(get_db)):
-    students = db.query(Student).filter(
+def get_school_students_nested(school_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    students = ctx.filter_query(db.query(Student), Student).filter(
         Student.school_id == school_id,
         Student.deleted_at.is_(None)
     ).order_by(Student.roll_number).all()
@@ -346,14 +362,15 @@ def get_school_students_nested(school_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/students", status_code=status.HTTP_201_CREATED)
-def create_student(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_student(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     full_name = data.get("fullName") or data.get("full_name")
     if not full_name:
         raise HTTPException(status_code=400, detail="विद्यार्थीको पूरा नाम अनिवार्य छ।")
 
     try:
         student = Student(
-            id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
+        id=uuid.uuid4(),
             full_name=full_name,
             admission_no=data.get("admissionNo") or data.get("admission_no") or f"ADM-{datetime.utcnow().strftime('%y%m%d%H%M%S')}",
             school_id=str(data.get("schoolId") or data.get("school_id") or ""),
@@ -378,12 +395,12 @@ def create_student(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.delete("/students/{student_id}")
-def delete_student(student_id: str, db: Session = Depends(get_db)):
+def delete_student(student_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         u_id = uuid.UUID(student_id)
-        student = db.query(Student).filter(Student.id == u_id).first()
+        student = ctx.filter_query(db.query(Student), Student).filter(Student.id == u_id).first()
     except ValueError:
-        student = db.query(Student).filter(Student.admission_no == student_id).first()
+        student = ctx.filter_query(db.query(Student), Student).filter(Student.admission_no == student_id).first()
 
     if not student:
         raise HTTPException(status_code=404, detail="विद्यार्थी फेला परेन।")
@@ -398,9 +415,9 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
 def get_teachers(
     schoolId: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Teacher).filter(Teacher.deleted_at.is_(None))
+    query = ctx.filter_query(db.query(Teacher), Teacher).filter(Teacher.deleted_at.is_(None))
     if schoolId:
         query = query.filter(Teacher.school_id == schoolId)
     if search:
@@ -420,14 +437,15 @@ def get_teachers(
 
 
 @router.post("/teachers", status_code=status.HTTP_201_CREATED)
-def create_teacher(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_teacher(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     full_name = data.get("fullName") or data.get("full_name")
     if not full_name:
         raise HTTPException(status_code=400, detail="शिक्षकको नाम अनिवार्य छ।")
 
     try:
         teacher = Teacher(
-            id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
+        id=uuid.uuid4(),
             full_name=full_name,
             school_id=str(data.get("schoolId") or data.get("school_id") or ""),
             designation=data.get("designation") or "शिक्षक",
@@ -449,10 +467,10 @@ def create_teacher(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.delete("/teachers/{teacher_id}")
-def delete_teacher(teacher_id: str, db: Session = Depends(get_db)):
+def delete_teacher(teacher_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         u_id = uuid.UUID(teacher_id)
-        teacher = db.query(Teacher).filter(Teacher.id == u_id).first()
+        teacher = ctx.filter_query(db.query(Teacher), Teacher).filter(Teacher.id == u_id).first()
     except ValueError:
         teacher = None
 
@@ -466,11 +484,11 @@ def delete_teacher(teacher_id: str, db: Session = Depends(get_db)):
 
 # ── 5. NUTRITION & MID-DAY MEALS ───────────────────────────────────────────
 @router.get("/nutrition")
-def get_nutrition_records(db: Session = Depends(get_db)):
-    records = db.query(EducationNutrition).order_by(EducationNutrition.ward_number).all()
+def get_nutrition_records(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    records = ctx.filter_query(db.query(EducationNutrition), EducationNutrition).order_by(EducationNutrition.ward_number).all()
     if not records:
         # Generate default dynamic tracker records based on primary schools in Panchpokhari
-        schools = db.query(School).filter(School.deleted_at.is_(None)).order_by(School.ward_number).limit(10).all()
+        schools = ctx.filter_query(db.query(School), School).filter(School.deleted_at.is_(None)).order_by(School.ward_number).limit(10).all()
         seed_list = []
         for s in schools:
             ben_count = int(s.total_students * 0.65) if s.total_students else 45
@@ -493,14 +511,15 @@ def get_nutrition_records(db: Session = Depends(get_db)):
 
 
 @router.post("/nutrition", status_code=status.HTTP_201_CREATED)
-def create_nutrition_record(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_nutrition_record(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     school_name = data.get("schoolName") or data.get("school_name")
     if not school_name:
         raise HTTPException(status_code=400, detail="विद्यालयको नाम अनिवार्य छ।")
 
     try:
         record = EducationNutrition(
-            id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
+        id=uuid.uuid4(),
             school_name=school_name,
             ward_number=int(data.get("wardNumber") or data.get("ward_number") or 1),
             beneficiary_count=int(data.get("beneficiaryCount") or data.get("beneficiary_count") or 0),
@@ -521,9 +540,9 @@ def create_nutrition_record(data: Dict[str, Any], db: Session = Depends(get_db))
 def get_attendance_records(
     date: Optional[str] = Query(None),
     schoolId: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(EducationAttendance)
+    query = ctx.filter_query(db.query(EducationAttendance), EducationAttendance)
     if date:
         query = query.filter(EducationAttendance.date == date)
     if schoolId:
@@ -534,10 +553,11 @@ def get_attendance_records(
 
 
 @router.post("/attendance", status_code=status.HTTP_201_CREATED)
-def record_attendance(data: Dict[str, Any], db: Session = Depends(get_db)):
+def record_attendance(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         attendance = EducationAttendance(
-            id=uuid.uuid4(),
+            tenant_id=ctx.effective_tenant_id,
+        id=uuid.uuid4(),
             date=data.get("date") or datetime.utcnow().strftime("%Y-%m-%d"),
             user_name=data.get("userName") or data.get("full_name") or "शिक्षक",
             user_type=data.get("userType", "teacher"),
@@ -559,9 +579,9 @@ def record_attendance(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 # ── 7. GIS GEOJSON SCHOOLS ─────────────────────────────────────────────────
 @router.get("/gis")
-def get_schools_geojson(db: Session = Depends(get_db)):
+def get_schools_geojson(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     """GeoJSON FeatureCollection for WebGIS layers"""
-    schools = db.query(School).filter(
+    schools = ctx.filter_query(db.query(School), School).filter(
         School.deleted_at.is_(None),
         School.latitude.isnot(None),
         School.longitude.isnot(None)
@@ -601,8 +621,8 @@ def get_schools_geojson(db: Session = Depends(get_db)):
 
 # ── 8. STUDENT EXAM ASSESSMENTS (विद्यार्थी परीक्षा मूल्याङ्कन तथा नतिजा) ───
 @router.get("/assessments/stats")
-def get_assessment_stats(db: Session = Depends(get_db)):
-    assessments = db.query(Assessment).all()
+def get_assessment_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    assessments = ctx.filter_query(db.query(Assessment), Assessment).all()
     total = len(assessments)
     if total == 0:
         return {
@@ -661,9 +681,9 @@ def get_assessments(
     exam_type: Optional[str] = Query(None),
     grade: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(Assessment)
+    query = ctx.filter_query(db.query(Assessment), Assessment)
 
     if school_name and school_name != 'all':
         query = query.filter(Assessment.school_name.ilike(f"%{school_name}%"))
@@ -689,12 +709,13 @@ def get_assessments(
 
 
 @router.post("/assessments", status_code=status.HTTP_201_CREATED)
-def create_assessment(data: Dict[str, Any], db: Session = Depends(get_db)):
+def create_assessment(data: Dict[str, Any], db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     student_name = data.get("studentName") or data.get("student_name")
     if not student_name:
         raise HTTPException(status_code=400, detail="विद्यार्थीको नाम (Student Name) अनिवार्य छ।")
 
     assessment = Assessment(
+        tenant_id=ctx.effective_tenant_id,
         id=uuid.uuid4(),
         student_id=data.get("studentId") or data.get("student_id"),
         student_name=student_name,
@@ -721,10 +742,10 @@ def create_assessment(data: Dict[str, Any], db: Session = Depends(get_db)):
 
 
 @router.get("/assessments/{assessment_id}")
-def get_assessment(assessment_id: str, db: Session = Depends(get_db)):
+def get_assessment(assessment_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         u_id = uuid.UUID(assessment_id)
-        assessment = db.query(Assessment).filter(Assessment.id == u_id).first()
+        assessment = ctx.filter_query(db.query(Assessment), Assessment).filter(Assessment.id == u_id).first()
     except ValueError:
         assessment = None
 
@@ -734,10 +755,10 @@ def get_assessment(assessment_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/assessments/{assessment_id}")
-def delete_assessment(assessment_id: str, db: Session = Depends(get_db)):
+def delete_assessment(assessment_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
     try:
         u_id = uuid.UUID(assessment_id)
-        assessment = db.query(Assessment).filter(Assessment.id == u_id).first()
+        assessment = ctx.filter_query(db.query(Assessment), Assessment).filter(Assessment.id == u_id).first()
     except ValueError:
         assessment = None
 

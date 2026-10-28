@@ -15,8 +15,11 @@ import {
   Wrench,
   QrCode,
   Tag,
-  Coins
+  Coins,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportAssetsData } from '../../utils/exportUtils';
 
 interface Asset {
   id: string;
@@ -166,6 +169,45 @@ export const AssetsPamsPage: React.FC = () => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            onClick={() => exportAssetsData(filteredList, 'xlsx')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.6rem 1.15rem',
+              background: '#10b981',
+              border: '1px solid #059669',
+              borderRadius: '8px',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              boxShadow: '0 4px 10px rgba(16,185,129,0.3)',
+            }}
+            title="हालको फिल्टर अनुसार जिन्सी सम्पत्ति लगत एक्सेल (.xlsx) मा डाउनलोड गर्नुहोस्"
+          >
+            <FileSpreadsheet size={16} /> एक्सेल (.xlsx) निर्यात
+          </button>
+          <button
+            onClick={() => exportAssetsData(filteredList, 'csv')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.6rem 0.95rem',
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '8px',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+            }}
+            title="CSV ढाँचामा डाउनलोड गर्नुहोस्"
+          >
+            <Download size={15} /> CSV
+          </button>
           <button
             onClick={() => window.print()}
             style={{

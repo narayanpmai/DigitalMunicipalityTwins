@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from schemas.gis import BufferRequest, RiskAnalysisRequest, GeoJSONFeatureCollection, Coordinate
 from shapely.geometry import Point
 from core.database import get_db
-from core.tenant import get_current_tenant
+from core.tenant import get_current_tenant, get_tenant_context, TenantContext
 from models.tenant import Tenant
 from models.municipality import MunicipalityProfile
 from models.gis_resources import NaturalResourceMaster, EnvironmentalRiskZone, TourismHeritageMaster, PublicLandMaster
@@ -159,9 +159,10 @@ def get_environmental_risks(
     severity_level: Optional[str] = Query(None),
     mitigation_status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(EnvironmentalRiskZone)
+    query = ctx.filter_query(db.query(EnvironmentalRiskZone), EnvironmentalRiskZone)
     if risk_type and risk_type != 'all':
         query = query.filter(EnvironmentalRiskZone.risk_type == risk_type)
     if severity_level and severity_level != 'all':
@@ -182,8 +183,11 @@ def get_environmental_risks(
 
 
 @router.get("/environmental-risks/geojson")
-def get_environmental_risks_geojson(db: Session = Depends(get_db)):
-    records = db.query(EnvironmentalRiskZone).all()
+def get_environmental_risks_geojson(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    records = ctx.filter_query(db.query(EnvironmentalRiskZone), EnvironmentalRiskZone).all()
     return {
         "type": "FeatureCollection",
         "features": [r.to_geojson_feature() for r in records]
@@ -191,11 +195,15 @@ def get_environmental_risks_geojson(db: Session = Depends(get_db)):
 
 
 @router.get("/environmental-risks/stats")
-def get_environmental_risks_stats(db: Session = Depends(get_db)):
-    total = db.query(EnvironmentalRiskZone).count()
-    high_extreme = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.severity_level.in_(['High', 'Extreme', 'उच्च', 'अति उच्च'])).count()
-    mitigated = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.mitigation_status.in_(['Mitigated', 'निवारण गरिएको', 'Early Warning Installed'])).count()
-    in_progress = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.mitigation_status.in_(['In Progress', 'कार्य प्रगतिमा', 'Monitoring'])).count()
+def get_environmental_risks_stats(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    base_q = ctx.filter_query(db.query(EnvironmentalRiskZone), EnvironmentalRiskZone)
+    total = base_q.count()
+    high_extreme = base_q.filter(EnvironmentalRiskZone.severity_level.in_(['High', 'Extreme', 'उच्च', 'अति उच्च'])).count()
+    mitigated = base_q.filter(EnvironmentalRiskZone.mitigation_status.in_(['Mitigated', 'निवारण गरिएको', 'Early Warning Installed'])).count()
+    in_progress = base_q.filter(EnvironmentalRiskZone.mitigation_status.in_(['In Progress', 'कार्य प्रगतिमा', 'Monitoring'])).count()
     
     return {
         "totalRisks": total,
@@ -206,19 +214,27 @@ def get_environmental_risks_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/environmental-risks/{id}")
-def get_environmental_risk(id: str, db: Session = Depends(get_db)):
-    record = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id).first()
+def get_environmental_risk(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id), EnvironmentalRiskZone).first()
     if not record:
         raise HTTPException(status_code=404, detail="Environmental risk record not found")
     return record.to_dict()
 
 
 @router.post("/environmental-risks")
-def create_environmental_risk(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_environmental_risk(
+    data: Dict[str, Any] = Body(...),
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     rec_id = data.get("id") or f"RISK-{uuid.uuid4().hex[:8].upper()}"
     new_rec = EnvironmentalRiskZone(
         id=rec_id,
-        tenant_id=data.get("tenant_id") or "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06",
+        tenant_id=ctx.effective_tenant_id,
         risk_type=data.get("risk_type") or data.get("riskType") or "Landslide",
         severity_level=data.get("severity_level") or data.get("severityLevel") or "High",
         mitigation_status=data.get("mitigation_status") or data.get("mitigationStatus") or "Monitoring",
@@ -231,8 +247,13 @@ def create_environmental_risk(data: Dict[str, Any] = Body(...), db: Session = De
 
 
 @router.put("/environmental-risks/{id}")
-def update_environmental_risk(id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
-    record = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id).first()
+def update_environmental_risk(
+    id: str,
+    data: Dict[str, Any] = Body(...),
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id), EnvironmentalRiskZone).first()
     if not record:
         raise HTTPException(status_code=404, detail="Environmental risk record not found")
     
@@ -252,8 +273,12 @@ def update_environmental_risk(id: str, data: Dict[str, Any] = Body(...), db: Ses
 
 
 @router.delete("/environmental-risks/{id}")
-def delete_environmental_risk(id: str, db: Session = Depends(get_db)):
-    record = db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id).first()
+def delete_environmental_risk(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(EnvironmentalRiskZone).filter(EnvironmentalRiskZone.id == id), EnvironmentalRiskZone).first()
     if not record:
         raise HTTPException(status_code=404, detail="Environmental risk record not found")
     db.delete(record)
@@ -271,9 +296,10 @@ def get_natural_resources(
     ward_id: Optional[str] = Query(None),
     conservation_status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(NaturalResourceMaster)
+    query = ctx.filter_query(db.query(NaturalResourceMaster), NaturalResourceMaster)
     if resource_type and resource_type != 'all':
         query = query.filter(NaturalResourceMaster.resource_type == resource_type)
     if ward_id and ward_id != 'all':
@@ -294,8 +320,11 @@ def get_natural_resources(
 
 
 @router.get("/natural-resources/geojson")
-def get_natural_resources_geojson(db: Session = Depends(get_db)):
-    records = db.query(NaturalResourceMaster).all()
+def get_natural_resources_geojson(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    records = ctx.filter_query(db.query(NaturalResourceMaster), NaturalResourceMaster).all()
     return {
         "type": "FeatureCollection",
         "features": [r.to_geojson_feature() for r in records]
@@ -303,11 +332,15 @@ def get_natural_resources_geojson(db: Session = Depends(get_db)):
 
 
 @router.get("/natural-resources/stats")
-def get_natural_resources_stats(db: Session = Depends(get_db)):
-    total = db.query(NaturalResourceMaster).count()
-    protected = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.conservation_status.in_(['Protected', 'संरक्षित', 'National Park Area'])).count()
-    community_managed = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.conservation_status.in_(['Community Managed', 'सामुदायिक व्यवस्थापन'])).count()
-    water_bodies = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.resource_type.in_(['River', 'River/Stream', 'Glacial Lake', 'Wetland', 'Spring', 'खोला/जलाधार', 'ताल/कुण्ड'])).count()
+def get_natural_resources_stats(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    base_q = ctx.filter_query(db.query(NaturalResourceMaster), NaturalResourceMaster)
+    total = base_q.count()
+    protected = base_q.filter(NaturalResourceMaster.conservation_status.in_(['Protected', 'संरक्षित', 'National Park Area'])).count()
+    community_managed = base_q.filter(NaturalResourceMaster.conservation_status.in_(['Community Managed', 'सामुदायिक व्यवस्थापन'])).count()
+    water_bodies = base_q.filter(NaturalResourceMaster.resource_type.in_(['River', 'River/Stream', 'Glacial Lake', 'Wetland', 'Spring', 'खोला/जलाधार', 'ताल/कुण्ड'])).count()
     
     return {
         "totalResources": total,
@@ -318,19 +351,27 @@ def get_natural_resources_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/natural-resources/{id}")
-def get_natural_resource(id: str, db: Session = Depends(get_db)):
-    record = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id).first()
+def get_natural_resource(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id), NaturalResourceMaster).first()
     if not record:
         raise HTTPException(status_code=404, detail="Natural resource record not found")
     return record.to_dict()
 
 
 @router.post("/natural-resources")
-def create_natural_resource(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_natural_resource(
+    data: Dict[str, Any] = Body(...),
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     rec_id = data.get("id") or f"NAT-{uuid.uuid4().hex[:8].upper()}"
     new_rec = NaturalResourceMaster(
         id=rec_id,
-        tenant_id=data.get("tenant_id") or "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06",
+        tenant_id=ctx.effective_tenant_id,
         resource_type=data.get("resource_type") or data.get("resourceType") or "Community Forest",
         name=data.get("name") or "नयाँ प्राकृतिक स्रोत",
         ward_id=str(data.get("ward_id") or data.get("wardId") or "1"),
@@ -346,8 +387,13 @@ def create_natural_resource(data: Dict[str, Any] = Body(...), db: Session = Depe
 
 
 @router.put("/natural-resources/{id}")
-def update_natural_resource(id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
-    record = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id).first()
+def update_natural_resource(
+    id: str,
+    data: Dict[str, Any] = Body(...),
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id), NaturalResourceMaster).first()
     if not record:
         raise HTTPException(status_code=404, detail="Natural resource record not found")
     
@@ -373,8 +419,12 @@ def update_natural_resource(id: str, data: Dict[str, Any] = Body(...), db: Sessi
 
 
 @router.delete("/natural-resources/{id}")
-def delete_natural_resource(id: str, db: Session = Depends(get_db)):
-    record = db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id).first()
+def delete_natural_resource(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    record = ctx.filter_query(db.query(NaturalResourceMaster).filter(NaturalResourceMaster.id == id), NaturalResourceMaster).first()
     if not record:
         raise HTTPException(status_code=404, detail="Natural resource record not found")
     db.delete(record)

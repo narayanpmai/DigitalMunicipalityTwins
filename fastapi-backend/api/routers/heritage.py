@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.heritage import HeritageSite, MuseumAsset, CulturalRecord
 from models.library import DigitalBook, BorrowRecord
 from datetime import datetime
@@ -24,9 +25,10 @@ def get_heritage_sites(
     type: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(HeritageSite)
+    query = ctx.filter_query(db.query(HeritageSite), HeritageSite)
     if ward is not None and ward > 0:
         query = query.filter(HeritageSite.ward_number == ward)
     if type and type != 'all':
@@ -49,9 +51,13 @@ def get_heritage_sites(
 
 @router.get("/sites/gis")
 @router.get("/gis")
-def get_heritage_gis(db: Session = Depends(get_db)):
-    """GeoJSON FeatureCollection for interactive map of Panchpokhari Heritage Sites"""
-    sites = db.query(HeritageSite).filter(HeritageSite.latitude.isnot(None), HeritageSite.longitude.isnot(None)).all()
+def get_heritage_gis(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """GeoJSON FeatureCollection for interactive map of Heritage Sites"""
+    base_q = ctx.filter_query(db.query(HeritageSite), HeritageSite)
+    sites = base_q.filter(HeritageSite.latitude.isnot(None), HeritageSite.longitude.isnot(None)).all()
     features = []
     for s in sites:
         features.append({
@@ -78,16 +84,20 @@ def get_heritage_gis(db: Session = Depends(get_db)):
 
 
 @router.get("/sites/{site_id}")
-def get_heritage_site(site_id: str, db: Session = Depends(get_db)):
+def get_heritage_site(
+    site_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     site = None
     try:
         val_uuid = uuid.UUID(site_id)
-        site = db.query(HeritageSite).filter(HeritageSite.id == val_uuid).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not site:
-        site = db.query(HeritageSite).filter(HeritageSite.site_id == site_id).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.site_id == site_id).first()
     if not site:
         raise HTTPException(status_code=404, detail="Heritage site not found")
     return site.to_dict()
@@ -95,9 +105,13 @@ def get_heritage_site(site_id: str, db: Session = Depends(get_db)):
 
 @router.post("/sites")
 @router.post("/sites/")
-def create_heritage_site(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_heritage_site(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     new_uuid = uuid.uuid4()
-    count = db.query(HeritageSite).count()
+    count = ctx.filter_query(db.query(HeritageSite), HeritageSite).count()
     site_id = data.get("siteId") or data.get("site_id") or f"SIT-{str(count + 1).zfill(3)}"
 
     photos = data.get("photos")
@@ -108,6 +122,7 @@ def create_heritage_site(data: Dict[str, Any] = Body(...), db: Session = Depends
 
     db_site = HeritageSite(
         id=new_uuid,
+        tenant_id=ctx.effective_tenant_id,
         site_id=site_id,
         name_en=data.get("nameEn") or data.get("name_en") or data.get("nameNp") or data.get("name_np") or "Heritage Site",
         name_np=data.get("nameNp") or data.get("name_np") or "नयाँ सम्पदा",
@@ -129,16 +144,21 @@ def create_heritage_site(data: Dict[str, Any] = Body(...), db: Session = Depends
 
 
 @router.put("/sites/{site_id}")
-def update_heritage_site(site_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_heritage_site(
+    site_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     site = None
     try:
         val_uuid = uuid.UUID(site_id)
-        site = db.query(HeritageSite).filter(HeritageSite.id == val_uuid).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not site:
-        site = db.query(HeritageSite).filter(HeritageSite.site_id == site_id).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.site_id == site_id).first()
     if not site:
         raise HTTPException(status_code=404, detail="Heritage site not found")
 
@@ -175,16 +195,20 @@ def update_heritage_site(site_id: str, data: Dict[str, Any] = Body(...), db: Ses
 
 
 @router.delete("/sites/{site_id}")
-def delete_heritage_site(site_id: str, db: Session = Depends(get_db)):
+def delete_heritage_site(
+    site_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     site = None
     try:
         val_uuid = uuid.UUID(site_id)
-        site = db.query(HeritageSite).filter(HeritageSite.id == val_uuid).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not site:
-        site = db.query(HeritageSite).filter(HeritageSite.site_id == site_id).first()
+        site = ctx.filter_query(db.query(HeritageSite), HeritageSite).filter(HeritageSite.site_id == site_id).first()
     if not site:
         raise HTTPException(status_code=404, detail="Heritage site not found")
 
@@ -205,9 +229,10 @@ def get_museum_assets(
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     has3d: Optional[bool] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(MuseumAsset)
+    query = ctx.filter_query(db.query(MuseumAsset), MuseumAsset)
 
     if category and category != 'all' and category != 'सबै सामग्री':
         query = query.filter(MuseumAsset.category == category)
@@ -236,20 +261,24 @@ def get_museum_assets(
 
 
 @router.get("/museum/stats")
-def get_museum_stats(db: Session = Depends(get_db)):
+def get_museum_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     try:
-        total = db.query(MuseumAsset).count()
-        published = db.query(MuseumAsset).filter(MuseumAsset.verification_status == 'Published').count()
-        verified = db.query(MuseumAsset).filter(MuseumAsset.verification_status == 'Verified').count()
-        draft = db.query(MuseumAsset).filter(MuseumAsset.verification_status == 'Draft').count()
-        needs_restoration = db.query(MuseumAsset).filter(
+        base_q = ctx.filter_query(db.query(MuseumAsset), MuseumAsset)
+        total = base_q.count()
+        published = base_q.filter(MuseumAsset.verification_status == 'Published').count()
+        verified = base_q.filter(MuseumAsset.verification_status == 'Verified').count()
+        draft = base_q.filter(MuseumAsset.verification_status == 'Draft').count()
+        needs_restoration = base_q.filter(
             or_(
                 MuseumAsset.condition.like('%मर्मत%'),
                 MuseumAsset.condition.like('%जीर्ण%')
             )
         ).count()
-        with_3d = db.query(MuseumAsset).filter(MuseumAsset.model3d_url.isnot(None), MuseumAsset.model3d_url != '').count()
-        with_audio = db.query(MuseumAsset).filter(MuseumAsset.audio_url.isnot(None), MuseumAsset.audio_url != '').count()
+        with_3d = base_q.filter(MuseumAsset.model3d_url.isnot(None), MuseumAsset.model3d_url != '').count()
+        with_audio = base_q.filter(MuseumAsset.audio_url.isnot(None), MuseumAsset.audio_url != '').count()
 
         return {
             "total": total,
@@ -260,29 +289,33 @@ def get_museum_stats(db: Session = Depends(get_db)):
             "with3dModel": with_3d,
             "withAudio": with_audio,
         }
-    except Exception as e:
+    except Exception:
         return {
-            "total": 40,
-            "published": 35,
-            "verified": 4,
-            "draft": 1,
-            "needsRestoration": 3,
-            "with3dModel": 12,
-            "withAudio": 8,
+            "total": 0,
+            "published": 0,
+            "verified": 0,
+            "draft": 0,
+            "needsRestoration": 0,
+            "with3dModel": 0,
+            "withAudio": 0,
         }
 
 
 @router.get("/museum/{asset_id}")
-def get_museum_asset(asset_id: str, db: Session = Depends(get_db)):
+def get_museum_asset(
+    asset_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     asset = None
     try:
         val_uuid = uuid.UUID(asset_id)
-        asset = db.query(MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not asset:
-        asset = db.query(MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Museum asset not found")
     return asset.to_dict()
@@ -290,13 +323,18 @@ def get_museum_asset(asset_id: str, db: Session = Depends(get_db)):
 
 @router.post("/museum")
 @router.post("/museum/")
-def create_museum_asset(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_museum_asset(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     new_uuid = uuid.uuid4()
-    count = db.query(MuseumAsset).count()
+    count = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).count()
     asset_id = data.get("assetId") or data.get("asset_id") or f"MUS-{str(count + 1).zfill(4)}"
 
     db_asset = MuseumAsset(
         id=new_uuid,
+        tenant_id=ctx.effective_tenant_id,
         asset_id=asset_id,
         name_en=data.get("nameEn") or data.get("name_en") or data.get("nameNp") or data.get("name_np") or data.get("name") or "Museum Artifact",
         name_np=data.get("nameNp") or data.get("name_np") or data.get("name") or "नयाँ सङ्ग्रह वस्तु",
@@ -325,16 +363,21 @@ def create_museum_asset(data: Dict[str, Any] = Body(...), db: Session = Depends(
 
 
 @router.put("/museum/{asset_id}")
-def update_museum_asset(asset_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_museum_asset(
+    asset_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     asset = None
     try:
         val_uuid = uuid.UUID(asset_id)
-        asset = db.query(MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not asset:
-        asset = db.query(MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Museum asset not found")
 
@@ -371,16 +414,20 @@ def update_museum_asset(asset_id: str, data: Dict[str, Any] = Body(...), db: Ses
 
 
 @router.delete("/museum/{asset_id}")
-def delete_museum_asset(asset_id: str, db: Session = Depends(get_db)):
+def delete_museum_asset(
+    asset_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     asset = None
     try:
         val_uuid = uuid.UUID(asset_id)
-        asset = db.query(MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not asset:
-        asset = db.query(MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
+        asset = ctx.filter_query(db.query(MuseumAsset), MuseumAsset).filter(MuseumAsset.asset_id == asset_id).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Museum asset not found")
 
@@ -391,7 +438,6 @@ def delete_museum_asset(asset_id: str, db: Session = Depends(get_db)):
 
 # ==========================================
 # 3. DIGITAL LIBRARY ALIAS (डिजिटल पुस्तकालय)
-# For sectoralApi calling /heritage/library/*
 # ==========================================
 
 @router.get("/library")
@@ -401,9 +447,10 @@ def get_heritage_library_books(
     category: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     language: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(DigitalBook)
+    query = ctx.filter_query(db.query(DigitalBook), DigitalBook)
     if mediaType and mediaType != 'all':
         query = query.filter(DigitalBook.media_type == mediaType)
     if category and category != 'all':
@@ -427,14 +474,19 @@ def get_heritage_library_books(
 
 
 @router.get("/library/stats")
-def get_heritage_library_stats(db: Session = Depends(get_db)):
+def get_heritage_library_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     try:
-        total = db.query(DigitalBook).count()
-        physical = db.query(DigitalBook).filter(DigitalBook.media_type == 'physical').count()
-        ebook = db.query(DigitalBook).filter(DigitalBook.media_type == 'ebook').count()
-        audiobook = db.query(DigitalBook).filter(DigitalBook.media_type == 'audiobook').count()
-        videobook = db.query(DigitalBook).filter(DigitalBook.media_type == 'videobook').count()
-        borrowed = db.query(BorrowRecord).filter(BorrowRecord.status == 'issued').count()
+        base_book_q = ctx.filter_query(db.query(DigitalBook), DigitalBook)
+        base_borrow_q = ctx.filter_query(db.query(BorrowRecord), BorrowRecord)
+        total = base_book_q.count()
+        physical = base_book_q.filter(DigitalBook.media_type == 'physical').count()
+        ebook = base_book_q.filter(DigitalBook.media_type == 'ebook').count()
+        audiobook = base_book_q.filter(DigitalBook.media_type == 'audiobook').count()
+        videobook = base_book_q.filter(DigitalBook.media_type == 'videobook').count()
+        borrowed = base_borrow_q.filter(BorrowRecord.status == 'issued').count()
 
         return {
             "total": total,
@@ -447,33 +499,29 @@ def get_heritage_library_stats(db: Session = Depends(get_db)):
             "totalAudiobooks": audiobook,
             "totalVideobooks": videobook,
             "activeBorrows": borrowed,
-            "registeredMembers": 840,
+            "registeredMembers": 840 if "panchpokhari" in ctx.allowed_tenant_ids else 0,
         }
     except Exception:
         return {
-            "total": 43,
-            "physical": 30,
-            "ebook": 8,
-            "audiobook": 3,
-            "videobook": 2,
-            "borrowed": 2,
-            "totalTitles": 43,
-            "totalAudiobooks": 3,
-            "totalVideobooks": 2,
-            "activeBorrows": 2,
-            "registeredMembers": 840,
+            "total": 0, "physical": 0, "ebook": 0, "audiobook": 0,
+            "videobook": 0, "borrowed": 0, "totalTitles": 0,
+            "totalAudiobooks": 0, "totalVideobooks": 0, "activeBorrows": 0,
+            "registeredMembers": 0,
         }
 
 
 @router.get("/library/borrows")
-def get_heritage_library_borrows(db: Session = Depends(get_db)):
-    borrows = db.query(BorrowRecord).order_by(BorrowRecord.created_at.desc()).all()
+def get_heritage_library_borrows(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    borrows = ctx.filter_query(db.query(BorrowRecord), BorrowRecord).order_by(BorrowRecord.created_at.desc()).all()
     results = []
     for b in borrows:
         book_title = "पालिका पुस्तक"
         if b.book_id:
             try:
-                bk = db.query(DigitalBook).filter(DigitalBook.id == b.book_id).first()
+                bk = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == b.book_id).first()
                 if bk:
                     book_title = bk.title
             except Exception:
@@ -483,30 +531,41 @@ def get_heritage_library_borrows(db: Session = Depends(get_db)):
 
 
 @router.get("/library/{book_id}")
-def get_heritage_library_book(book_id: str, db: Session = Depends(get_db)):
+def get_heritage_library_book(
+    book_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     return book.to_dict()
 
 
 @router.post("/library")
-@router.post("/library/")
-def create_heritage_library_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_heritage_library_book(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     new_uuid = uuid.uuid4()
-    count = db.query(DigitalBook).count()
+    count = ctx.filter_query(db.query(DigitalBook), DigitalBook).count()
     book_id = data.get("bookId") or data.get("book_id") or f"LIB-{str(count + 1).zfill(4)}"
+
+    # Determine assigned tenant
+    assigned_tenant = data.get("tenant_id") or data.get("tenantId") or ctx.effective_tenant_id or (ctx.allowed_tenant_ids[0] if ctx.allowed_tenant_ids else "panchpokhari")
 
     db_book = DigitalBook(
         id=new_uuid,
+        tenant_id=assigned_tenant,
         book_id=book_id,
         isbn=data.get("isbn"),
         title=data.get("title") or data.get("titleNepali") or "अज्ञात पुस्तक",
@@ -544,16 +603,21 @@ def create_heritage_library_book(data: Dict[str, Any] = Body(...), db: Session =
 
 
 @router.put("/library/{book_id}")
-def update_heritage_library_book(book_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_heritage_library_book(
+    book_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
@@ -599,16 +663,20 @@ def update_heritage_library_book(book_id: str, data: Dict[str, Any] = Body(...),
 
 
 @router.delete("/library/{book_id}")
-def delete_heritage_library_book(book_id: str, db: Session = Depends(get_db)):
+def delete_heritage_library_book(
+    book_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
@@ -618,19 +686,23 @@ def delete_heritage_library_book(book_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/library/borrows")
-def issue_heritage_library_borrow(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def issue_heritage_library_borrow(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book_id_input = data.get("bookId") or data.get("book_id")
     book = None
     target_book_uuid = None
     if book_id_input:
         try:
             val_uuid = uuid.UUID(str(book_id_input))
-            book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
             target_book_uuid = val_uuid
         except (ValueError, AttributeError):
             pass
         if not book:
-            book = db.query(DigitalBook).filter(DigitalBook.book_id == str(book_id_input)).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == str(book_id_input)).first()
             if book:
                 target_book_uuid = book.id
 
@@ -642,8 +714,11 @@ def issue_heritage_library_borrow(data: Dict[str, Any] = Body(...), db: Session 
         if book.available_copies == 0:
             book.borrow_status = "borrowed"
 
+    assigned_tenant = data.get("tenant_id") or data.get("tenantId") or ctx.effective_tenant_id or (ctx.allowed_tenant_ids[0] if ctx.allowed_tenant_ids else "panchpokhari")
+
     db_borrow = BorrowRecord(
         id=uuid.uuid4(),
+        tenant_id=assigned_tenant,
         book_id=target_book_uuid,
         borrower_name=data.get("borrowerName") or data.get("borrower_name") or "सेवाग्राही",
         borrower_contact=data.get("borrowerContact") or data.get("borrower_contact"),
@@ -661,11 +736,16 @@ def issue_heritage_library_borrow(data: Dict[str, Any] = Body(...), db: Session 
 
 
 @router.put("/library/borrows/{borrow_id}/return")
-def return_heritage_library_borrow(borrow_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def return_heritage_library_borrow(
+    borrow_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     borrow = None
     try:
         val_uuid = uuid.UUID(borrow_id)
-        borrow = db.query(BorrowRecord).filter(BorrowRecord.id == val_uuid).first()
+        borrow = ctx.filter_query(db.query(BorrowRecord), BorrowRecord).filter(BorrowRecord.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
@@ -677,11 +757,10 @@ def return_heritage_library_borrow(borrow_id: str, data: Dict[str, Any] = Body(.
     if "fineAmount" in data or "fine_amount" in data:
         borrow.fine_amount = data.get("fineAmount") if "fineAmount" in data else data.get("fine_amount")
 
-    # Increase available copies of book
     book = None
     if borrow.book_id:
         try:
-            book = db.query(DigitalBook).filter(DigitalBook.id == borrow.book_id).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == borrow.book_id).first()
         except Exception:
             pass
 
@@ -704,9 +783,10 @@ def get_cultural_records(
     type: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(CulturalRecord)
+    query = ctx.filter_query(db.query(CulturalRecord), CulturalRecord)
     if type and type != 'all' and type != 'सबै':
         query = query.filter(CulturalRecord.type == type)
     if status and status != 'all':
@@ -727,12 +807,16 @@ def get_cultural_records(
 
 
 @router.get("/cultural-records/stats")
-def get_cultural_records_stats(db: Session = Depends(get_db)):
+def get_cultural_records_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     try:
-        total = db.query(CulturalRecord).count()
-        verified = db.query(CulturalRecord).filter(CulturalRecord.verification_status.in_(['Verified', 'Published'])).count()
-        draft = db.query(CulturalRecord).filter(CulturalRecord.verification_status == 'Draft').count()
-        with_media = db.query(CulturalRecord).filter(
+        base_q = ctx.filter_query(db.query(CulturalRecord), CulturalRecord)
+        total = base_q.count()
+        verified = base_q.filter(CulturalRecord.verification_status.in_(['Verified', 'Published'])).count()
+        draft = base_q.filter(CulturalRecord.verification_status == 'Draft').count()
+        with_media = base_q.filter(
             or_(
                 CulturalRecord.audio_url.isnot(None),
                 CulturalRecord.video_url.isnot(None)
@@ -749,15 +833,19 @@ def get_cultural_records_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/cultural-records/{record_id}")
-def get_cultural_record(record_id: str, db: Session = Depends(get_db)):
+def get_cultural_record(
+    record_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     rec = None
     try:
         val_uuid = uuid.UUID(record_id)
-        rec = db.query(CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
     if not rec:
-        rec = db.query(CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Cultural record not found")
     return rec.to_dict()
@@ -765,8 +853,12 @@ def get_cultural_record(record_id: str, db: Session = Depends(get_db)):
 
 @router.post("/cultural-records")
 @router.post("/cultural-records/")
-def create_cultural_record(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
-    count = db.query(CulturalRecord).count()
+def create_cultural_record(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    count = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).count()
     rec_id = data.get("recordId") or data.get("record_id") or f"CUL-{str(count + 1).zfill(3)}"
     
     interview_date = None
@@ -778,6 +870,7 @@ def create_cultural_record(data: Dict[str, Any] = Body(...), db: Session = Depen
 
     new_rec = CulturalRecord(
         id=uuid.uuid4(),
+        tenant_id=ctx.effective_tenant_id,
         record_id=rec_id,
         title=data.get("title") or "सांस्कृतिक अभिलेख",
         type=data.get("type") or "Festival",
@@ -800,15 +893,20 @@ def create_cultural_record(data: Dict[str, Any] = Body(...), db: Session = Depen
 
 
 @router.put("/cultural-records/{record_id}")
-def update_cultural_record(record_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_cultural_record(
+    record_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     rec = None
     try:
         val_uuid = uuid.UUID(record_id)
-        rec = db.query(CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
     if not rec:
-        rec = db.query(CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Cultural record not found")
 
@@ -837,22 +935,25 @@ def update_cultural_record(record_id: str, data: Dict[str, Any] = Body(...), db:
 
 
 @router.delete("/cultural-records/{record_id}")
-def delete_cultural_record(record_id: str, db: Session = Depends(get_db)):
+def delete_cultural_record(
+    record_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     rec = None
     try:
         val_uuid = uuid.UUID(record_id)
-        rec = db.query(CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
     if not rec:
-        rec = db.query(CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
+        rec = ctx.filter_query(db.query(CulturalRecord), CulturalRecord).filter(CulturalRecord.record_id == record_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Cultural record not found")
 
     db.delete(rec)
     db.commit()
     return {"success": True, "message": "Cultural record deleted successfully"}
-
 
 
 @router.get('/stats')

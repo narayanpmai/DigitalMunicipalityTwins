@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTenant } from '../../context/TenantContext';
+import { useFiscalYear } from '../../context/FiscalYearContext';
 import {
   Activity,
   Layers,
@@ -433,7 +434,9 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
   };
 
   const [selectedWard, setSelectedWard] = useState<number>(0);
-  const [fiscalYear, setFiscalYear] = useState<string>('२०८०/०८१');
+  const { fiscalYears, activeFiscalYear, setActiveFiscalYear } = useFiscalYear();
+  const fiscalYear = activeFiscalYear;
+  const setFiscalYear = setActiveFiscalYear;
 
   const { data: profile } = useQuery({
     queryKey: ['municipality-profile', tenantId],
@@ -452,7 +455,7 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchStats = async (targetFy = activeFiscalYear) => {
     setIsRefreshing(true);
     queryClient.invalidateQueries({ queryKey: ['municipality-profile'] });
     const token =
@@ -465,9 +468,11 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
+    const fyParam = targetFy ? `?fiscalYear=${encodeURIComponent(targetFy)}` : '';
+
     const candidateUrls = [
-      '/api/v1/dashboard/stats',
-      'http://localhost:3001/api/v1/dashboard/stats',
+      `/api/v1/dashboard/stats${fyParam}`,
+      `http://localhost:3001/api/v1/dashboard/stats${fyParam}`,
     ];
 
     let foundData = false;
@@ -515,14 +520,14 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
       disasterStats,
       reportKpis,
     ] = await Promise.all([
-      safeArray('/api/v1/darta'),
-      safeArray('/api/v1/chalani'),
+      safeArray(`/api/v1/darta${fyParam}`),
+      safeArray(`/api/v1/chalani${fyParam}`),
       safeArray('/api/v1/business'),
       safeArray('/api/v1/building-permits'),
       safeObj('/api/v1/building-permits/stats'),
-      safeArray('/api/v1/revenue'),
+      safeArray(`/api/v1/revenue${fyParam}`),
       safeArray('/api/v1/employment'),
-      safeObj('/api/v1/projects'),
+      safeObj(`/api/v1/projects${fyParam}`),
       safeArray('/api/v1/tourism/destinations'),
       safeArray('/api/v1/tourism/hotels'),
       safeArray('/api/v1/complaints'),
@@ -661,8 +666,8 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
   };
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    fetchStats(activeFiscalYear);
+  }, [activeFiscalYear]);
 
   // 18 Sector Cards explicitly requested by the user
   const sectorCards: StatCardProps[] = [
@@ -1430,9 +1435,11 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
                   }}
                   title="आर्थिक वर्ष छनोट गर्नुहोस्"
                 >
-                  <option value="२०८०/०८१">चालु आ.व. २०८०/०८१</option>
-                  <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
-                  <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                  {fiscalYears.map((fy) => (
+                    <option key={fy.id} value={fy.name}>
+                      {fy.isCurrent ? `चालु आ.व. ${fy.name}` : `आ.व. ${fy.name}`}
+                    </option>
+                  ))}
                 </select>
 
                 <Link
@@ -1632,9 +1639,11 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
                   }}
                   title="आर्थिक वर्ष छनोट गर्नुहोस्"
                 >
-                  <option value="२०८०/०८१">चालु आ.व. २०८०/०८१</option>
-                  <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
-                  <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                  {fiscalYears.map((fy) => (
+                    <option key={fy.id} value={fy.name}>
+                      {fy.isCurrent ? `चालु आ.व. ${fy.name}` : `आ.व. ${fy.name}`}
+                    </option>
+                  ))}
                 </select>
 
                 <Link

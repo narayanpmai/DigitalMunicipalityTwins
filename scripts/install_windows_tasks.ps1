@@ -26,5 +26,11 @@ Start-ScheduledTask -TaskName $taskName
 Write-Host "Task $taskName registered and started!"
 Start-Sleep -Seconds 5
 
+# 3. Register Automated Backup Tasks
+$backupScheduleScript = Join-Path (Split-Path $scriptPath -Parent) "schedule_daily_backup.ps1"
+if (Test-Path $backupScheduleScript) {
+    & powershell.exe -ExecutionPolicy Bypass -File $backupScheduleScript
+}
+
 Write-Host "`nChecking ports:"
 Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -in 3001, 3002, 8000, 8001, 80, 8080 } | Select-Object LocalAddress, LocalPort, OwningProcess | Sort-Object LocalPort | Format-Table -AutoSize

@@ -96,8 +96,15 @@ def get_budgets(
 
 
 @router.get("/stats")
-def get_budget_stats(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
-    budgets = ctx.filter_query(db.query(Budget).filter(Budget.deleted_at.is_(None)), Budget).all()
+def get_budget_stats(
+    fiscalYear: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    query = ctx.filter_query(db.query(Budget).filter(Budget.deleted_at.is_(None)), Budget)
+    if fiscalYear and fiscalYear != "all":
+        query = query.filter(Budget.fiscal_year == fiscalYear)
+    budgets = query.all()
     
     total_allocated = sum(float(b.allocated_amount or 0) for b in budgets)
     total_released = sum(float(b.released_amount or 0) for b in budgets)
@@ -165,6 +172,49 @@ def create_budget(
     db.commit()
     db.refresh(new_budget)
     return new_budget.to_dict()
+
+
+@router.post("/bulk-import")
+def bulk_import_budgets(
+    items: List[Dict[str, Any]],
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """
+    SuTRA / Excel Bulk Importer for Municipal Budgets
+    Supports importing lists of budget heads and program allocations.
+    """
+    imported = 0
+    eff_tenant = ctx.effective_tenant_id
+    for item in items:
+        alloc = float(item.get("allocatedAmount") or item.get("allocated_amount") or item.get("budget") or 0)
+        rel = float(item.get("releasedAmount") or item.get("released_amount") or alloc)
+        spent = float(item.get("spentAmount") or item.get("spent_amount") or 0)
+        
+        b = Budget(
+            id=uuid.uuid4(),
+            tenant_id=eff_tenant,
+            title=item.get("title") or item.get("programName") or item.get("budgetHead") or "बजेट कार्यक्रम",
+            fiscal_year=item.get("fiscalYear") or item.get("fiscal_year") or "२०८१/०८२",
+            type=normalize_budget_type(item.get("type")),
+            status=normalize_budget_status(item.get("status") or "approved"),
+            sector=item.get("sector") or "पूर्वाधार विकास",
+            ward_number=item.get("wardNumber") or item.get("ward_number"),
+            allocated_amount=alloc,
+            released_amount=rel,
+            spent_amount=spent,
+            source_of_fund=item.get("sourceOfFund") or item.get("source") or "गाउँपालिका आन्तरिक स्रोत",
+            description=item.get("description", ""),
+            approved_by=item.get("approvedBy", "गाउँसभा"),
+            approved_at=datetime.utcnow(),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.add(b)
+        imported += 1
+
+    db.commit()
+    return {"success": True, "message": f"Successfully imported {imported} budget lines", "count": imported}
 
 
 @router.get("/{id}")

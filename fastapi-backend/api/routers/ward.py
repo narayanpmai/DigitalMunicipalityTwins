@@ -5,6 +5,7 @@ from datetime import datetime
 import uuid
 
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.ward import Ward
 from models.representative import Representative
 
@@ -20,25 +21,17 @@ def get_wards(
     request: Request,
     tenant_id: Optional[str] = Query(None),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    eff_tenant = (tenant_id or x_tenant_id or "").strip()
-    if not eff_tenant:
-        from api.routers.auth import _get_token_payload
-        from models.user import User
-        payload = _get_token_payload(request)
-        if payload and payload.get("sub"):
-            u = db.query(User).filter(User.id == payload.get("sub"), User.deleted_at == None).first()
-            if u and u.tenant_id and u.tenant_id not in ("all", "*"):
-                eff_tenant = u.tenant_id
+    eff_tenant = (tenant_id or x_tenant_id or (ctx.tenant_subdomain if not ctx.is_all else "")).strip().lower()
+    if not eff_tenant or eff_tenant in ["default", "localhost", "103"]:
+        eff_tenant = ctx.tenant_subdomain or "panchpokhari"
 
-    query = db.query(Ward)
-    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "localhost", "all", "digitaltwin", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
-        if eff_tenant in ["gaushala", "gaushalamun", "gaushala_municipality"]:
-            wards = query.filter(Ward.tenant_id == "gaushala").order_by(Ward.ward_number).all()
-        else:
-            wards = query.filter(Ward.tenant_id == eff_tenant).order_by(Ward.ward_number).all()
-        if not wards:
+    query = ctx.filter_query(db.query(Ward), Ward)
+    wards = query.order_by(Ward.ward_number).all()
+
+    if not wards and eff_tenant and eff_tenant not in ["all", "*"]:
             if eff_tenant in ["khadadevi", "khandadevi"]:
                 KHADADEVI_OFFICIAL_WARDS = [
                     {"ward": 1, "name": "राकाथुम", "chair": "राम कुमार श्रेष्ठ", "pop": 2602, "male": 1225, "female": 1377, "hh": 742, "phone": "०६०-४२०१०१"},
@@ -127,10 +120,11 @@ def get_wards(
                     db.add(new_w)
             db.commit()
             wards = query.filter(Ward.tenant_id == eff_tenant).order_by(Ward.ward_number).all()
-        reps = db.query(Representative).filter(Representative.tenant_id == eff_tenant, Representative.is_current == True).all()
+
+    if ctx.allowed_tenant_ids:
+        reps = db.query(Representative).filter(Representative.tenant_id.in_(ctx.allowed_tenant_ids), Representative.is_current == True).all()
     else:
-        wards = query.filter((Ward.tenant_id == "panchpokhari") | (Ward.tenant_id == "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06") | (Ward.tenant_id == None)).order_by(Ward.ward_number).all()
-        reps = db.query(Representative).filter(Representative.is_current == True).all()
+        reps = ctx.filter_query(db.query(Representative), Representative).filter(Representative.is_current == True).all()
 
     rep_map = {}
     for r in reps:
@@ -159,14 +153,10 @@ def get_wards(
 def get_ward_stats(
     tenant_id: Optional[str] = Query(None),
     x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-Id"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    eff_tenant = tenant_id or x_tenant_id
-    query = db.query(Ward)
-    if eff_tenant and eff_tenant not in ["panchpokhari", "default", "localhost", "all", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06"]:
-        wards = query.filter(Ward.tenant_id == eff_tenant).all()
-    else:
-        wards = query.filter((Ward.tenant_id == "panchpokhari") | (Ward.tenant_id == "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06") | (Ward.tenant_id == None)).all()
+    wards = ctx.filter_query(db.query(Ward), Ward).all()
 
     total_pop = sum(int(w.total_population or w.population or 0) for w in wards)
     total_hh = sum(int(w.households or 0) for w in wards)
@@ -187,12 +177,16 @@ def get_ward_stats(
 
 
 @router.get("/{ward_number}")
-def get_ward(ward_number: int, db: Session = Depends(get_db)):
-    ward = db.query(Ward).filter(Ward.ward_number == ward_number).first()
+def get_ward(
+    ward_number: int,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    ward = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == ward_number).first()
     if not ward:
         raise HTTPException(status_code=404, detail="Ward not found")
     d = ward.to_dict()
-    rep = db.query(Representative).filter(
+    rep = ctx.filter_query(db.query(Representative), Representative).filter(
         Representative.ward_no == ward_number,
         Representative.is_current == True
     ).first()
@@ -210,8 +204,13 @@ def get_ward(ward_number: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{ward_number}")
-def update_ward(ward_number: int, payload: Dict[str, Any], db: Session = Depends(get_db)):
-    ward = db.query(Ward).filter(Ward.ward_number == ward_number).first()
+def update_ward(
+    ward_number: int,
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    ward = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == ward_number).first()
     if not ward:
         raise HTTPException(status_code=404, detail="Ward not found")
 
@@ -219,8 +218,8 @@ def update_ward(ward_number: int, payload: Dict[str, Any], db: Session = Depends
         name = payload.get("wardChairName") or payload.get("chairperson")
         ward.ward_chair_name = name
         ward.chairperson = name
-        # Also sync to representative table if exists
-        rep = db.query(Representative).filter(
+        # Also sync to representative table if exists in the same tenant
+        rep = ctx.filter_query(db.query(Representative), Representative).filter(
             Representative.ward_no == ward_number,
             Representative.is_current == True
         ).first()
@@ -248,14 +247,19 @@ def update_ward(ward_number: int, payload: Dict[str, Any], db: Session = Depends
 
 @router.post("")
 @router.post("/")
-def create_ward(payload: Dict[str, Any], db: Session = Depends(get_db)):
+def create_ward(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     w_no = int(payload.get("wardNumber", 1))
-    existing = db.query(Ward).filter(Ward.ward_number == w_no).first()
+    existing = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == w_no).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Ward with this number already exists")
+        raise HTTPException(status_code=400, detail="Ward with this number already exists in this municipality")
 
     new_ward = Ward(
         id=uuid.uuid4(),
+        tenant_id=ctx.effective_tenant_id,
         ward_number=w_no,
         name=payload.get("name", f"वडा नं. {w_no}"),
         ward_chair_name=payload.get("wardChairName") or payload.get("chairperson"),

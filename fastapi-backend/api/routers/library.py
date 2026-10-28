@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from typing import List, Optional, Any, Dict
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.library import DigitalBook, BorrowRecord
 from datetime import datetime
 import uuid
@@ -20,9 +21,10 @@ def get_books(
     category: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     language: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
 ):
-    query = db.query(DigitalBook)
+    query = ctx.filter_query(db.query(DigitalBook), DigitalBook)
 
     if mediaType and mediaType != 'all':
         query = query.filter(DigitalBook.media_type == mediaType)
@@ -48,14 +50,20 @@ def get_books(
 
 
 @router.get("/stats")
-def get_stats(db: Session = Depends(get_db)):
+def get_stats(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     try:
-        total = db.query(DigitalBook).count()
-        physical = db.query(DigitalBook).filter(DigitalBook.media_type == "physical").count()
-        ebook = db.query(DigitalBook).filter(DigitalBook.media_type == "ebook").count()
-        audio = db.query(DigitalBook).filter(DigitalBook.media_type == "audiobook").count()
-        video = db.query(DigitalBook).filter(DigitalBook.media_type == "videobook").count()
-        active_borrows = db.query(BorrowRecord).filter(BorrowRecord.status == "issued").count()
+        base_book_q = ctx.filter_query(db.query(DigitalBook), DigitalBook)
+        base_borrow_q = ctx.filter_query(db.query(BorrowRecord), BorrowRecord)
+
+        total = base_book_q.count()
+        physical = base_book_q.filter(DigitalBook.media_type == "physical").count()
+        ebook = base_book_q.filter(DigitalBook.media_type == "ebook").count()
+        audio = base_book_q.filter(DigitalBook.media_type == "audiobook").count()
+        video = base_book_q.filter(DigitalBook.media_type == "videobook").count()
+        active_borrows = base_borrow_q.filter(BorrowRecord.status == "issued").count()
 
         return {
             "total": total,
@@ -68,33 +76,36 @@ def get_stats(db: Session = Depends(get_db)):
             "totalAudiobooks": audio,
             "totalVideobooks": video,
             "activeBorrows": active_borrows,
-            "registeredMembers": 840
+            "registeredMembers": 840 if "panchpokhari" in ctx.allowed_tenant_ids else 0
         }
     except Exception:
         return {
-            "total": 43,
-            "physical": 30,
-            "ebook": 8,
-            "audiobook": 3,
-            "videobook": 2,
-            "borrowed": 2,
-            "totalTitles": 43,
-            "totalAudiobooks": 3,
-            "totalVideobooks": 2,
-            "activeBorrows": 2,
-            "registeredMembers": 840
+            "total": 0,
+            "physical": 0,
+            "ebook": 0,
+            "audiobook": 0,
+            "videobook": 0,
+            "borrowed": 0,
+            "totalTitles": 0,
+            "totalAudiobooks": 0,
+            "totalVideobooks": 0,
+            "activeBorrows": 0,
+            "registeredMembers": 0
         }
 
 
 @router.get("/borrows")
-def get_borrows(db: Session = Depends(get_db)):
-    borrows = db.query(BorrowRecord).order_by(BorrowRecord.created_at.desc()).all()
+def get_borrows(
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    borrows = ctx.filter_query(db.query(BorrowRecord), BorrowRecord).order_by(BorrowRecord.created_at.desc()).all()
     results = []
     for b in borrows:
         book_title = "पालिका पुस्तक"
         if b.book_id:
             try:
-                bk = db.query(DigitalBook).filter(DigitalBook.id == b.book_id).first()
+                bk = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == b.book_id).first()
                 if bk:
                     book_title = bk.title
             except Exception:
@@ -105,16 +116,20 @@ def get_borrows(db: Session = Depends(get_db)):
 
 @router.get("/books/{book_id}")
 @router.get("/{book_id}")
-def get_book(book_id: str, db: Session = Depends(get_db)):
+def get_book(
+    book_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     return book.to_dict()
@@ -123,13 +138,20 @@ def get_book(book_id: str, db: Session = Depends(get_db)):
 @router.post("")
 @router.post("/")
 @router.post("/books")
-def create_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def create_book(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     new_uuid = uuid.uuid4()
-    count = db.query(DigitalBook).count()
+    count = ctx.filter_query(db.query(DigitalBook), DigitalBook).count()
     book_id = data.get("bookId") or data.get("book_id") or f"LIB-{str(count + 1).zfill(4)}"
+
+    assigned_tenant = data.get("tenant_id") or data.get("tenantId") or ctx.effective_tenant_id or (ctx.allowed_tenant_ids[0] if ctx.allowed_tenant_ids else "panchpokhari")
 
     db_book = DigitalBook(
         id=new_uuid,
+        tenant_id=assigned_tenant,
         book_id=book_id,
         isbn=data.get("isbn"),
         title=data.get("title") or data.get("titleNepali") or "अज्ञात पुस्तक",
@@ -168,16 +190,21 @@ def create_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db))
 
 @router.put("/books/{book_id}")
 @router.put("/{book_id}")
-def update_book(book_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def update_book(
+    book_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
@@ -224,16 +251,20 @@ def update_book(book_id: str, data: Dict[str, Any] = Body(...), db: Session = De
 
 @router.delete("/books/{book_id}")
 @router.delete("/{book_id}")
-def delete_book(book_id: str, db: Session = Depends(get_db)):
+def delete_book(
+    book_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book = None
     try:
         val_uuid = uuid.UUID(book_id)
-        book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
     if not book:
-        book = db.query(DigitalBook).filter(DigitalBook.book_id == book_id).first()
+        book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
@@ -243,19 +274,23 @@ def delete_book(book_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/borrows")
-def issue_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def issue_book(
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     book_id_input = data.get("bookId") or data.get("book_id")
     book = None
     target_book_uuid = None
     if book_id_input:
         try:
             val_uuid = uuid.UUID(str(book_id_input))
-            book = db.query(DigitalBook).filter(DigitalBook.id == val_uuid).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == val_uuid).first()
             target_book_uuid = val_uuid
         except (ValueError, AttributeError):
             pass
         if not book:
-            book = db.query(DigitalBook).filter(DigitalBook.book_id == str(book_id_input)).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.book_id == str(book_id_input)).first()
             if book:
                 target_book_uuid = book.id
 
@@ -267,8 +302,11 @@ def issue_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
         if book.available_copies == 0:
             book.borrow_status = "borrowed"
 
+    assigned_tenant = data.get("tenant_id") or data.get("tenantId") or ctx.effective_tenant_id or (ctx.allowed_tenant_ids[0] if ctx.allowed_tenant_ids else "panchpokhari")
+
     db_borrow = BorrowRecord(
         id=uuid.uuid4(),
+        tenant_id=assigned_tenant,
         book_id=target_book_uuid,
         borrower_name=data.get("borrowerName") or data.get("borrower_name") or "सेवाग्राही",
         borrower_contact=data.get("borrowerContact") or data.get("borrower_contact"),
@@ -286,11 +324,16 @@ def issue_book(data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
 
 
 @router.put("/borrows/{borrow_id}/return")
-def return_book(borrow_id: str, data: Dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+def return_book(
+    borrow_id: str,
+    data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
     borrow = None
     try:
         val_uuid = uuid.UUID(borrow_id)
-        borrow = db.query(BorrowRecord).filter(BorrowRecord.id == val_uuid).first()
+        borrow = ctx.filter_query(db.query(BorrowRecord), BorrowRecord).filter(BorrowRecord.id == val_uuid).first()
     except (ValueError, AttributeError):
         pass
 
@@ -305,7 +348,7 @@ def return_book(borrow_id: str, data: Dict[str, Any] = Body(...), db: Session = 
     book = None
     if borrow.book_id:
         try:
-            book = db.query(DigitalBook).filter(DigitalBook.id == borrow.book_id).first()
+            book = ctx.filter_query(db.query(DigitalBook), DigitalBook).filter(DigitalBook.id == borrow.book_id).first()
         except Exception:
             pass
 
