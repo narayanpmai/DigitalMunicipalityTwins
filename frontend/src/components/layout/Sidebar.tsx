@@ -358,12 +358,11 @@ export const adminNavSections: NavSection[] = [
         featureId: 'f_gis',
       },
       {
-        label: 'जग्गा वर्गीकरण (Land Classification)',
+        label: 'जग्गा वर्गीकरण तथा भू-उपयोग नक्सा',
         path: '/app/land-classification',
         icon: <Compass size={16} style={{ color: '#10b981' }} />,
-        badge: 'भू-उपयोग',
+        badge: 'Land Use Twin',
         badgeColor: '#10b981',
-        featureId: 'f_gis',
       },
       {
         label: 'सार्वजनिक जिन्सी तथा सम्पत्ति (PAMS)',
@@ -705,6 +704,13 @@ export const publicNavSections: NavSection[] = [
         icon: <Layers size={16} style={{ color: '#06b6d4' }} />,
         badge: '3D Twin',
         badgeColor: '#06b6d4',
+      },
+      {
+        label: 'जग्गा वर्गीकरण तथा भू-उपयोग नक्सा',
+        path: '/land-classification',
+        icon: <Compass size={16} style={{ color: '#10b981' }} />,
+        badge: 'Land Use Twin',
+        badgeColor: '#10b981',
       },
       {
         label: 'फोहोरमैला व्यवस्थापन ट्विन',

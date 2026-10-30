@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -13,6 +14,7 @@ import {
   AlertTriangle,
   Info,
   ShieldAlert,
+  ShieldCheck,
   TreePine,
   Home,
   Building2,
@@ -71,7 +73,13 @@ const ZONE_ICONS: Record<string, any> = {
   IND: Factory,
 };
 
-export const LandClassificationPage: React.FC = () => {
+interface LandClassificationPageProps {
+  isPublic?: boolean;
+}
+
+export const LandClassificationPage: React.FC<LandClassificationPageProps> = ({ isPublic: isPublicProp }) => {
+  const location = useLocation();
+  const isPublic = isPublicProp !== undefined ? isPublicProp : !location.pathname.startsWith('/app');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const wardsLayerRef = useRef<L.GeoJSON | null>(null);
@@ -188,11 +196,25 @@ export const LandClassificationPage: React.FC = () => {
 
     mapInstanceRef.current = map;
 
+    // Ensure Leaflet tiles and viewport calculate proper dimensions
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
     return () => {
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Invalidate map size on tab or fullscreen toggle
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 150);
+    }
+  }, [isFullscreenGis, activeTab]);
 
   // 4. Update Tile Layer on BaseMap Change
   useEffect(() => {
@@ -258,6 +280,14 @@ export const LandClassificationPage: React.FC = () => {
 
     layer.addTo(map);
     wardsLayerRef.current = layer;
+
+    // Automatically zoom to palika boundaries on initial load
+    if (layer.getBounds().isValid()) {
+      map.fitBounds(layer.getBounds(), { padding: [25, 25] });
+    }
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
   }, [wardGeojson, selectedWard]);
 
   // 6. Render Land Classification Layer (Land Use 87)
@@ -314,10 +344,17 @@ export const LandClassificationPage: React.FC = () => {
     layer.addTo(map);
     landLayersRef.current = layer;
 
-    // Zoom to features if filtered
-    if (selectedWard !== 'all' && layer.getBounds().isValid()) {
-      map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 16 });
+    // Zoom to features
+    if (layer.getBounds().isValid()) {
+      if (selectedWard !== 'all') {
+        map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 16 });
+      } else {
+        map.fitBounds(layer.getBounds(), { padding: [25, 25] });
+      }
     }
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
   }, [landGeojson, selectedFeature, selectedWard, isLanduse87Active, landuseOpacity]);
 
   // 7. Dynamic Viewport Cadastre Parcels (when zoomed in)
@@ -527,6 +564,41 @@ export const LandClassificationPage: React.FC = () => {
               >
                 MUTM 87 Active
               </span>
+              {isPublic ? (
+                <span
+                  style={{
+                    background: 'rgba(34,197,94,0.15)',
+                    border: '1px solid rgba(34,197,94,0.35)',
+                    color: '#4ade80',
+                    padding: '2px 9px',
+                    borderRadius: '12px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <ShieldCheck size={12} /> सार्वजनिक खुला पहुँच (Read-Only)
+                </span>
+              ) : (
+                <span
+                  style={{
+                    background: 'rgba(99,102,241,0.15)',
+                    border: '1px solid rgba(99,102,241,0.35)',
+                    color: '#a5b4fc',
+                    padding: '2px 9px',
+                    borderRadius: '12px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  प्रशासनिक पोर्टल (Admin Twin)
+                </span>
+              )}
             </div>
             <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
               पाँचपोखरी थाङपाल गाउँपालिका — भू-उपयोग ऐन २०७६ र नापी विभाग मापदण्ड अनुसार आधिकारिक जग्गा तथा कित्ता नक्सा
@@ -654,7 +726,7 @@ export const LandClassificationPage: React.FC = () => {
             }}
           >
             <Database size={15} color="#c084fc" />
-            <span>Add Geodatabase</span>
+            <span>Geodatabase विवरण</span>
             <span
               style={{
                 background: '#9333ea',
@@ -669,7 +741,7 @@ export const LandClassificationPage: React.FC = () => {
             </span>
           </button>
 
-          {/* 3. Add Cadastre Data */}
+          {/* 3. Cadastre Data Layer Toggle */}
           <button
             onClick={() => setIsCadastreLayerActive(!isCadastreLayerActive)}
             style={{
@@ -688,7 +760,7 @@ export const LandClassificationPage: React.FC = () => {
             }}
           >
             <Grid size={15} />
-            <span>Cadastre Data (नापी कित्ता)</span>
+            <span>नापी कित्ता तह (Cadastre)</span>
             <span
               style={{
                 width: '8px',

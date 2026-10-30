@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSensorsSocket } from '../../api/socket';
 import { municipalityApi, type SensorItem } from '../../api/municipality';
@@ -942,6 +942,28 @@ export const GisMapPage: React.FC<{ isPublic?: boolean }> = ({ isPublic = false 
               <span>३D डिजिटल ट्विन भू-धरातल</span>
             </button>
           </div>
+
+          {/* Direct Link to Land Classification Twin */}
+          <Link
+            to={isPublic ? "/land-classification" : "/app/land-classification"}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 0.9rem',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Compass size={16} />
+            <span>जग्गा वर्गीकरण तथा भू-उपयोग नक्सा</span>
+          </Link>
 
           {/* Quick Base Layer Switcher (Normal View) */}
           {viewMode === '2d' && (
