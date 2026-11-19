@@ -34,6 +34,7 @@ import {
   MapPin,
   Award,
   Layers,
+  Hash,
   ArrowRight,
   ShieldCheck,
   FileText,
@@ -3451,67 +3452,75 @@ return (
             )}
 
             {/* ============================================================== */}
-            {/* 7. HRMS ONBOARDING MODAL                                       */}
+            {/* 7. HRMS ONBOARDING MODAL (PREMIUM EXECUTIVE REDESIGN)          */}
             {/* ============================================================== */}
             {showOnboardModal && onboardingApp && (
               <div className="rec-onboard-modal-overlay">
                 <div className="rec-onboard-modal">
+                  {/* Sticky Header */}
                   <div className="rec-onboard-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                      <div style={{ background: 'rgba(255,255,255,0.2)', padding: '0.45rem', borderRadius: '10px' }}>
-                        <UserCheck size={22} color="#ffffff" />
+                    <div className="rec-onboard-header-left">
+                      <div className="rec-onboard-header-icon-box">
+                        <UserCheck size={24} />
                       </div>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>
-                          कर्मचारी पदस्थापन तथा HRMS दर्ता
+                        <div className="rec-onboard-header-badge">
+                          <Sparkles size={12} /> कर्मचारी पदस्थापन तथा अभिलेख
+                        </div>
+                        <h3 className="rec-onboard-title">
+                          कर्मचारी व्यक्तिगत विवरण (HRMS) दर्ता
                         </h3>
-                        <span style={{ fontSize: '0.78rem', color: '#a7f3d0' }}>
-                          छनोट उम्मेदवारलाई 'कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS)' मा सिधै दर्ता गर्नुहोस्
-                        </span>
+                        <p className="rec-onboard-subtitle">
+                          खुला दरखास्तबाट छनोट भएका उम्मेदवारलाई आधिकारिक कर्मचारी संकेत नम्बर जारी गरी HRMS मा दर्ता गर्नुहोस्
+                        </p>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
                         setShowOnboardModal(false);
                         setOnboardingApp(null);
                         setOnboardSuccessData(null);
                       }}
-                      style={{ background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer' }}
+                      className="rec-onboard-close-btn"
+                      title="बन्द गर्नुहोस्"
                     >
-                      <X size={20} />
+                      <X size={18} />
                     </button>
                   </div>
 
-                  <div style={{ padding: '1.5rem' }}>
+                  {/* Scrollable Body */}
+                  <div className="rec-onboard-body">
                     {onboardSuccessData ? (
-                      <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
-                          <CheckCircle2 size={38} />
+                      <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                        <div style={{ width: '68px', height: '68px', borderRadius: '50%', background: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem auto', border: '3px solid #86efac', boxShadow: '0 8px 24px rgba(22, 163, 74, 0.25)' }}>
+                          <CheckCircle2 size={42} />
                         </div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#15803d', margin: '0 0 0.5rem 0' }}>
+                        <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#15803d', margin: '0 0 0.5rem 0' }}>
                           HRMS मा सफलतापूर्वक दर्ता सम्पन्न भयो!
                         </h3>
-                        <p style={{ fontSize: '0.88rem', color: '#475569', marginBottom: '1.25rem' }}>
+                        <p style={{ fontSize: '0.9rem', color: '#475569', marginBottom: '1.5rem', lineHeight: 1.5 }}>
                           {onboardSuccessData.message}
                         </p>
-                        <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '1rem', maxWidth: '380px', margin: '0 auto 1.5rem auto' }}>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>कर्मचारी संकेत नम्बर:</div>
-                          <div style={{ fontFamily: 'monospace', fontSize: '1.4rem', fontWeight: 900, color: '#047857', letterSpacing: '0.5px' }}>
+                        <div style={{ background: '#f8fafc', border: '1.5px dashed #86efac', borderRadius: '14px', padding: '1.15rem', maxWidth: '400px', margin: '0 auto 1.75rem auto' }}>
+                          <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700 }}>आधिकारिक कर्मचारी संकेत नम्बर:</div>
+                          <div style={{ fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 900, color: '#047857', letterSpacing: '0.5px', marginTop: '0.2rem' }}>
                             {onboardSuccessData.employeeId}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                           <button
+                            type="button"
                             onClick={() => {
                               setShowOnboardModal(false);
                               navigate('/app/employees');
                             }}
-                            className="rec-btn rec-btn-primary"
-                            style={{ background: '#047857' }}
+                            className="rec-btn rec-btn-onboard-confirm"
                           >
-                            <Users size={16} /> कर्मचारी व्यवस्थापन (HRMS) मा हेर्नुहोस्
+                            <Users size={17} /> कर्मचारी व्यवस्थापन (HRMS) मा हेर्नुहोस्
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setShowOnboardModal(false);
                               setOnboardingApp(null);
@@ -3524,220 +3533,293 @@ return (
                         </div>
                       </div>
                     ) : (
-                      <div>
-                        {/* Candidate Summary Card */}
-                        <div className="rec-onboard-summary-box">
-                          {onboardingApp.photoUrl || onboardingApp.photo_url ? (
-                            <img
-                              src={onboardingApp.photoUrl || onboardingApp.photo_url}
-                              alt={onboardingApp.fullNameNp || onboardingApp.full_name_np}
-                              className="rec-onboard-avatar"
-                            />
-                          ) : (
-                            <div className="rec-onboard-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#047857', fontWeight: 800, fontSize: '1.2rem' }}>
-                              {(onboardingApp.fullNameNp || onboardingApp.full_name_np || 'उ')[0]}
+                      <>
+                        {/* 1. Candidate Executive Profile Card */}
+                        <div className="rec-onboard-card">
+                          <div className="rec-onboard-card-accent" />
+                          <div className="rec-onboard-card-content">
+                            <div className="rec-onboard-avatar-wrap">
+                              {onboardingApp.photoUrl || onboardingApp.photo_url ? (
+                                <img
+                                  src={onboardingApp.photoUrl || onboardingApp.photo_url}
+                                  alt={onboardingApp.fullNameNp || onboardingApp.full_name_np}
+                                  className="rec-onboard-avatar-img"
+                                />
+                              ) : (
+                                <div className="rec-onboard-avatar-placeholder">
+                                  {(onboardingApp.fullNameNp || onboardingApp.full_name_np || 'उ')[0]}
+                                </div>
+                              )}
+                              <span className="rec-onboard-status-badge">छनोट उम्मेदवार</span>
                             </div>
-                          )}
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0f172a' }}>
-                                {onboardingApp.fullNameNp || onboardingApp.full_name_np}
-                                {onboardingApp.fullNameEn && <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, marginLeft: '0.4rem' }}>({onboardingApp.fullNameEn})</span>}
+
+                            <div className="rec-onboard-info-wrap">
+                              <div className="rec-onboard-name-row">
+                                <div>
+                                  <span className="rec-onboard-name-np">
+                                    {onboardingApp.fullNameNp || onboardingApp.full_name_np}
+                                  </span>
+                                  {onboardingApp.fullNameEn && (
+                                    <span className="rec-onboard-name-en">
+                                      ({onboardingApp.fullNameEn})
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="rec-onboard-app-pill">
+                                  {onboardingApp.applicationNo || onboardingApp.application_no}
+                                </span>
                               </div>
-                              <span className="rec-app-no-badge">
-                                {onboardingApp.applicationNo || onboardingApp.application_no}
+
+                              <div className="rec-onboard-post-pill">
+                                <Briefcase size={14} />
+                                <span>पद: <strong>{onboardingApp.postTitle || onboardingApp.post_title}</strong></span>
+                                <span className="rec-pill-dot">•</span>
+                                <span>विज्ञापन नं: <strong>{onboardingApp.vacancyNo || onboardingApp.vacancy_no}</strong></span>
+                              </div>
+
+                              <div className="rec-onboard-meta-grid">
+                                <div className="rec-onboard-meta-item">
+                                  <span className="rec-meta-label">नागरिकता नं:</span>
+                                  <span className="rec-meta-val">{onboardingApp.citizenshipNo || onboardingApp.citizenship_no} ({onboardingApp.citizenshipDistrict || onboardingApp.citizenship_district || 'सिन्धुपाल्चोक'})</span>
+                                </div>
+                                <div className="rec-onboard-meta-item">
+                                  <span className="rec-meta-label">सम्पर्क:</span>
+                                  <span className="rec-meta-val">{onboardingApp.contactPhone || onboardingApp.contact_phone}</span>
+                                </div>
+                                <div className="rec-onboard-meta-item" style={{ gridColumn: 'span 2' }}>
+                                  <span className="rec-meta-label">स्थायी ठेगाना:</span>
+                                  <span className="rec-meta-val">{onboardingApp.permanentAddress || onboardingApp.permanent_address}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 2. Form Inputs Card */}
+                        <div className="rec-onboard-form-card">
+                          <div className="rec-onboard-section-title">
+                            <Building size={17} color="#059669" />
+                            <span>पदस्थापन तथा सेवा अभिलेख विवरण (HRMS Appointment Details)</span>
+                          </div>
+
+                          <div className="rec-onboard-fields-grid">
+                            {/* Employee ID */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Hash size={14} color="#059669" />
+                                <span>कर्मचारी संकेत नम्बर (Employee ID)</span>
+                                <span className="rec-req">*</span>
+                              </label>
+                              <div className="rec-input-affix-wrap">
+                                <input
+                                  type="text"
+                                  value={onboardForm.employeeId}
+                                  onChange={e => setOnboardForm(p => ({ ...p, employeeId: e.target.value }))}
+                                  className="rec-onboard-input rec-input-empid"
+                                  placeholder="EMP-2081-XXXX"
+                                  required
+                                />
+                                <span className="rec-input-badge-green">प्रणाली सिफारिस</span>
+                              </div>
+                              <span className="rec-field-hint">
+                                💡 प्रणालीद्वारा स्वतः सिफारिस संकेत नं (आवश्यकतानुसार परिमार्जन गर्न सकिने)
                               </span>
                             </div>
-                            <div style={{ fontSize: '0.82rem', color: '#0284c7', fontWeight: 700, marginTop: '0.2rem' }}>
-                              पद: {onboardingApp.postTitle || onboardingApp.post_title} (विज्ञापन नं: {onboardingApp.vacancyNo || onboardingApp.vacancy_no})
+
+                            {/* Designation */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Briefcase size={14} color="#0284c7" />
+                                <span>पद / पदनाम (Designation)</span>
+                                <span className="rec-req">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={onboardForm.designation}
+                                onChange={e => setOnboardForm(p => ({ ...p, designation: e.target.value }))}
+                                className="rec-onboard-input"
+                                required
+                              />
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                              <span>नागरिकता नं: <strong>{onboardingApp.citizenshipNo || onboardingApp.citizenship_no}</strong> ({onboardingApp.citizenshipDistrict || onboardingApp.citizenship_district || 'सिन्धुपाल्चोक'})</span>
-                              <span>सम्पर्क: <strong>{onboardingApp.contactPhone || onboardingApp.contact_phone}</strong></span>
-                              <span>ठेगाना: <strong>{onboardingApp.permanentAddress || onboardingApp.permanent_address}</strong></span>
+
+                            {/* Department */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Building size={14} color="#0284c7" />
+                                <span>शाखा / विभाग (Department)</span>
+                                <span className="rec-req">*</span>
+                              </label>
+                              <select
+                                value={onboardForm.department}
+                                onChange={e => setOnboardForm(p => ({ ...p, department: e.target.value }))}
+                                className="rec-onboard-select"
+                              >
+                                <option value="प्रशासन तथा सामान्य प्रशासन शाखा">प्रशासन तथा सामान्य प्रशासन शाखा</option>
+                                <option value="योजना तथा भौतिक पूर्वाधार विकास शाखा">योजना तथा भौतिक पूर्वाधार विकास शाखा</option>
+                                <option value="स्वास्थ्य शाखा">स्वास्थ्य शाखा</option>
+                                <option value="शिक्षा, युवा तथा खेलकुद शाखा">शिक्षा, युवा तथा खेलकुद शाखा</option>
+                                <option value="आर्थिक प्रशासन (लेखा) शाखा">आर्थिक प्रशासन (लेखा) शाखा</option>
+                                <option value="राजस्व तथा आन्तरिक नियन्त्रण शाखा">राजस्व तथा आन्तरिक नियन्त्रण शाखा</option>
+                                <option value="कृषि तथा पशुपन्छी विकास शाखा">कृषि तथा पशुपन्छी विकास शाखा</option>
+                                <option value="महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा">महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा</option>
+                                <option value="सूचना प्रविधि (IT) तथा डिजिटल शाखा">सूचना प्रविधि (IT) तथा डिजिटल शाखा</option>
+                                <option value="विपद् व्यवस्थापन तथा वातावरण शाखा">विपद् व्यवस्थापन तथा वातावरण शाखा</option>
+                              </select>
+                            </div>
+
+                            {/* Level / Grade */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Layers size={14} color="#0284c7" />
+                                <span>तह / श्रेणी (Level / Grade)</span>
+                              </label>
+                              <select
+                                value={onboardForm.levelGrade}
+                                onChange={e => setOnboardForm(p => ({ ...p, levelGrade: e.target.value }))}
+                                className="rec-onboard-select"
+                              >
+                                <option value="सहायक पाँचौं (Assistant 5th)">सहायक पाँचौं (Assistant 5th)</option>
+                                <option value="सहायक चौथो (Assistant 4th)">सहायक चौथो (Assistant 4th)</option>
+                                <option value="अधिकृत छैटौं (Officer 6th)">अधिकृत छैटौं (Officer 6th)</option>
+                                <option value="अधिकृत सातौं (Officer 7th)">अधिकृत सातौं (Officer 7th)</option>
+                                <option value="अधिकृत आठौं (Officer 8th)">अधिकृत आठौं (Officer 8th)</option>
+                                <option value="श्रेणीविहीन (Non-Classified)">श्रेणीविहीन (Non-Classified)</option>
+                              </select>
+                            </div>
+
+                            {/* Employment Type */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Briefcase size={14} color="#64748b" />
+                                <span>सेवा प्रकार (Employment Type)</span>
+                              </label>
+                              <select
+                                value={onboardForm.employmentType}
+                                onChange={e => setOnboardForm(p => ({ ...p, employmentType: e.target.value }))}
+                                className="rec-onboard-select"
+                              >
+                                <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
+                                <option value="स्थायी (Permanent)">स्थायी (Permanent)</option>
+                                <option value="अस्थायी / ज्यालादारी">अस्थायी / ज्यालादारी</option>
+                              </select>
+                            </div>
+
+                            {/* Service Group */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Layers size={14} color="#64748b" />
+                                <span>सेवा समूह (Service Group)</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={onboardForm.serviceGroup}
+                                onChange={e => setOnboardForm(p => ({ ...p, serviceGroup: e.target.value }))}
+                                className="rec-onboard-input"
+                                placeholder="उदा: नेपाल प्रशासन / इन्जिनियरिङ्ग"
+                              />
+                            </div>
+
+                            {/* Appointment Date */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Calendar size={14} color="#0284c7" />
+                                <span>नियुक्ति मिति (वि.सं.)</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={onboardForm.appointmentDateBs}
+                                onChange={e => setOnboardForm(p => ({ ...p, appointmentDateBs: e.target.value }))}
+                                className="rec-onboard-input"
+                                placeholder="२०८१-०८-०१"
+                              />
+                            </div>
+
+                            {/* Joining Date */}
+                            <div className="rec-field-group">
+                              <label className="rec-onboard-label">
+                                <Calendar size={14} color="#0284c7" />
+                                <span>हाजिर मिति (वि.सं.)</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={onboardForm.joinDateBs}
+                                onChange={e => setOnboardForm(p => ({ ...p, joinDateBs: e.target.value }))}
+                                className="rec-onboard-input"
+                                placeholder="२०८१-०८-०१"
+                              />
                             </div>
                           </div>
-                        </div>
 
-                        {/* Form Fields */}
-                        <div className="rec-onboard-grid">
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              कर्मचारी संकेत नम्बर (Employee ID) <span style={{ color: '#ef4444' }}>*</span>
+                          {/* Remarks */}
+                          <div className="rec-field-group" style={{ marginTop: '1.15rem' }}>
+                            <label className="rec-onboard-label">
+                              <FileText size={14} color="#64748b" />
+                              <span>कैफियत / पदस्थापन टिप्पणी (Remarks)</span>
                             </label>
-                            <input
-                              type="text"
-                              value={onboardForm.employeeId}
-                              onChange={e => setOnboardForm(p => ({ ...p, employeeId: e.target.value }))}
-                              className="rec-form-input"
-                              style={{ fontFamily: 'monospace', fontWeight: 800, color: '#047857' }}
-                              placeholder="EMP-2081-XXXX"
-                              required
-                            />
-                            <span style={{ fontSize: '0.68rem', color: '#64748b' }}>प्रणालीले स्वतः सिफारिस गरेको संकेत नं</span>
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              पद / पदनाम (Designation) <span style={{ color: '#ef4444' }}>*</span>
-                            </label>
-                            <input
-                              type="text"
-                              value={onboardForm.designation}
-                              onChange={e => setOnboardForm(p => ({ ...p, designation: e.target.value }))}
-                              className="rec-form-input"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              शाखा / विभाग (Department) <span style={{ color: '#ef4444' }}>*</span>
-                            </label>
-                            <select
-                              value={onboardForm.department}
-                              onChange={e => setOnboardForm(p => ({ ...p, department: e.target.value }))}
-                              className="rec-form-input"
-                            >
-                              <option value="प्रशासन तथा सामान्य प्रशासन शाखा">प्रशासन तथा सामान्य प्रशासन शाखा</option>
-                              <option value="योजना तथा भौतिक पूर्वाधार विकास शाखा">योजना तथा भौतिक पूर्वाधार विकास शाखा</option>
-                              <option value="स्वास्थ्य शाखा">स्वास्थ्य शाखा</option>
-                              <option value="शिक्षा, युवा तथा खेलकुद शाखा">शिक्षा, युवा तथा खेलकुद शाखा</option>
-                              <option value="आर्थिक प्रशासन (लेखा) शाखा">आर्थिक प्रशासन (लेखा) शाखा</option>
-                              <option value="राजस्व तथा आन्तरिक नियन्त्रण शाखा">राजस्व तथा आन्तरिक नियन्त्रण शाखा</option>
-                              <option value="कृषि तथा पशुपन्छी विकास शाखा">कृषि तथा पशुपन्छी विकास शाखा</option>
-                              <option value="महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा">महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा</option>
-                              <option value="सूचना प्रविधि (IT) तथा डिजिटल शाखा">सूचना प्रविधि (IT) तथा डिजिटल शाखा</option>
-                              <option value="विपद् व्यवस्थापन तथा वातावरण शाखा">विपद् व्यवस्थापन तथा वातावरण शाखा</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              तह / श्रेणी (Level / Grade)
-                            </label>
-                            <select
-                              value={onboardForm.levelGrade}
-                              onChange={e => setOnboardForm(p => ({ ...p, levelGrade: e.target.value }))}
-                              className="rec-form-input"
-                            >
-                              <option value="सहायक पाँचौं (Assistant 5th)">सहायक पाँचौं (Assistant 5th)</option>
-                              <option value="सहायक चौथो (Assistant 4th)">सहायक चौथो (Assistant 4th)</option>
-                              <option value="अधिकृत छैटौं (Officer 6th)">अधिकृत छैटौं (Officer 6th)</option>
-                              <option value="अधिकृत सातौं (Officer 7th)">अधिकृत सातौं (Officer 7th)</option>
-                              <option value="अधिकृत आठौं (Officer 8th)">अधिकृत आठौं (Officer 8th)</option>
-                              <option value="श्रेणीविहीन (Non-Classified)">श्रेणीविहीन (Non-Classified)</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              सेवा प्रकार (Employment Type)
-                            </label>
-                            <select
-                              value={onboardForm.employmentType}
-                              onChange={e => setOnboardForm(p => ({ ...p, employmentType: e.target.value }))}
-                              className="rec-form-input"
-                            >
-                              <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
-                              <option value="स्थायी (Permanent)">स्थायी (Permanent)</option>
-                              <option value="अस्थायी / ज्यालादारी">अस्थायी / ज्यालादारी</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              सेवा समूह (Service Group)
-                            </label>
-                            <input
-                              type="text"
-                              value={onboardForm.serviceGroup}
-                              onChange={e => setOnboardForm(p => ({ ...p, serviceGroup: e.target.value }))}
-                              className="rec-form-input"
-                              placeholder="उदा: नेपाल प्रशासन / इन्जिनियरिङ्ग"
-                            />
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              नियुक्ति मिति (वि.सं.)
-                            </label>
-                            <input
-                              type="text"
-                              value={onboardForm.appointmentDateBs}
-                              onChange={e => setOnboardForm(p => ({ ...p, appointmentDateBs: e.target.value }))}
-                              className="rec-form-input"
-                              placeholder="२०८१-०८-०१"
-                            />
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              हाजिर मिति (वि.सं.)
-                            </label>
-                            <input
-                              type="text"
-                              value={onboardForm.joinDateBs}
-                              onChange={e => setOnboardForm(p => ({ ...p, joinDateBs: e.target.value }))}
-                              className="rec-form-input"
-                              placeholder="२०८१-०८-०१"
+                            <textarea
+                              value={onboardForm.remarks}
+                              onChange={e => setOnboardForm(p => ({ ...p, remarks: e.target.value }))}
+                              className="rec-onboard-textarea"
+                              rows={2}
+                              placeholder="पदस्थापन सम्बन्धी विशेष टिप्पणी वा निर्णय..."
                             />
                           </div>
                         </div>
 
-                        <div style={{ marginBottom: '1.25rem' }}>
-                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                            कैफियत / पदस्थापन टिप्पणी (Remarks)
-                          </label>
-                          <textarea
-                            value={onboardForm.remarks}
-                            onChange={e => setOnboardForm(p => ({ ...p, remarks: e.target.value }))}
-                            className="rec-form-input"
-                            rows={2}
-                            placeholder="पदस्थापन सम्बन्धित विशेष निर्णय वा विवरण..."
-                          />
+                        {/* 3. Document Sync Card */}
+                        <div className="rec-onboard-docs-box">
+                          <div className="rec-onboard-docs-header">
+                            <CheckCircle size={18} color="#059669" />
+                            <span style={{ fontWeight: 800, color: '#065f46', fontSize: '0.86rem' }}>
+                              कागजात स्वतः स्थानान्तरण (Automatic Document Sync)
+                            </span>
+                          </div>
+                          <p style={{ margin: '0.35rem 0 0.55rem 0', fontSize: '0.78rem', color: '#334155', lineHeight: 1.5 }}>
+                            यो पदस्थापन सुरक्षित गर्नासाथ उम्मेदवारका यी सम्पूर्ण कागजातहरू सिधै HRMS डिजिटल व्यक्तिगत फाइलमा सुरक्षित हुनेछन्:
+                          </p>
+                          <div className="rec-onboard-doc-pills">
+                            <span className="rec-doc-pill">✓ नागरिकता प्रमाणपत्र</span>
+                            <span className="rec-doc-pill">✓ शैक्षिक प्रमाणपत्र</span>
+                            <span className="rec-doc-pill">✓ पासपोर्ट फोटो</span>
+                            <span className="rec-doc-pill">✓ काउन्सिल / तालिम</span>
+                          </div>
                         </div>
-
-                        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: '#065f46' }}>
-                          <CheckCircle size={18} color="#059669" />
-                          <span>
-                            यो दर्ता सम्पन्न भएपछि उम्मेदवारको नागरिकता, फोटो, शैक्षिक प्रमाणपत्र तथा अनुभव कागजातहरू स्वतः <strong>'कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS)'</strong> मा सुरक्षित हुनेछन्।
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowOnboardModal(false);
-                              setOnboardingApp(null);
-                            }}
-                            className="rec-btn rec-btn-outline"
-                            disabled={isOnboardingLoading}
-                          >
-                            रद्द गर्नुहोस्
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleConfirmOnboard}
-                            disabled={isOnboardingLoading || !onboardForm.employeeId || !onboardForm.department}
-                            className="rec-btn rec-btn-primary"
-                            style={{ background: '#047857' }}
-                          >
-                            {isOnboardingLoading ? (
-                              <>
-                                <Loader2 size={16} className="animate-spin" /> दर्ता हुँदैछ...
-                              </>
-                            ) : (
-                              <>
-                                <UserPlus size={16} /> कर्मचारी दर्ता सुरक्षित गर्नुहोस् (Confirm & Save)
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                      </>
                     )}
                   </div>
+
+                  {/* Sticky Footer */}
+                  {!onboardSuccessData && (
+                    <div className="rec-onboard-footer">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOnboardModal(false);
+                          setOnboardingApp(null);
+                        }}
+                        className="rec-btn rec-btn-outline"
+                        disabled={isOnboardingLoading}
+                      >
+                        रद्द गर्नुहोस्
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmOnboard}
+                        disabled={isOnboardingLoading || !onboardForm.employeeId || !onboardForm.department}
+                        className="rec-btn rec-btn-onboard-confirm"
+                      >
+                        {isOnboardingLoading ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" /> दर्ता हुँदैछ...
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus size={16} /> कर्मचारी दर्ता सुरक्षित गर्नुहोस् (Confirm & Save)
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
