@@ -644,20 +644,25 @@ def initiate_payment(
 
     if gateway_name in ("FONEPAY", "FONEPAY_QR", "QR"):
         gateway_name = "FONEPAY"
-        # Generate Fonepay Merchant Presented Dynamic EMVCo QR String
-        # EMVCo format payload containing merchant ID, amount, PRN (ApplicationNo), and municipality remarks
-        merchant_code = "P5THANGPAL"
+        # Nepal Investment Mega Bank (NIMB) Official Revenue Account
+        bank_name = "Nepal Investment Mega Bank (NIMB)"
+        account_no = "18301400000109"
+        account_name = "GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA"
         prn = app.application_no
         trace_id = txn_uuid
         
-        # Fonepay standard URI scheme compatible with all Nepali mobile banking apps
-        qr_data = f"fonepay://pay?merchant={merchant_code}&name=Panchpokhari+Thangpal+RM&prn={prn}&amount={amount:.2f}&trace={trace_id}&remarks=Recruitment+Fee+{prn}"
+        # Standard EMVCo & Fonepay/NepalPay QR payload for NIMB
+        qr_data = f"fonepay://pay?merchant=NIMB&bank=NIMB&account={account_no}&name=GA+1.1+PANCHPOKHARI+THANGPAL+GA.PA.+AANTARIK+RAJASHO+KHATA&prn={prn}&amount={amount:.2f}&trace={trace_id}&remarks=Recruitment+Fee+{prn}"
         params = {
-            "merchantName": "पाँचपोखरी थाङपाल गाउँ कार्यपालिका",
-            "merchantCode": merchant_code,
+            "bankName": bank_name,
+            "accountNumber": account_no,
+            "accountName": account_name,
+            "merchantName": "गाउँ कार्यपालिकाको कार्यालय, पाँचपोखरी थाङपाल",
+            "merchantCode": "NIMB-18301400000109",
             "prn": prn,
             "traceId": trace_id,
             "amount": amount,
+            "qrData": qr_data,
             "expirySeconds": 900
         }
 
@@ -721,9 +726,9 @@ def initiate_payment(
         gateway_name = "BANK_VOUCHER"
         params = {
             "voucherNo": data.voucher_no or f"VCH-{uuid.uuid4().hex[:6].upper()}",
-            "bankName": "नेपाल बैंक लिमिटेड, पाँचपोखरी शाखा",
-            "accountNumber": "०४५००१०६६९०२३४०००००१",
-            "accountTitle": "पाँचपोखरी थाङपाल गाउँपालिका आन्तरिक राजस्व खाता"
+            "bankName": "Nepal Investment Mega Bank (NIMB)",
+            "accountNumber": "18301400000109",
+            "accountTitle": "GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA (ग १.१ पाँचपोखरी थाङपाल गा.पा. आन्तरिक राजस्व खाता)"
         }
 
     # Store initiated transaction record
