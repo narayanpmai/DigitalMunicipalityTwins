@@ -1,7 +1,16 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment configuration (.env)
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import os
 from core.db_init import init_and_sync_db
 
 # Ensure all database tables and columns are created and synchronized
@@ -13,10 +22,16 @@ from api.routers.engineer_payment import engineer_router, payment_router
 from api.routers.odk_service_router import odk_router, service_router_api
 from api.routers.extra_stubs import extra_router
 
+is_prod = os.getenv("ENVIRONMENT", "").lower() == "production"
+enable_docs = os.getenv("ENABLE_DOCS", "false").lower() in ("true", "1")
+
 app = FastAPI(
     title="Municipal Digital Twins API",
     description="FastAPI Backend for Integrated Survey Engine",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs" if (not is_prod or enable_docs) else None,
+    redoc_url="/redoc" if (not is_prod or enable_docs) else None,
+    openapi_url="/openapi.json" if (not is_prod or enable_docs) else None
 )
 
 # Multi-Tenant Subdomain Extractor Middleware

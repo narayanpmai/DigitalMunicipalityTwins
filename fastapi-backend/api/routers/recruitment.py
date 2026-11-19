@@ -44,6 +44,16 @@ from schemas.recruitment import (
     RefundCreateRequest,
     OnboardToHrmsRequest
 )
+from models.user import User, UserRole
+from api.routers.auth import get_current_user, require_roles, _get_token_payload
+
+RECRUITMENT_ADMIN_ROLES = (
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.CAO,
+    UserRole.IT_ADMIN,
+    UserRole.REVENUE_OFFICER,
+)
 
 router = APIRouter(
     prefix="/api/v1/recruitment",
@@ -136,7 +146,10 @@ def get_recruitment_summary(db: Session = Depends(get_db)):
 # 2. EXCEL EXPORT (WITH FINANCIAL AUDIT COLUMNS)
 # -------------------------------------------------------------
 @router.get("/export-excel")
-def export_recruitment_excel(db: Session = Depends(get_db)):
+def export_recruitment_excel(
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
     vacancies = db.query(VacancyAnnouncement).order_by(desc(VacancyAnnouncement.created_at)).all()
     applications = db.query(JobApplication).order_by(desc(JobApplication.created_at)).all()
 
@@ -318,11 +331,18 @@ async def upload_recruitment_document(file: UploadFile = File(...)):
     _, ext = os.path.splitext(raw_name)
     ext_lower = ext.lower()
     
-    allowed = {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".svg", ".doc", ".docx"}
+    allowed = {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".doc", ".docx"}
     if ext_lower not in allowed:
         raise HTTPException(
             status_code=400,
             detail="अमान्य फाइल ढाँचा! कृपया तस्बिर (.jpg, .jpeg, .png) वा (.pdf) फाइल मात्र छनोट गर्नुहोस्।"
+        )
+
+    # Reject SVG or script-bearing XML explicitly to prevent Stored XSS
+    if ext_lower == ".svg" or (file.content_type and "svg" in file.content_type.lower()):
+        raise HTTPException(
+            status_code=400,
+            detail="सुरक्षा कारणले SVG ढाँचाका फाइलहरू अपलोड गर्न निषेध गरिएको छ। कृपया JPG, PNG वा PDF फाइल छनोट गर्नुहोस्।"
         )
         
     contents = await file.read()
@@ -373,6 +393,7 @@ def list_vacancies(
 def create_vacancy(
     data: VacancyAnnouncementCreate,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     if not data.vacancy_no:
@@ -430,6 +451,7 @@ def update_vacancy(
     vacancy_id: str,
     data: VacancyAnnouncementUpdate,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     cond = [VacancyAnnouncement.vacancy_no == vacancy_id]
@@ -462,7 +484,12 @@ def update_vacancy(
 
 
 @router.delete("/vacancies/{vacancy_id}")
-def delete_vacancy(vacancy_id: str, request: Request, db: Session = Depends(get_db)):
+def delete_vacancy(
+    vacancy_id: str,
+    request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
     cond = [VacancyAnnouncement.vacancy_no == vacancy_id]
     if is_valid_uuid(vacancy_id) or len(vacancy_id) > 10:
         cond.append(VacancyAnnouncement.id == vacancy_id)
@@ -689,8 +716,8 @@ def initiate_payment(
         gateway_name = "ESEWA"
         checkout_url = "https://epay.esewa.com.np/api/epay/main/v2/form"
         # Signature: HMAC-SHA256 of total_amount,transaction_uuid,product_code
-        product_code = "EPAYTEST"
-        secret_key = "8gBm/:&EnhH.1/q("
+        product_code = os.getenv("ESEWA_PRODUCT_CODE", "EPAYTEST")
+        secret_key = os.getenv("ESEWA_SECRET_KEY", "8gBm/:&EnhH.1/q(")
         message_to_sign = f"total_amount={amount:.2f},transaction_uuid={txn_uuid},product_code={product_code}"
         signature = base64.b64encode(hmac.new(secret_key.encode(), message_to_sign.encode(), hashlib.sha256).digest()).decode()
         
@@ -812,8 +839,51 @@ def verify_payment(
             paid_at=app.paid_at.strftime("%Y-%m-%d %H:%M:%S") if app.paid_at else None
         )
 
-    # In production, gateway inquiry API is queried here.
-    # We support real verification or mock auto approval for testing
+    # Check if caller has valid admin token or if system allows mock payments
+    allow_mock = os.getenv("ALLOW_MOCK_PAYMENTS", "false").lower() in ("true", "1") or os.getenv("ENVIRONMENT", "").lower() in ("development", "dev", "test")
+    is_admin = False
+    auth_payload = _get_token_payload(request) if request else None
+    if auth_payload and auth_payload.get("role") in [r.value for r in RECRUITMENT_ADMIN_ROLES]:
+        is_admin = True
+
+    # If mock_auto_approve is requested by an unauthenticated / public caller in strict production mode:
+    if data.mock_auto_approve and not (is_admin or allow_mock):
+        # Do NOT issue official receipt or grant free PAID status.
+        # Instead, mark as PENDING_VERIFICATION (कार्यालय बैंक रुजु बाँकी) so candidate's application is recorded
+        # but requires revenue desk clearance before receipt and admit card are issued.
+        ref_id = data.gateway_ref_id or f"SUBMITTED-{uuid.uuid4().hex[:6].upper()}"
+        pay.status = "PENDING_VERIFICATION"
+        pay.gateway_ref_id = ref_id
+        
+        app.payment_status = "PENDING_VERIFICATION"
+        app.application_status = "SUBMITTED"
+        app.status = "विचाराधीन (कार्यालय बैंक रुजु बाँकी)"
+        app.payment_method = pay.gateway
+        app.payment_voucher_no = ref_id
+        db.commit()
+
+        record_audit(
+            db=db,
+            entity_type="PAYMENT",
+            entity_id=pay.transaction_uuid,
+            action="PAY_PENDING_VERIFICATION",
+            performed_by="CANDIDATE",
+            details=f"Payment submitted for bank statement verification. App: {app.application_no}, Gateway: {pay.gateway}, Ref: {ref_id}",
+            ip_address=request.client.host if request.client else None
+        )
+
+        return PaymentVerifyResponse(
+            success=True,
+            message="तपाईंको भुक्तानी विवरण प्राप्त भएको छ। कार्यालयबाट बैंक दाखिला रुजु भएपछि आधिकारिक रसिद र प्रवेशपत्र उपलब्ध हुनेछ।",
+            transaction_uuid=pay.transaction_uuid,
+            receipt_no=None,
+            application_no=app.application_no,
+            paid_amount=float(pay.amount),
+            payment_status="PENDING_VERIFICATION",
+            paid_at=None
+        )
+
+    # Legitimate clearance: Admin confirmation, Gateway callback, or approved test mode
     pay.status = "SUCCESS"
     pay.gateway_ref_id = data.gateway_ref_id or f"GW-REF-{uuid.uuid4().hex[:8].upper()}"
     pay.verified_at = datetime.datetime.utcnow()
@@ -839,7 +909,7 @@ def verify_payment(
         entity_type="PAYMENT",
         entity_id=pay.transaction_uuid,
         action="PAY_SUCCESS",
-        performed_by="GATEWAY_CALLBACK",
+        performed_by="ADMIN" if is_admin else ("MOCK_AUTO_APPROVE" if allow_mock else "GATEWAY_CALLBACK"),
         details=f"Payment verified for {app.application_no}, receipt: {receipt_no}, amount: Rs. {pay.amount}",
         ip_address=request.client.host if request.client else None
     )
@@ -847,6 +917,72 @@ def verify_payment(
     return PaymentVerifyResponse(
         success=True,
         message="भुक्तानी सफलतापूर्वक प्रमाणीकरण भयो। दरखास्त दर्ता सम्पन्न भएको छ!",
+        transaction_uuid=pay.transaction_uuid,
+        receipt_no=receipt_no,
+        application_no=app.application_no,
+        paid_amount=float(pay.amount),
+        payment_status="PAID",
+        paid_at=pay.verified_at.strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+
+@router.post("/admin/payments/{transaction_uuid}/confirm", response_model=PaymentVerifyResponse)
+def admin_confirm_payment(
+    transaction_uuid: str,
+    request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
+    """
+    Dedicated Municipal Admin/Cashier endpoint to confirm bank voucher or offline payment,
+    generate official electronic revenue receipt, and activate admit card eligibility.
+    """
+    pay = db.query(RecruitmentPayment).filter(
+        RecruitmentPayment.transaction_uuid == transaction_uuid.strip()
+    ).first()
+
+    if not pay:
+        raise HTTPException(status_code=404, detail="कारोबार रेकर्ड फेला परेन।")
+
+    app = db.query(JobApplication).filter(JobApplication.id == pay.application_id).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="सम्बन्धित दरखास्त फेला परेन।")
+
+    pay.status = "SUCCESS"
+    if not pay.gateway_ref_id:
+        pay.gateway_ref_id = f"OFFICE-CONFIRM-{uuid.uuid4().hex[:6].upper()}"
+    pay.verified_at = datetime.datetime.utcnow()
+
+    if not app.receipt_no:
+        count_receipts = db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)).count() + 1
+        receipt_no = f"RCPT-2081-{count_receipts:04d}"
+        app.receipt_no = receipt_no
+    else:
+        receipt_no = app.receipt_no
+
+    app.payment_status = "PAID"
+    app.application_status = "SUBMITTED"
+    app.status = "विचाराधीन (Pending)"
+    app.paid_amount = pay.amount
+    app.paid_at = pay.verified_at
+    app.payment_method = pay.gateway
+    app.payment_voucher_no = pay.gateway_ref_id
+
+    db.commit()
+
+    record_audit(
+        db=db,
+        entity_type="PAYMENT",
+        entity_id=pay.transaction_uuid,
+        action="ADMIN_PAYMENT_CONFIRM",
+        performed_by=f"ADMIN:{current_user.email}",
+        details=f"Payment manually verified and confirmed by admin {current_user.email} for {app.application_no}, receipt: {receipt_no}",
+        ip_address=request.client.host if request.client else None
+    )
+
+    return PaymentVerifyResponse(
+        success=True,
+        message=f"दरखास्त नं {app.application_no} को भुक्तानी सफलतापूर्वक प्रमाणित गरी रसिद नं {receipt_no} जारी गरियो।",
         transaction_uuid=pay.transaction_uuid,
         receipt_no=receipt_no,
         application_no=app.application_no,
@@ -1013,6 +1149,7 @@ def list_admin_payments(
     gateway: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     query = db.query(RecruitmentPayment).order_by(desc(RecruitmentPayment.created_at))
@@ -1033,7 +1170,10 @@ def list_admin_payments(
 
 
 @router.get("/admin/reconciliation")
-def get_payment_reconciliation(db: Session = Depends(get_db)):
+def get_payment_reconciliation(
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
     """
     Returns financial breakdown by gateway, successful collections, pending, refunds.
     """
@@ -1072,6 +1212,7 @@ def get_payment_reconciliation(db: Session = Depends(get_db)):
 def process_refund(
     data: RefundCreateRequest,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     app = db.query(JobApplication).filter(JobApplication.application_no == data.application_no.strip()).first()
@@ -1126,6 +1267,7 @@ def process_refund(
 def list_audit_logs(
     entity_type: Optional[str] = None,
     limit: int = 50,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     q = db.query(RecruitmentAuditLog).order_by(desc(RecruitmentAuditLog.created_at))
@@ -1143,6 +1285,7 @@ def list_applications(
     status: Optional[str] = None,
     payment_status: Optional[str] = None,
     search: Optional[str] = None,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     query = db.query(JobApplication)
@@ -1177,6 +1320,7 @@ def verify_job_application(
     application_id: str,
     data: ApplicationVerificationUpdate,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     cond = [JobApplication.application_no == application_id]
@@ -1225,6 +1369,7 @@ def update_job_application(
     application_id: str,
     data: JobApplicationUpdate,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     cond = [JobApplication.application_no == application_id]
@@ -1257,7 +1402,12 @@ def update_job_application(
 
 
 @router.delete("/applications/{application_id}")
-def delete_job_application(application_id: str, request: Request, db: Session = Depends(get_db)):
+def delete_job_application(
+    application_id: str,
+    request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
     cond = [JobApplication.application_no == application_id]
     if is_valid_uuid(application_id) or len(application_id) > 10:
         cond.append(JobApplication.id == application_id)
@@ -1288,6 +1438,7 @@ def onboard_candidate_to_hrms(
     application_id: str,
     data: OnboardToHrmsRequest,
     request: Request,
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
     """
