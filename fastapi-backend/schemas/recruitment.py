@@ -94,6 +94,8 @@ class JobApplicationSchema(BaseModel):
     experience_doc_url: Optional[str] = Field(None, alias="experienceDocUrl")
     payment_voucher_doc_url: Optional[str] = Field(None, alias="paymentVoucherDocUrl")
     documents_json: Optional[str] = Field(None, alias="documentsJson")
+    onboarded_employee_id: Optional[str] = Field(None, alias="onboardedEmployeeId")
+    onboarded_at: Optional[datetime] = Field(None, alias="onboardedAt")
     created_at: Optional[datetime] = Field(None, alias="createdAt")
 
     class Config:
@@ -305,3 +307,19 @@ class RefundCreateRequest(BaseModel):
 
     class Config:
         populate_by_name = True
+
+
+class OnboardToHrmsRequest(BaseModel):
+    employee_id: Optional[str] = Field(None, alias="employeeId")
+    department: str = Field("प्रशासन शाखा", alias="department")
+    designation: Optional[str] = Field(None, alias="designation")
+    level_grade: Optional[str] = Field(None, alias="levelGrade")
+    service_group: Optional[str] = Field("प्रशासन / प्राविधिक", alias="serviceGroup")
+    employment_type: Optional[str] = Field("करार सेवा (Contract)", alias="employmentType")
+    appointment_date_bs: Optional[str] = Field(None, alias="appointmentDateBs")
+    join_date_bs: Optional[str] = Field(None, alias="joinDateBs")
+    remarks: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+

@@ -477,12 +477,13 @@
   }
 }
 
-/* Admin View: Dynamic auto-fit */
+/* Admin View: Balanced 2-Line Grid (3 columns x 2 rows) */
 .rec-tabs-grid.rec-tabs-admin {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.9rem;
+  margin-bottom: 1.75rem;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -491,10 +492,33 @@
   }
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1024px) {
   .rec-tabs-grid.rec-tabs-admin {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important; /* Exactly 3 cards per row -> 2 lines for 6 tabs */
   }
+}
+
+.rec-tabs-admin .rec-tab-card {
+  padding: 0.85rem 1.15rem;
+  min-height: 72px;
+  border-radius: 14px;
+}
+
+.rec-tabs-admin .rec-tab-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.rec-tabs-admin .rec-tab-title {
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.rec-tabs-admin .rec-tab-subtitle {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 0.15rem;
 }
 
 /* Tab Card Base */
@@ -2254,3 +2278,122 @@
     border: 2px solid #000;
   }
 }
+
+/* ============================================================== */
+/* HRMS ONBOARDING MODAL & LINKED BADGES                          */
+/* ============================================================== */
+.rec-onboard-success-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-family: monospace;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rec-onboard-success-badge:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.rec-icon-btn-onboard {
+  background: #f0fdf4 !important;
+  color: #16a34a !important;
+  border-color: #86efac !important;
+}
+
+.rec-icon-btn-onboard:hover {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  border-color: #16a34a !important;
+}
+
+.rec-icon-btn-onboarded {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #6ee7b7 !important;
+}
+
+.rec-icon-btn-onboarded:hover {
+  background: #047857 !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+}
+
+.rec-onboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1rem;
+}
+
+.rec-onboard-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #e2e8f0;
+  animation: recFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rec-onboard-header {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+  color: #ffffff;
+  border-top-left-radius: 19px;
+  border-top-right-radius: 19px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.rec-onboard-summary-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.rec-onboard-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #059669;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.rec-onboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .rec-onboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

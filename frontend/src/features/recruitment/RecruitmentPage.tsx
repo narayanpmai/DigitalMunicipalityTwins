@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   FileText,
   UserCheck,
+  UserPlus,
   Clock,
   Sparkles,
   ExternalLink,
@@ -168,6 +169,10 @@ interface Application {
   payment_voucher_doc_url?: string;
   documentsJson?: string;
   documents_json?: string;
+  onboardedEmployeeId?: string;
+  onboarded_employee_id?: string;
+  onboardedAt?: string;
+  onboarded_at?: string;
   createdAt?: string;
 }
 
@@ -341,6 +346,66 @@ export const RecruitmentPage: React.FC = () => {
     examDateTime: '२०८१/०६/१५ बिहान ११:०० बजे',
   });
 
+  // HRMS Onboarding State
+  const [showOnboardModal, setShowOnboardModal] = useState(false);
+  const [onboardingApp, setOnboardingApp] = useState<Application | null>(null);
+  const [isOnboardingLoading, setIsOnboardingLoading] = useState(false);
+  const [onboardSuccessData, setOnboardSuccessData] = useState<any>(null);
+
+  const [onboardForm, setOnboardForm] = useState({
+    employeeId: '',
+    department: 'प्रशासन तथा सामान्य प्रशासन शाखा',
+    designation: '',
+    levelGrade: 'सहायक पाँचौं (Assistant 5th)',
+    serviceGroup: 'नेपाल प्रशासन सेवा',
+    employmentType: 'करार सेवा (Contract)',
+    appointmentDateBs: '२०८१-०८-०१',
+    joinDateBs: '२०८१-०८-०१',
+    remarks: '',
+  });
+
+  const openOnboardModal = (app: Application) => {
+    setOnboardingApp(app);
+    setOnboardSuccessData(null);
+    const postTitle = app.postTitle || app.post_title || 'सहायक पाँचौं';
+    const isTechnical = postTitle.includes('इन्जिनियर') || postTitle.includes('अमिन') || postTitle.includes('प्राविधिक');
+    
+    // Auto-suggest next employee ID format: EMP-2081-XXXX
+    const randomDigits = String(Math.floor(1000 + Math.random() * 9000));
+    const suggestedEmpId = app.onboardedEmployeeId || app.onboarded_employee_id || `EMP-2081-${randomDigits}`;
+
+    setOnboardForm({
+      employeeId: suggestedEmpId,
+      department: isTechnical ? 'योजना तथा भौतिक पूर्वाधार विकास शाखा' : 'प्रशासन तथा सामान्य प्रशासन शाखा',
+      designation: postTitle,
+      levelGrade: postTitle.includes('अधिकृत') ? 'अधिकृत छैटौं (Officer 6th)' : 'सहायक पाँचौं (Assistant 5th)',
+      serviceGroup: isTechnical ? 'नेपाल इन्जिनियरिङ्ग सेवा' : 'नेपाल प्रशासन सेवा',
+      employmentType: 'करार सेवा (Contract)',
+      appointmentDateBs: '२०८१-०८-०१',
+      joinDateBs: '२०८१-०८-०१',
+      remarks: `विज्ञापन नं: ${app.vacancyNo || app.vacancy_no || ''} (आवेदन नं: ${app.applicationNo || app.application_no || ''}) बाट छनोट भई पदस्थापन`,
+    });
+    setShowOnboardModal(true);
+  };
+
+  const handleConfirmOnboard = async () => {
+    if (!onboardingApp) return;
+    setIsOnboardingLoading(true);
+    try {
+      const res: any = await api.post(`/recruitment/applications/${onboardingApp.id}/onboard-to-hrms`, onboardForm);
+      const data = res.data || res;
+      if (data.success) {
+        setOnboardSuccessData(data);
+        queryClient.invalidateQueries({ queryKey: ['recruitment-applications'] });
+        queryClient.invalidateQueries({ queryKey: ['recruitment-summary'] });
+      }
+    } catch (err: any) {
+      alert('HRMS मा दर्ता गर्न सकिएन: ' + (err?.response?.data?.detail || err.message));
+    } finally {
+      setIsOnboardingLoading(false);
+    }
+  };
+
   // Calculate live application fee
   const calculatedFee = React.useMemo(() => {
     const base = Number(applyForm.baseFee || 500);
@@ -349,13 +414,13 @@ export const RecruitmentPage: React.FC = () => {
     return base + (extraCount * incFee);
   }, [applyForm.baseFee, applyForm.inclusiveGroupFee, applyForm.selectedInclusive]);
 
-  // QR Code Generator Effect for NIMB Account 18301400000109
+  // QR Code Generator Effect for NIMB Account 18301400000109 with Instant Fallback
   useEffect(() => {
     const rawQr = activePaymentTxn?.qr_data || activePaymentTxn?.qrData || activePaymentTxn?.parameters?.qrData;
-    const appNo = savedDraftApp?.applicationNo || savedDraftApp?.application_no || 'APP-2081-XXXX';
+    const appNo = savedDraftApp?.applicationNo || savedDraftApp?.application_no || activePaymentTxn?.application_no || 'APP-2081-XXXX';
     const amountVal = Number(activePaymentTxn?.amount || calculatedFee || 1000).toFixed(2);
 
-    // Standard EMVCo & Fonepay/NepalPay QR payload for NIMB
+    // Standard EMVCo & Fonepay/NepalPay QR payload for NIMB Account 18301400000109
     const finalQrString = rawQr || `fonepay://pay?merchant=NIMB&bank=Nepal+Investment+Mega+Bank&account=18301400000109&name=GA+1.1+PANCHPOKHARI+THANGPAL+GA.PA.+AANTARIK+RAJASHO+KHATA&prn=${appNo}&amount=${amountVal}&remarks=Recruitment+Fee+${appNo}`;
 
     QRCode.toDataURL(finalQrString, {
@@ -369,7 +434,7 @@ export const RecruitmentPage: React.FC = () => {
       .catch(err => {
         console.error('QR generation error:', err);
       });
-  }, [activePaymentTxn, savedDraftApp, calculatedFee]);
+  }, [activePaymentTxn, savedDraftApp, calculatedFee, wizardStep]);
 
 // Payment Countdown Timer
 useEffect(() => {
@@ -918,63 +983,123 @@ return (
 
     {/* 2. NAVIGATION TABS */}
     {!isPublicView ? (
-      /* ADMIN COMPACT MODERN NAVIGATION BAR */
-      <div className="rec-admin-nav-bar">
+      /* ADMIN BALANCED 2-LINE TABS (3 CARDS x 2 ROWS) */
+      <div className="rec-tabs-grid rec-tabs-admin">
+        {/* Row 1 - Card 1: Vacancies */}
         <button
           onClick={() => setActiveTab('vacancies')}
-          className={`rec-admin-nav-btn ${activeTab === 'vacancies' ? 'active active-vacancies' : ''}`}
+          className={`rec-tab-card ${activeTab === 'vacancies' ? 'active-vacancies' : ''}`}
         >
-          <Briefcase size={17} />
-          <span>खुला विज्ञापनहरू</span>
-          <span className="rec-admin-nav-badge">{vacancies.length}</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box">
+              <Briefcase size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">खुला विज्ञापन तथा पदहरू</div>
+              <div className="rec-tab-subtitle">
+                {vacancies.filter(v => v.status.includes('खुला')).length} पदहरूमा दरखास्त खुला
+              </div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge">{vacancies.length} पद</span>
         </button>
 
+        {/* Row 1 - Card 2: Applications Review Desk */}
         <button
           onClick={() => setActiveTab('applications')}
-          className={`rec-admin-nav-btn ${activeTab === 'applications' ? 'active active-applications' : ''}`}
+          className={`rec-tab-card ${activeTab === 'applications' ? 'active-applications' : ''}`}
         >
-          <UserCheck size={17} />
-          <span>दरखास्त रुजु डेस्क</span>
-          <span className="rec-admin-nav-badge">{applications.length}</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+              <UserCheck size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">दरखास्त रुजु तथा पदपूर्ति</div>
+              <div className="rec-tab-subtitle">छानबिन, स्वीकृत तथा HRMS दर्ता</div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>
+            {applications.length} उम्मेदवार
+          </span>
         </button>
 
+        {/* Row 1 - Card 3: Finance & Reconciliation */}
         <button
           onClick={() => setActiveTab('finance')}
-          className={`rec-admin-nav-btn ${activeTab === 'finance' ? 'active active-finance' : ''}`}
+          className={`rec-tab-card ${activeTab === 'finance' ? 'active-finance' : ''}`}
         >
-          <Landmark size={17} />
-          <span>राजस्व तथा वित्तीय मेलमिलाप</span>
-          <span className="rec-admin-nav-badge rec-badge-green">राजस्व</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
+              <Landmark size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">वित्तीय तथा राजस्व मेलमिलाप</div>
+              <div className="rec-tab-subtitle">Fonepay QR, eSewa, ConnectIPS</div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge" style={{ background: '#d1fae5', color: '#065f46' }}>
+            राजस्व
+          </span>
         </button>
 
+        {/* Row 2 - Card 4: Security & Audit Logs */}
         <button
           onClick={() => setActiveTab('audit')}
-          className={`rec-admin-nav-btn ${activeTab === 'audit' ? 'active active-audit' : ''}`}
+          className={`rec-tab-card ${activeTab === 'audit' ? 'active-audit' : ''}`}
         >
-          <History size={17} />
-          <span>सुरक्षा तथा अडिट लग</span>
-          <span className="rec-admin-nav-badge rec-badge-purple">Audit</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+              <History size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">सुरक्षा तथा अडिट लग</div>
+              <div className="rec-tab-subtitle">कारोबार तथा कर्मचारी कार्य लग</div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge" style={{ background: '#ede9fe', color: '#6d28d9' }}>
+            Audit
+          </span>
         </button>
 
+        {/* Row 2 - Card 5: Apply Form Preview */}
         <button
           onClick={() => {
             setWizardStep(1);
             setActiveTab('apply');
           }}
-          className={`rec-admin-nav-btn ${activeTab === 'apply' ? 'active active-apply' : ''}`}
+          className={`rec-tab-card ${activeTab === 'apply' ? 'active-apply' : ''}`}
         >
-          <FileText size={17} />
-          <span>फारम पूर्वावलोकन</span>
-          <span className="rec-admin-nav-badge rec-badge-amber">Apply</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box" style={{ background: '#fffbeb', color: '#d97706' }}>
+              <FileText size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">अनलाइन दरखास्त फारम</div>
+              <div className="rec-tab-subtitle">५-चरणको डिजिटल आवेदन पूर्वावलोकन</div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge" style={{ background: '#fef3c7', color: '#b45309' }}>
+            Apply Now
+          </span>
         </button>
 
+        {/* Row 2 - Card 6: Admit Card Status */}
         <button
           onClick={() => setActiveTab('admitCard')}
-          className={`rec-admin-nav-btn ${activeTab === 'admitCard' ? 'active active-admit' : ''}`}
+          className={`rec-tab-card ${activeTab === 'admitCard' ? 'active-admit' : ''}`}
         >
-          <QrCode size={17} />
-          <span>प्रवेशपत्र तथा स्थिति</span>
-          <span className="rec-admin-nav-badge rec-badge-sky">Admit</span>
+          <div className="rec-tab-card-left">
+            <div className="rec-tab-icon-box" style={{ background: '#f0f9ff', color: '#0284c7' }}>
+              <QrCode size={22} />
+            </div>
+            <div className="rec-tab-text-group">
+              <div className="rec-tab-title">प्रवेशपत्र तथा आवेदन स्थिति</div>
+              <div className="rec-tab-subtitle">रसिद, प्रवेशपत्र र बाँकी शुल्क भुक्तानी</div>
+            </div>
+          </div>
+          <span className="rec-tab-pill-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>
+            Admit Card
+          </span>
         </button>
       </div>
     ) : (
@@ -1340,6 +1465,17 @@ return (
                             <span className="rec-pulse-dot" />
                             {app.status}
                           </span>
+                          {(app.onboardedEmployeeId || app.onboarded_employee_id) && (
+                            <div style={{ marginTop: '0.3rem' }}>
+                              <a
+                                href="/app/employees"
+                                className="rec-onboard-success-badge"
+                                title="कर्मचारी व्यवस्थापन (HRMS) मा विवरण हेर्नुहोस्"
+                              >
+                                <CheckCircle size={11} /> {app.onboardedEmployeeId || app.onboarded_employee_id}
+                              </a>
+                            </div>
+                          )}
                         </td>
                         <td>
                           {app.admitCardRollNo || app.admit_card_roll_no ? (
@@ -1385,6 +1521,25 @@ return (
                             >
                               <ShieldCheck size={15} />
                             </button>
+
+                            {/* HRMS Onboarding Action */}
+                            {app.onboardedEmployeeId || app.onboarded_employee_id ? (
+                              <a
+                                href="/app/employees"
+                                className="rec-icon-btn rec-icon-btn-onboarded"
+                                title={`HRMS मा दर्ता सम्पन्न (संकेत नं: ${app.onboardedEmployeeId || app.onboarded_employee_id}) - HRMS प्रोफाइल हेर्नुहोस्`}
+                              >
+                                <UserCheck size={15} />
+                              </a>
+                            ) : (
+                              <button
+                                onClick={() => openOnboardModal(app)}
+                                className="rec-icon-btn rec-icon-btn-onboard"
+                                title="कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS) मा OnBoarding दर्ता गर्नुहोस्"
+                              >
+                                <UserPlus size={15} />
+                              </button>
+                            )}
 
                             {isPaid && (
                               <button
@@ -3256,7 +3411,31 @@ return (
                     </div>
                   </div>
 
-                  <div className="rec-modal-footer">
+                  <div className="rec-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      {selectedApp.onboardedEmployeeId || selectedApp.onboarded_employee_id ? (
+                        <a
+                          href="/app/employees"
+                          className="rec-onboard-success-badge"
+                          style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+                        >
+                          <CheckCircle size={14} /> HRMS दर्ता सम्पन्न: {selectedApp.onboardedEmployeeId || selectedApp.onboarded_employee_id}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const app = selectedApp;
+                            setShowDetailModal(false);
+                            openOnboardModal(app);
+                          }}
+                          className="rec-btn rec-btn-success"
+                          style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem' }}
+                        >
+                          <UserPlus size={15} /> HRMS मा OnBoarding दर्ता गर्नुहोस्
+                        </button>
+                      )}
+                    </div>
                     <button
                       onClick={() => {
                         setShowDetailModal(false);
@@ -3266,6 +3445,298 @@ return (
                     >
                       बन्द गर्नुहोस्
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 7. HRMS ONBOARDING MODAL                                       */}
+            {/* ============================================================== */}
+            {showOnboardModal && onboardingApp && (
+              <div className="rec-onboard-modal-overlay">
+                <div className="rec-onboard-modal">
+                  <div className="rec-onboard-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.2)', padding: '0.45rem', borderRadius: '10px' }}>
+                        <UserCheck size={22} color="#ffffff" />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>
+                          कर्मचारी पदस्थापन तथा HRMS दर्ता
+                        </h3>
+                        <span style={{ fontSize: '0.78rem', color: '#a7f3d0' }}>
+                          छनोट उम्मेदवारलाई 'कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS)' मा सिधै दर्ता गर्नुहोस्
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowOnboardModal(false);
+                        setOnboardingApp(null);
+                        setOnboardSuccessData(null);
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div style={{ padding: '1.5rem' }}>
+                    {onboardSuccessData ? (
+                      <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+                          <CheckCircle2 size={38} />
+                        </div>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#15803d', margin: '0 0 0.5rem 0' }}>
+                          HRMS मा सफलतापूर्वक दर्ता सम्पन्न भयो!
+                        </h3>
+                        <p style={{ fontSize: '0.88rem', color: '#475569', marginBottom: '1.25rem' }}>
+                          {onboardSuccessData.message}
+                        </p>
+                        <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '1rem', maxWidth: '380px', margin: '0 auto 1.5rem auto' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>कर्मचारी संकेत नम्बर:</div>
+                          <div style={{ fontFamily: 'monospace', fontSize: '1.4rem', fontWeight: 900, color: '#047857', letterSpacing: '0.5px' }}>
+                            {onboardSuccessData.employeeId}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => {
+                              setShowOnboardModal(false);
+                              navigate('/app/employees');
+                            }}
+                            className="rec-btn rec-btn-primary"
+                            style={{ background: '#047857' }}
+                          >
+                            <Users size={16} /> कर्मचारी व्यवस्थापन (HRMS) मा हेर्नुहोस्
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowOnboardModal(false);
+                              setOnboardingApp(null);
+                              setOnboardSuccessData(null);
+                            }}
+                            className="rec-btn rec-btn-outline"
+                          >
+                            बन्द गर्नुहोस्
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        {/* Candidate Summary Card */}
+                        <div className="rec-onboard-summary-box">
+                          {onboardingApp.photoUrl || onboardingApp.photo_url ? (
+                            <img
+                              src={onboardingApp.photoUrl || onboardingApp.photo_url}
+                              alt={onboardingApp.fullNameNp || onboardingApp.full_name_np}
+                              className="rec-onboard-avatar"
+                            />
+                          ) : (
+                            <div className="rec-onboard-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#047857', fontWeight: 800, fontSize: '1.2rem' }}>
+                              {(onboardingApp.fullNameNp || onboardingApp.full_name_np || 'उ')[0]}
+                            </div>
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0f172a' }}>
+                                {onboardingApp.fullNameNp || onboardingApp.full_name_np}
+                                {onboardingApp.fullNameEn && <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, marginLeft: '0.4rem' }}>({onboardingApp.fullNameEn})</span>}
+                              </div>
+                              <span className="rec-app-no-badge">
+                                {onboardingApp.applicationNo || onboardingApp.application_no}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: '#0284c7', fontWeight: 700, marginTop: '0.2rem' }}>
+                              पद: {onboardingApp.postTitle || onboardingApp.post_title} (विज्ञापन नं: {onboardingApp.vacancyNo || onboardingApp.vacancy_no})
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                              <span>नागरिकता नं: <strong>{onboardingApp.citizenshipNo || onboardingApp.citizenship_no}</strong> ({onboardingApp.citizenshipDistrict || onboardingApp.citizenship_district || 'सिन्धुपाल्चोक'})</span>
+                              <span>सम्पर्क: <strong>{onboardingApp.contactPhone || onboardingApp.contact_phone}</strong></span>
+                              <span>ठेगाना: <strong>{onboardingApp.permanentAddress || onboardingApp.permanent_address}</strong></span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Form Fields */}
+                        <div className="rec-onboard-grid">
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              कर्मचारी संकेत नम्बर (Employee ID) <span style={{ color: '#ef4444' }}>*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={onboardForm.employeeId}
+                              onChange={e => setOnboardForm(p => ({ ...p, employeeId: e.target.value }))}
+                              className="rec-form-input"
+                              style={{ fontFamily: 'monospace', fontWeight: 800, color: '#047857' }}
+                              placeholder="EMP-2081-XXXX"
+                              required
+                            />
+                            <span style={{ fontSize: '0.68rem', color: '#64748b' }}>प्रणालीले स्वतः सिफारिस गरेको संकेत नं</span>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              पद / पदनाम (Designation) <span style={{ color: '#ef4444' }}>*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={onboardForm.designation}
+                              onChange={e => setOnboardForm(p => ({ ...p, designation: e.target.value }))}
+                              className="rec-form-input"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              शाखा / विभाग (Department) <span style={{ color: '#ef4444' }}>*</span>
+                            </label>
+                            <select
+                              value={onboardForm.department}
+                              onChange={e => setOnboardForm(p => ({ ...p, department: e.target.value }))}
+                              className="rec-form-input"
+                            >
+                              <option value="प्रशासन तथा सामान्य प्रशासन शाखा">प्रशासन तथा सामान्य प्रशासन शाखा</option>
+                              <option value="योजना तथा भौतिक पूर्वाधार विकास शाखा">योजना तथा भौतिक पूर्वाधार विकास शाखा</option>
+                              <option value="स्वास्थ्य शाखा">स्वास्थ्य शाखा</option>
+                              <option value="शिक्षा, युवा तथा खेलकुद शाखा">शिक्षा, युवा तथा खेलकुद शाखा</option>
+                              <option value="आर्थिक प्रशासन (लेखा) शाखा">आर्थिक प्रशासन (लेखा) शाखा</option>
+                              <option value="राजस्व तथा आन्तरिक नियन्त्रण शाखा">राजस्व तथा आन्तरिक नियन्त्रण शाखा</option>
+                              <option value="कृषि तथा पशुपन्छी विकास शाखा">कृषि तथा पशुपन्छी विकास शाखा</option>
+                              <option value="महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा">महिला, बालबालिका तथा ज्येष्ठ नागरिक शाखा</option>
+                              <option value="सूचना प्रविधि (IT) तथा डिजिटल शाखा">सूचना प्रविधि (IT) तथा डिजिटल शाखा</option>
+                              <option value="विपद् व्यवस्थापन तथा वातावरण शाखा">विपद् व्यवस्थापन तथा वातावरण शाखा</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              तह / श्रेणी (Level / Grade)
+                            </label>
+                            <select
+                              value={onboardForm.levelGrade}
+                              onChange={e => setOnboardForm(p => ({ ...p, levelGrade: e.target.value }))}
+                              className="rec-form-input"
+                            >
+                              <option value="सहायक पाँचौं (Assistant 5th)">सहायक पाँचौं (Assistant 5th)</option>
+                              <option value="सहायक चौथो (Assistant 4th)">सहायक चौथो (Assistant 4th)</option>
+                              <option value="अधिकृत छैटौं (Officer 6th)">अधिकृत छैटौं (Officer 6th)</option>
+                              <option value="अधिकृत सातौं (Officer 7th)">अधिकृत सातौं (Officer 7th)</option>
+                              <option value="अधिकृत आठौं (Officer 8th)">अधिकृत आठौं (Officer 8th)</option>
+                              <option value="श्रेणीविहीन (Non-Classified)">श्रेणीविहीन (Non-Classified)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              सेवा प्रकार (Employment Type)
+                            </label>
+                            <select
+                              value={onboardForm.employmentType}
+                              onChange={e => setOnboardForm(p => ({ ...p, employmentType: e.target.value }))}
+                              className="rec-form-input"
+                            >
+                              <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
+                              <option value="स्थायी (Permanent)">स्थायी (Permanent)</option>
+                              <option value="अस्थायी / ज्यालादारी">अस्थायी / ज्यालादारी</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              सेवा समूह (Service Group)
+                            </label>
+                            <input
+                              type="text"
+                              value={onboardForm.serviceGroup}
+                              onChange={e => setOnboardForm(p => ({ ...p, serviceGroup: e.target.value }))}
+                              className="rec-form-input"
+                              placeholder="उदा: नेपाल प्रशासन / इन्जिनियरिङ्ग"
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              नियुक्ति मिति (वि.सं.)
+                            </label>
+                            <input
+                              type="text"
+                              value={onboardForm.appointmentDateBs}
+                              onChange={e => setOnboardForm(p => ({ ...p, appointmentDateBs: e.target.value }))}
+                              className="rec-form-input"
+                              placeholder="२०८१-०८-०१"
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                              हाजिर मिति (वि.सं.)
+                            </label>
+                            <input
+                              type="text"
+                              value={onboardForm.joinDateBs}
+                              onChange={e => setOnboardForm(p => ({ ...p, joinDateBs: e.target.value }))}
+                              className="rec-form-input"
+                              placeholder="२०८१-०८-०१"
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                            कैफियत / पदस्थापन टिप्पणी (Remarks)
+                          </label>
+                          <textarea
+                            value={onboardForm.remarks}
+                            onChange={e => setOnboardForm(p => ({ ...p, remarks: e.target.value }))}
+                            className="rec-form-input"
+                            rows={2}
+                            placeholder="पदस्थापन सम्बन्धित विशेष निर्णय वा विवरण..."
+                          />
+                        </div>
+
+                        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: '#065f46' }}>
+                          <CheckCircle size={18} color="#059669" />
+                          <span>
+                            यो दर्ता सम्पन्न भएपछि उम्मेदवारको नागरिकता, फोटो, शैक्षिक प्रमाणपत्र तथा अनुभव कागजातहरू स्वतः <strong>'कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS)'</strong> मा सुरक्षित हुनेछन्।
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowOnboardModal(false);
+                              setOnboardingApp(null);
+                            }}
+                            className="rec-btn rec-btn-outline"
+                            disabled={isOnboardingLoading}
+                          >
+                            रद्द गर्नुहोस्
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleConfirmOnboard}
+                            disabled={isOnboardingLoading || !onboardForm.employeeId || !onboardForm.department}
+                            className="rec-btn rec-btn-primary"
+                            style={{ background: '#047857' }}
+                          >
+                            {isOnboardingLoading ? (
+                              <>
+                                <Loader2 size={16} className="animate-spin" /> दर्ता हुँदैछ...
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus size={16} /> कर्मचारी दर्ता सुरक्षित गर्नुहोस् (Confirm & Save)
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

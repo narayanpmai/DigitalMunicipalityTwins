@@ -19,6 +19,7 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.pat
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 from core.database import get_db
+from models.employee import Employee
 from models.recruitment import (
     VacancyAnnouncement,
     JobApplication,
@@ -40,7 +41,8 @@ from schemas.recruitment import (
     PaymentVerifyResponse,
     OfficialReceiptSchema,
     AuditLogSchema,
-    RefundCreateRequest
+    RefundCreateRequest,
+    OnboardToHrmsRequest
 )
 
 router = APIRouter(
@@ -1279,3 +1281,147 @@ def delete_job_application(application_id: str, request: Request, db: Session = 
     )
 
     return {"message": "दरखास्त आवेदन सफलतापूर्वक हटाइयो।", "success": True}
+
+
+@router.post("/applications/{application_id}/onboard-to-hrms")
+def onboard_candidate_to_hrms(
+    application_id: str,
+    data: OnboardToHrmsRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Onboard selected candidate from recruitment application into HRMS (employees table).
+    Transfers full candidate profile, documents, and assigns employee ID.
+    """
+    cond = [JobApplication.application_no == application_id]
+    if is_valid_uuid(application_id) or len(application_id) > 10:
+        cond.append(JobApplication.id == application_id)
+
+    app = db.query(JobApplication).filter(or_(*cond)).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="दरखास्त आवेदन फेला परेन।")
+
+    # Determine or generate unique employeeId
+    emp_id = (data.employee_id or "").strip()
+    if not emp_id:
+        total_emp_count = db.query(Employee).count()
+        emp_id = f"EMP-2081-{total_emp_count + 1:04d}"
+
+    # Check for existing employee with same ID
+    existing = db.query(Employee).filter(Employee.employee_id == emp_id).first()
+    if existing:
+        if app.onboarded_employee_id == emp_id:
+            return {
+                "success": True,
+                "message": f"उम्मेदवार पहिले नै कर्मचारी संकेत नं {emp_id} मा दर्ता भइसकेको छ।",
+                "employeeId": emp_id,
+                "alreadyOnboarded": True
+            }
+        emp_id = f"{emp_id}-{int(time.time()) % 1000}"
+
+    # Prepare document list for HRMS
+    docs_list = []
+    if app.citizenship_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": "नागरिकता प्रमाणपत्र (Citizenship)",
+            "type": "citizenship",
+            "fileName": os.path.basename(app.citizenship_doc_url) if "/" in app.citizenship_doc_url else "citizenship.pdf",
+            "fileUrl": app.citizenship_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": f"दरखास्त आवेदन {app.application_no} बाट स्वतः आयात गरिएको"
+        })
+    if app.qualification_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": f"शैक्षिक योग्यता ({app.qualification_title or 'प्रमाणपत्र'})",
+            "type": "academic",
+            "fileName": os.path.basename(app.qualification_doc_url) if "/" in app.qualification_doc_url else "academic.pdf",
+            "fileUrl": app.qualification_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": f"बोर्ड/विश्वविद्यालय: {app.board_university or '-'}, श्रेणी: {app.division_gpa or '-'}"
+        })
+    if app.council_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": "काउन्सिल दर्ता प्रमाणपत्र (Council Registration)",
+            "type": "tor",
+            "fileName": os.path.basename(app.council_doc_url) if "/" in app.council_doc_url else "council.pdf",
+            "fileUrl": app.council_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": f"काउन्सिल दर्ता नं: {app.council_reg_no or '-'}"
+        })
+    if app.experience_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": "अनुभव तथा तालिम प्रमाणपत्र",
+            "type": "training",
+            "fileName": os.path.basename(app.experience_doc_url) if "/" in app.experience_doc_url else "experience.pdf",
+            "fileUrl": app.experience_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": f"अनुभव: {app.experience_years or 0} वर्ष"
+        })
+
+    # Create new Employee in HRMS
+    new_emp = Employee(
+        id=str(uuid.uuid4()),
+        employee_id=emp_id,
+        full_name=app.full_name_np,
+        department=data.department or "प्रशासन शाखा",
+        designation=data.designation or app.post_title,
+        employment_type=data.employment_type or "करार सेवा (Contract)",
+        level_grade=data.level_grade or "सहायक पाँचौं (Assistant 5th)",
+        service_group=data.service_group or "प्रशासन / प्राविधिक",
+        contact_phone=app.contact_phone,
+        email=app.email,
+        citizenship_no=app.citizenship_no,
+        dob_bs=app.dob_bs,
+        gender=app.gender or "पुरुष",
+        permanent_address=app.permanent_address,
+        temporary_address=app.temporary_address,
+        appointment_date_bs=data.appointment_date_bs or "२०८१-०८-०१",
+        join_date_bs=data.join_date_bs or "२०८१-०८-०१",
+        service_status="कार्यरत (Active)",
+        status="Active",
+        photo_url=app.photo_url,
+        documents=docs_list,
+        tenant_id=getattr(app, 'tenant_id', None)
+    )
+    db.add(new_emp)
+
+    # Link application to employee
+    app.onboarded_employee_id = emp_id
+    app.onboarded_at = datetime.datetime.utcnow()
+    app.status = "छनोट / पदस्थापन (Onboarded)"
+
+    db.commit()
+    db.refresh(new_emp)
+    db.refresh(app)
+
+    record_audit(
+        db=db,
+        entity_type="HRMS_ONBOARDING",
+        entity_id=app.application_no,
+        action="ONBOARD_TO_HRMS",
+        performed_by="ADMIN",
+        details=f"उम्मेदवार {app.full_name_np} (आवेदन: {app.application_no}) लाई नयाँ कर्मचारी संकेत नं {emp_id} मा पदस्थापन/दर्ता गरियो।",
+        ip_address=request.client.host if request.client else None
+    )
+
+    return {
+        "success": True,
+        "message": f"उम्मेदवार {app.full_name_np} लाई कर्मचारी अभिलेख तथा व्यक्तिगत विवरण (HRMS) मा सफलतापूर्वक दर्ता गरियो।",
+        "employeeId": emp_id,
+        "employee": {
+            "id": new_emp.id,
+            "employeeId": new_emp.employee_id,
+            "fullName": new_emp.full_name,
+            "department": new_emp.department,
+            "designation": new_emp.designation,
+            "employmentType": new_emp.employment_type,
+            "levelGrade": new_emp.level_grade,
+            "joinDateBs": new_emp.join_date_bs
+        }
+    }
+

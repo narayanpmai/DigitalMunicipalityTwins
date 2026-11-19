@@ -75,6 +75,11 @@ class JobApplication(Base):
     experience_doc_url = Column(String, nullable=True)
     payment_voucher_doc_url = Column(String, nullable=True)
     documents_json = Column(Text, nullable=True)
+    
+    # HRMS Onboarding Link
+    onboarded_employee_id = Column(String, nullable=True, index=True)
+    onboarded_at = Column(DateTime, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
