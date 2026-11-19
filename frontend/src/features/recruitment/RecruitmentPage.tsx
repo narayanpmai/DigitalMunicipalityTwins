@@ -814,45 +814,33 @@ return (
                 setWizardStep(1);
                 setActiveTab('apply');
               }}
-              className="rec-btn rec-btn-accent"
+              className="rec-btn rec-btn-hero-primary"
             >
               <Briefcase size={16} />
-              अनलाइन दरखास्त फारम (Apply Now)
+              <span>अनलाइन दरखास्त फारम (Apply Now)</span>
             </button>
             <a
               href="/HOW_TO_APPLY.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="rec-btn"
-              style={{ textDecoration: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 800, border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 2px 8px rgba(245,158,11,0.35)' }}
+              className="rec-btn rec-btn-hero-guide"
             >
               <Sparkles size={16} />
-              दरखास्त कसरी दिने ? (सचित्र गाइड)
+              <span>दरखास्त कसरी दिने ? (सचित्र गाइड)</span>
             </a>
             <button
               onClick={() => setActiveTab('admitCard')}
-              className="rec-btn rec-btn-success"
+              className="rec-btn rec-btn-hero-status"
             >
               <QrCode size={16} />
-              प्रवेशपत्र तथा आवेदन स्थिति खोज्नुहोस्
+              <span>प्रवेशपत्र तथा आवेदन स्थिति</span>
             </button>
-            <a
-              href="/USER_MANUAL_RECRUITMENT.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rec-btn rec-btn-outline"
-              style={{ textDecoration: 'none', background: 'rgba(255, 255, 255, 0.15)', borderColor: 'rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-            >
-              <FileText size={16} />
-              प्रयोगकर्ता म्यानुअल (Full Manual)
-            </a>
             <button
               onClick={() => navigate('/app/recruitment')}
-              className="rec-btn rec-btn-outline"
-              style={{ background: 'rgba(255, 255, 255, 0.15)', borderColor: 'rgba(255,255,255,0.4)' }}
+              className="rec-btn rec-btn-hero-login"
             >
               <LogIn size={16} />
-              कार्यालय कर्मचारी लगइन
+              <span>कार्यालय कर्मचारी लगइन</span>
             </button>
           </div>
         ) : (
@@ -872,31 +860,19 @@ return (
               href="/HOW_TO_APPLY.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="rec-btn"
-              style={{ textDecoration: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 800, border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              className="rec-btn rec-btn-hero-guide"
             >
               <Sparkles size={16} />
-              सचित्र गाइड (Visual)
-            </a>
-            <a
-              href="/USER_MANUAL_RECRUITMENT.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rec-btn rec-btn-outline"
-              style={{ textDecoration: 'none', background: 'rgba(255, 255, 255, 0.15)', borderColor: 'rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-            >
-              <FileText size={16} />
-              प्रयोगकर्ता म्यानुअल (User Manual)
+              <span>सचित्र गाइड (Visual)</span>
             </a>
             <a
               href="/recruitment"
               target="_blank"
               rel="noopener noreferrer"
-              className="rec-btn rec-btn-outline"
-              style={{ textDecoration: 'none', background: 'rgba(255, 255, 255, 0.15)', borderColor: 'rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              className="rec-btn rec-btn-hero-login"
             >
               <Globe size={16} />
-              सार्वजनिक पोर्टल (Public View)
+              <span>सार्वजनिक पोर्टल (Public View)</span>
             </a>
           </div>
         )}
@@ -964,7 +940,7 @@ return (
     </div>
 
     {/* 2. NAVIGATION TABS */}
-    <div className="rec-tabs-grid">
+    <div className={`rec-tabs-grid ${isPublicView ? 'rec-tabs-public' : 'rec-tabs-admin'}`}>
       {/* Tab 1: Vacancies */}
       <button
         onClick={() => setActiveTab('vacancies')}
@@ -977,7 +953,7 @@ return (
           <div className="rec-tab-text-group">
             <div className="rec-tab-title">खुला विज्ञापन तथा पदहरू</div>
             <div className="rec-tab-subtitle">
-              {vacancies.filter(v => v.status.includes('खुला')).length} सक्रिय विज्ञापनहरू
+              {vacancies.filter(v => v.status.includes('खुला')).length} पदहरूमा दरखास्त खुला
             </div>
           </div>
         </div>
@@ -995,7 +971,7 @@ return (
               <UserCheck size={22} />
             </div>
             <div className="rec-tab-text-group">
-              <div className="rec-tab-title">दरखास्त रुजु तथा पदपूर्ति डेस्क</div>
+              <div className="rec-tab-title">दरखास्त रुजु तथा पदपूर्ति</div>
               <div className="rec-tab-subtitle">
                 छानबिन, स्वीकृत/अस्वीकृत तथा रोल नं
               </div>
@@ -1018,7 +994,7 @@ return (
             <div className="rec-tab-text-group">
               <div className="rec-tab-title">वित्तीय तथा राजस्व मेलमिलाप</div>
               <div className="rec-tab-subtitle">
-                Fonepay QR, eSewa, ConnectIPS, Refund
+                Fonepay QR, eSewa, ConnectIPS
               </div>
             </div>
           </div>
@@ -1062,11 +1038,11 @@ return (
             <FileText size={22} />
           </div>
           <div className="rec-tab-text-group">
-            <div className="rec-tab-title">अनलाइन दरखास्त तथा भुक्तानी</div>
-            <div className="rec-tab-subtitle">५-चरणको आवेदन र QR पेमेन्ट</div>
+            <div className="rec-tab-title">अनलाइन दरखास्त फारम</div>
+            <div className="rec-tab-subtitle">५-चरणको डिजिटल आवेदन र QR पेमेन्ट</div>
           </div>
         </div>
-        <span className="rec-tab-pill-badge">Apply</span>
+        <span className="rec-tab-pill-badge">Apply Now</span>
       </button>
 
       {/* Tab 6: Digital Admit Card */}
@@ -1079,7 +1055,7 @@ return (
             <QrCode size={22} />
           </div>
           <div className="rec-tab-text-group">
-            <div className="rec-tab-title">डिजिटल प्रवेशपत्र तथा आवेदन स्थिति</div>
+            <div className="rec-tab-title">प्रवेशपत्र तथा आवेदन स्थिति</div>
             <div className="rec-tab-subtitle">रसिद, प्रवेशपत्र र बाँकी शुल्क भुक्तानी</div>
           </div>
         </div>

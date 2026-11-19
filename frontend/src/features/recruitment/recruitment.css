@@ -138,7 +138,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  margin-top: 1.35rem;
 }
 
 /* Action Buttons */
@@ -146,19 +147,73 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 0.65rem 1.15rem;
-  border-radius: var(--rec-radius);
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.7rem 1.3rem;
+  border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  line-height: 1.25;
 }
 
 .rec-btn:hover {
   transform: translateY(-2px);
+}
+
+/* Hero Custom Themed Buttons */
+.rec-btn-hero-primary {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
+  border: 1px solid #fbbf24;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.38), 0 2px 4px rgba(0, 0, 0, 0.08);
+  font-weight: 900;
+}
+.rec-btn-hero-primary:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
+  color: #000000;
+}
+
+.rec-btn-hero-guide {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+  font-weight: 800;
+}
+.rec-btn-hero-guide:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 8px 22px rgba(2, 132, 199, 0.5);
+}
+
+.rec-btn-hero-status {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+  font-weight: 800;
+}
+.rec-btn-hero-status:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: #34d399;
+  box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+}
+
+.rec-btn-hero-login {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  font-weight: 700;
+}
+.rec-btn-hero-login:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
 }
 
 .rec-btn-primary {
@@ -281,118 +336,154 @@
 .rec-tabs-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
+  gap: 1.15rem;
+  margin-bottom: 2rem;
   width: 100%;
 }
 
+/* Public View: Exactly 3 balanced, roomy columns on tablets/desktops */
+.rec-tabs-grid.rec-tabs-public {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+@media (min-width: 840px) {
+  .rec-tabs-grid.rec-tabs-public {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Admin View: Dynamic auto-fit */
+.rec-tabs-grid.rec-tabs-admin {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
 @media (min-width: 640px) {
-  .rec-tabs-grid {
+  .rec-tabs-grid.rec-tabs-admin {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 1180px) {
-  .rec-tabs-grid {
+@media (min-width: 1100px) {
+  .rec-tabs-grid.rec-tabs-admin {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
+/* Tab Card Base */
 .rec-tab-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.85rem;
-  padding: 1rem 1.25rem;
-  border-radius: 14px;
-  border: 2px solid var(--rec-border);
+  gap: 1rem;
+  padding: 1.15rem 1.35rem;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   text-align: left;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
+}
+
+.rec-tab-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: all 0.25s ease;
 }
 
 .rec-tab-card:hover {
   transform: translateY(-3px);
   border-color: #cbd5e1;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(0, 0, 0, 0.03);
 }
 
 .rec-tab-card-left {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.95rem;
   flex: 1;
   min-width: 0;
 }
 
 .rec-tab-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: #f1f5f9;
   color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.25s ease;
+  transition: all 0.28s ease;
 }
 
 .rec-tab-text-group {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 0;
 }
 
 .rec-tab-title {
-  font-size: 0.94rem;
+  font-size: 1.02rem;
   font-weight: 800;
-  color: #334155;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #1e293b;
+  line-height: 1.35;
+  white-space: normal;
   transition: color 0.2s ease;
 }
 
 .rec-tab-subtitle {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: #64748b;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  white-space: normal;
+  margin-top: 0.1rem;
 }
 
 .rec-tab-pill-badge {
-  font-size: 0.73rem;
-  font-weight: 700;
-  padding: 0.3rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.35rem 0.8rem;
   border-radius: 9999px;
   background: #f1f5f9;
   color: #475569;
   white-space: nowrap;
   flex-shrink: 0;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
 }
 
-/* Active State Styles per tab */
-/* 1. Vacancies */
+/* Active State Styles */
+/* 1. Vacancies (Sky / Primary) */
 .rec-tab-card.active-vacancies {
   border-color: #0284c7;
   background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
-  box-shadow: 0 10px 25px -4px rgba(2, 132, 199, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.2), 0 0 0 2px rgba(2, 132, 199, 0.15);
   transform: translateY(-2px);
+}
+.rec-tab-card.active-vacancies::before {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
 }
 .rec-tab-card.active-vacancies .rec-tab-icon-box {
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
 }
 .rec-tab-card.active-vacancies .rec-tab-title {
   color: #0369a1;
@@ -400,20 +491,23 @@
 .rec-tab-card.active-vacancies .rec-tab-pill-badge {
   background: #0284c7;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
 }
 
-/* 2. Review Applications Desk */
+/* 2. Review Applications Desk (Indigo) */
 .rec-tab-card.active-applications {
   border-color: #4f46e5;
   background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
-  box-shadow: 0 10px 25px -4px rgba(79, 70, 229, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 28px -4px rgba(79, 70, 229, 0.2), 0 0 0 2px rgba(79, 70, 229, 0.15);
   transform: translateY(-2px);
+}
+.rec-tab-card.active-applications::before {
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
 }
 .rec-tab-card.active-applications .rec-tab-icon-box {
   background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
 }
 .rec-tab-card.active-applications .rec-tab-title {
   color: #3730a3;
@@ -421,41 +515,47 @@
 .rec-tab-card.active-applications .rec-tab-pill-badge {
   background: #4f46e5;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
 }
 
-/* 3. Apply Online Form */
+/* 3. Apply Online Form (Amber / Orange) */
 .rec-tab-card.active-apply {
   border-color: #d97706;
   background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
-  box-shadow: 0 10px 25px -4px rgba(217, 119, 6, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 28px -4px rgba(217, 119, 6, 0.2), 0 0 0 2px rgba(217, 119, 6, 0.15);
   transform: translateY(-2px);
 }
+.rec-tab-card.active-apply::before {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
 .rec-tab-card.active-apply .rec-tab-icon-box {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
 }
 .rec-tab-card.active-apply .rec-tab-title {
-  color: #92400e;
+  color: #b45309;
 }
 .rec-tab-card.active-apply .rec-tab-pill-badge {
   background: #d97706;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
 }
 
-/* 4. Admit Card */
+/* 4. Admit Card & Status (Emerald Green) */
 .rec-tab-card.active-admit {
   border-color: #059669;
   background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);
-  box-shadow: 0 10px 25px -4px rgba(5, 150, 105, 0.22), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 28px -4px rgba(5, 150, 105, 0.2), 0 0 0 2px rgba(5, 150, 105, 0.15);
   transform: translateY(-2px);
+}
+.rec-tab-card.active-admit::before {
+  background: linear-gradient(90deg, #10b981, #34d399);
 }
 .rec-tab-card.active-admit .rec-tab-icon-box {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
 }
 .rec-tab-card.active-admit .rec-tab-title {
   color: #065f46;
@@ -463,7 +563,55 @@
 .rec-tab-card.active-admit .rec-tab-pill-badge {
   background: #059669;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+}
+
+/* 5. Finance & Reconciliation (Emerald Teal) */
+.rec-tab-card.active-finance {
+  border-color: #0d9488;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
+  box-shadow: 0 12px 28px -4px rgba(13, 148, 136, 0.2), 0 0 0 2px rgba(13, 148, 136, 0.15);
+  transform: translateY(-2px);
+}
+.rec-tab-card.active-finance::before {
+  background: linear-gradient(90deg, #0d9488, #2dd4bf);
+}
+.rec-tab-card.active-finance .rec-tab-icon-box {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+}
+.rec-tab-card.active-finance .rec-tab-title {
+  color: #0f766e;
+}
+.rec-tab-card.active-finance .rec-tab-pill-badge {
+  background: #0d9488;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+}
+
+/* 6. Security & Audit (Purple) */
+.rec-tab-card.active-audit {
+  border-color: #7c3aed;
+  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+  box-shadow: 0 12px 28px -4px rgba(124, 58, 237, 0.2), 0 0 0 2px rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
+}
+.rec-tab-card.active-audit::before {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+.rec-tab-card.active-audit .rec-tab-icon-box {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+.rec-tab-card.active-audit .rec-tab-title {
+  color: #5b21b6;
+}
+.rec-tab-card.active-audit .rec-tab-pill-badge {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
 }
 
 /* 3. FILTER TOOLBAR */
