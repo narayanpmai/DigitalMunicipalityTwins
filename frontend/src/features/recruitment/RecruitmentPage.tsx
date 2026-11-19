@@ -819,6 +819,16 @@ return (
               <Briefcase size={16} />
               अनलाइन दरखास्त फारम (Apply Now)
             </button>
+            <a
+              href="/HOW_TO_APPLY.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rec-btn"
+              style={{ textDecoration: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 800, border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 2px 8px rgba(245,158,11,0.35)' }}
+            >
+              <Sparkles size={16} />
+              दरखास्त कसरी दिने ? (सचित्र गाइड)
+            </a>
             <button
               onClick={() => setActiveTab('admitCard')}
               className="rec-btn rec-btn-success"
@@ -834,7 +844,7 @@ return (
               style={{ textDecoration: 'none', background: 'rgba(255, 255, 255, 0.15)', borderColor: 'rgba(255,255,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
               <FileText size={16} />
-              प्रयोगकर्ता म्यानुअल (User Manual)
+              प्रयोगकर्ता म्यानुअल (Full Manual)
             </a>
             <button
               onClick={() => navigate('/app/recruitment')}
@@ -858,6 +868,16 @@ return (
               <Plus size={16} />
               नयाँ विज्ञापन आह्वान
             </button>
+            <a
+              href="/HOW_TO_APPLY.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rec-btn"
+              style={{ textDecoration: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 800, border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <Sparkles size={16} />
+              सचित्र गाइड (Visual)
+            </a>
             <a
               href="/USER_MANUAL_RECRUITMENT.md"
               target="_blank"
