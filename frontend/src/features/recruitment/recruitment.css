@@ -332,7 +332,129 @@
 .rec-stat-amber { color: #fde68a; }
 .rec-stat-yellow { color: #fef08a; }
 
-/* 2. TABS NAVIGATION GRID */
+/* ------------------------------------------------------------- */
+/* 2A. ADMIN DASHBOARD SLEEK SEGMENTED TAB BAR */
+/* ------------------------------------------------------------- */
+.rec-admin-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.45rem;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.rec-admin-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+
+.rec-admin-nav-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.rec-admin-nav-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #334155;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+}
+
+/* Active states for admin tabs */
+.rec-admin-nav-btn.active {
+  font-weight: 800;
+}
+
+.rec-admin-nav-btn.active.active-vacancies {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+.rec-admin-nav-btn.active.active-vacancies .rec-admin-nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.rec-admin-nav-btn.active.active-applications {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+}
+.rec-admin-nav-btn.active.active-applications .rec-admin-nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.rec-admin-nav-btn.active.active-finance {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+}
+.rec-admin-nav-btn.active.active-finance .rec-admin-nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.rec-admin-nav-btn.active.active-audit {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+.rec-admin-nav-btn.active.active-audit .rec-admin-nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.rec-admin-nav-btn.active.active-apply {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+.rec-admin-nav-btn.active.active-apply .rec-admin-nav-badge {
+  background: rgba(0, 0, 0, 0.15);
+  color: #0f172a;
+}
+
+.rec-admin-nav-btn.active.active-admit {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+}
+.rec-admin-nav-btn.active.active-admit .rec-admin-nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Badge color variants */
+.rec-badge-green { background: #dcfce7; color: #15803d; }
+.rec-badge-purple { background: #f3e8ff; color: #7e22ce; }
+.rec-badge-amber { background: #fef3c7; color: #b45309; }
+.rec-badge-sky { background: #e0f2fe; color: #0369a1; }
+
+/* 2B. CITIZEN TABS NAVIGATION GRID */
 .rec-tabs-grid {
   display: grid;
   grid-template-columns: 1fr;

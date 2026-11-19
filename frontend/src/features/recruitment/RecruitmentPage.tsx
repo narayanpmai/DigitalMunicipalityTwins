@@ -809,39 +809,16 @@ return (
         {/* Quick Action Buttons */}
         {isPublicView ? (
           <div className="rec-hero-actions">
-            <button
-              onClick={() => {
-                setWizardStep(1);
-                setActiveTab('apply');
-              }}
-              className="rec-btn rec-btn-hero-primary"
-            >
-              <Briefcase size={16} />
-              <span>अनलाइन दरखास्त फारम (Apply Now)</span>
-            </button>
             <a
               href="/HOW_TO_APPLY.html"
               target="_blank"
               rel="noopener noreferrer"
               className="rec-btn rec-btn-hero-guide"
+              style={{ fontSize: '0.98rem', padding: '0.8rem 1.6rem', boxShadow: '0 4px 18px rgba(2, 132, 199, 0.45)' }}
             >
-              <Sparkles size={16} />
+              <Sparkles size={18} />
               <span>दरखास्त कसरी दिने ? (सचित्र गाइड)</span>
             </a>
-            <button
-              onClick={() => setActiveTab('admitCard')}
-              className="rec-btn rec-btn-hero-status"
-            >
-              <QrCode size={16} />
-              <span>प्रवेशपत्र तथा आवेदन स्थिति</span>
-            </button>
-            <button
-              onClick={() => navigate('/app/recruitment')}
-              className="rec-btn rec-btn-hero-login"
-            >
-              <LogIn size={16} />
-              <span>कार्यालय कर्मचारी लगइन</span>
-            </button>
           </div>
         ) : (
           <div className="rec-hero-actions">
@@ -940,128 +917,126 @@ return (
     </div>
 
     {/* 2. NAVIGATION TABS */}
-    <div className={`rec-tabs-grid ${isPublicView ? 'rec-tabs-public' : 'rec-tabs-admin'}`}>
-      {/* Tab 1: Vacancies */}
-      <button
-        onClick={() => setActiveTab('vacancies')}
-        className={`rec-tab-card ${activeTab === 'vacancies' ? 'active-vacancies' : ''}`}
-      >
-        <div className="rec-tab-card-left">
-          <div className="rec-tab-icon-box">
-            <Briefcase size={22} />
-          </div>
-          <div className="rec-tab-text-group">
-            <div className="rec-tab-title">खुला विज्ञापन तथा पदहरू</div>
-            <div className="rec-tab-subtitle">
-              {vacancies.filter(v => v.status.includes('खुला')).length} पदहरूमा दरखास्त खुला
-            </div>
-          </div>
-        </div>
-        <span className="rec-tab-pill-badge">{vacancies.length} पद</span>
-      </button>
+    {!isPublicView ? (
+      /* ADMIN COMPACT MODERN NAVIGATION BAR */
+      <div className="rec-admin-nav-bar">
+        <button
+          onClick={() => setActiveTab('vacancies')}
+          className={`rec-admin-nav-btn ${activeTab === 'vacancies' ? 'active active-vacancies' : ''}`}
+        >
+          <Briefcase size={17} />
+          <span>खुला विज्ञापनहरू</span>
+          <span className="rec-admin-nav-badge">{vacancies.length}</span>
+        </button>
 
-      {/* Tab 2: Applications Review Desk (ADMIN ONLY) */}
-      {!isPublicView && (
         <button
           onClick={() => setActiveTab('applications')}
-          className={`rec-tab-card ${activeTab === 'applications' ? 'active-applications' : ''}`}
+          className={`rec-admin-nav-btn ${activeTab === 'applications' ? 'active active-applications' : ''}`}
+        >
+          <UserCheck size={17} />
+          <span>दरखास्त रुजु डेस्क</span>
+          <span className="rec-admin-nav-badge">{applications.length}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('finance')}
+          className={`rec-admin-nav-btn ${activeTab === 'finance' ? 'active active-finance' : ''}`}
+        >
+          <Landmark size={17} />
+          <span>राजस्व तथा वित्तीय मेलमिलाप</span>
+          <span className="rec-admin-nav-badge rec-badge-green">राजस्व</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`rec-admin-nav-btn ${activeTab === 'audit' ? 'active active-audit' : ''}`}
+        >
+          <History size={17} />
+          <span>सुरक्षा तथा अडिट लग</span>
+          <span className="rec-admin-nav-badge rec-badge-purple">Audit</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setWizardStep(1);
+            setActiveTab('apply');
+          }}
+          className={`rec-admin-nav-btn ${activeTab === 'apply' ? 'active active-apply' : ''}`}
+        >
+          <FileText size={17} />
+          <span>फारम पूर्वावलोकन</span>
+          <span className="rec-admin-nav-badge rec-badge-amber">Apply</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('admitCard')}
+          className={`rec-admin-nav-btn ${activeTab === 'admitCard' ? 'active active-admit' : ''}`}
+        >
+          <QrCode size={17} />
+          <span>प्रवेशपत्र तथा स्थिति</span>
+          <span className="rec-admin-nav-badge rec-badge-sky">Admit</span>
+        </button>
+      </div>
+    ) : (
+      /* CITIZEN PUBLIC 3-CARD HERO TABS */
+      <div className="rec-tabs-grid rec-tabs-public">
+        {/* Tab 1: Vacancies */}
+        <button
+          onClick={() => setActiveTab('vacancies')}
+          className={`rec-tab-card ${activeTab === 'vacancies' ? 'active-vacancies' : ''}`}
         >
           <div className="rec-tab-card-left">
             <div className="rec-tab-icon-box">
-              <UserCheck size={22} />
+              <Briefcase size={22} />
             </div>
             <div className="rec-tab-text-group">
-              <div className="rec-tab-title">दरखास्त रुजु तथा पदपूर्ति</div>
+              <div className="rec-tab-title">खुला विज्ञापन तथा पदहरू</div>
               <div className="rec-tab-subtitle">
-                छानबिन, स्वीकृत/अस्वीकृत तथा रोल नं
+                {vacancies.filter(v => v.status.includes('खुला')).length} पदहरूमा दरखास्त आह्वान
               </div>
             </div>
           </div>
-          <span className="rec-tab-pill-badge">{applications.length} उम्मेदवार</span>
+          <span className="rec-tab-pill-badge">{vacancies.length} पद</span>
         </button>
-      )}
 
-      {/* Tab 3: Finance & Reconciliation (ADMIN ONLY) */}
-      {!isPublicView && (
+        {/* Tab 2: 5-Step Online Apply Form */}
         <button
-          onClick={() => setActiveTab('finance')}
-          className={`rec-tab-card ${activeTab === 'finance' ? 'active-finance' : ''}`}
+          onClick={() => {
+            setWizardStep(1);
+            setActiveTab('apply');
+          }}
+          className={`rec-tab-card ${activeTab === 'apply' ? 'active-apply' : ''}`}
         >
           <div className="rec-tab-card-left">
-            <div className="rec-tab-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
-              <Landmark size={22} />
+            <div className="rec-tab-icon-box">
+              <FileText size={22} />
             </div>
             <div className="rec-tab-text-group">
-              <div className="rec-tab-title">वित्तीय तथा राजस्व मेलमिलाप</div>
-              <div className="rec-tab-subtitle">
-                Fonepay QR, eSewa, ConnectIPS
-              </div>
+              <div className="rec-tab-title">अनलाइन दरखास्त फारम</div>
+              <div className="rec-tab-subtitle">५-चरणको डिजिटल आवेदन र भुक्तानी</div>
             </div>
           </div>
-          <span className="rec-tab-pill-badge" style={{ background: '#d1fae5', color: '#065f46' }}>
-            राजस्व
-          </span>
+          <span className="rec-tab-pill-badge">Apply Now</span>
         </button>
-      )}
 
-      {/* Tab 4: Security Audit Logs (ADMIN ONLY) */}
-      {!isPublicView && (
+        {/* Tab 3: Digital Admit Card */}
         <button
-          onClick={() => setActiveTab('audit')}
-          className={`rec-tab-card ${activeTab === 'audit' ? 'active-audit' : ''}`}
+          onClick={() => setActiveTab('admitCard')}
+          className={`rec-tab-card ${activeTab === 'admitCard' ? 'active-admit' : ''}`}
         >
           <div className="rec-tab-card-left">
-            <div className="rec-tab-icon-box" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
-              <History size={22} />
+            <div className="rec-tab-icon-box">
+              <QrCode size={22} />
             </div>
             <div className="rec-tab-text-group">
-              <div className="rec-tab-title">सुरक्षा तथा अडिट लग</div>
-              <div className="rec-tab-subtitle">कारोबार तथा कर्मचारी कार्य लग</div>
+              <div className="rec-tab-title">प्रवेशपत्र तथा आवेदन स्थिति</div>
+              <div className="rec-tab-subtitle">रसिद, प्रवेशपत्र र बाँकी शुल्क भुक्तानी</div>
             </div>
           </div>
-          <span className="rec-tab-pill-badge" style={{ background: '#ede9fe', color: '#6d28d9' }}>
-            Audit
-          </span>
+          <span className="rec-tab-pill-badge">Admit Card</span>
         </button>
-      )}
-
-      {/* Tab 5: 5-Step Online Apply Form */}
-      <button
-        onClick={() => {
-          setWizardStep(1);
-          setActiveTab('apply');
-        }}
-        className={`rec-tab-card ${activeTab === 'apply' ? 'active-apply' : ''}`}
-      >
-        <div className="rec-tab-card-left">
-          <div className="rec-tab-icon-box">
-            <FileText size={22} />
-          </div>
-          <div className="rec-tab-text-group">
-            <div className="rec-tab-title">अनलाइन दरखास्त फारम</div>
-            <div className="rec-tab-subtitle">५-चरणको डिजिटल आवेदन र QR पेमेन्ट</div>
-          </div>
-        </div>
-        <span className="rec-tab-pill-badge">Apply Now</span>
-      </button>
-
-      {/* Tab 6: Digital Admit Card */}
-      <button
-        onClick={() => setActiveTab('admitCard')}
-        className={`rec-tab-card ${activeTab === 'admitCard' ? 'active-admit' : ''}`}
-      >
-        <div className="rec-tab-card-left">
-          <div className="rec-tab-icon-box">
-            <QrCode size={22} />
-          </div>
-          <div className="rec-tab-text-group">
-            <div className="rec-tab-title">प्रवेशपत्र तथा आवेदन स्थिति</div>
-            <div className="rec-tab-subtitle">रसिद, प्रवेशपत्र र बाँकी शुल्क भुक्तानी</div>
-          </div>
-        </div>
-        <span className="rec-tab-pill-badge">Admit Card</span>
-      </button>
-    </div>
+      </div>
+    )}
 
     {/* ============================================================== */}
     {/* 3. TAB 1: VACANCIES (खुला विज्ञापन तथा पदहरू) */}
