@@ -14,6 +14,7 @@ class VacancyAnnouncement(Base):
     openings_count = Column(Integer, default=1)
     employment_type = Column(String, default='करार सेवा (Contract)')
     application_fee = Column(Numeric(10, 2), default=500.0)
+    inclusive_group_fee = Column(Numeric(10, 2), default=200.0)
     min_qualification = Column(String)
     publish_date_bs = Column(String)
     deadline_date_bs = Column(String)
@@ -47,13 +48,25 @@ class JobApplication(Base):
     division_gpa = Column(String, nullable=True)
     council_reg_no = Column(String, nullable=True)
     experience_years = Column(Integer, default=0)
-    payment_method = Column(String, default='eSewa / Khalti / ConnectIPS')
+    inclusive_categories = Column(String, nullable=True) # e.g. "महिला, आदिवासी/जनजाति"
+    
+    # Payment lifecycle
+    payment_method = Column(String, default='Fonepay QR / ConnectIPS / eSewa')
     payment_voucher_no = Column(String, nullable=True)
+    payment_status = Column(String, default='UNPAID') # UNPAID, PENDING_VERIFICATION, PAID, FAILED, REFUNDED
+    receipt_no = Column(String, nullable=True, unique=True)
+    paid_amount = Column(Numeric(10, 2), default=0.0)
+    paid_at = Column(DateTime, nullable=True)
+    
+    # Application & Review lifecycle
     status = Column(String, default='विचाराधीन (Pending)')
+    application_status = Column(String, default='SUBMITTED') # DRAFT, SUBMITTED, APPROVED, REJECTED
     rejection_reason = Column(String, nullable=True)
     admit_card_roll_no = Column(String, nullable=True)
     exam_center = Column(String, nullable=True)
     exam_date_time = Column(String, nullable=True)
+    
+    # Document URLs
     photo_url = Column(String, nullable=True)
     signature_url = Column(String, nullable=True)
     citizenship_doc_url = Column(String, nullable=True)
@@ -64,3 +77,48 @@ class JobApplication(Base):
     documents_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+class RecruitmentPayment(Base):
+    __tablename__ = 'recruitment_payments'
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    application_id = Column(String, index=True)
+    application_no = Column(String, index=True)
+    transaction_uuid = Column(String, unique=True, index=True)
+    gateway = Column(String) # FONEPAY, CONNECTIPS, ESEWA, KHALTI, BANK_VOUCHER
+    gateway_ref_id = Column(String, nullable=True)
+    amount = Column(Numeric(10, 2), nullable=False)
+    status = Column(String, default='INITIATED') # INITIATED, SUCCESS, FAILED, CANCELLED, REFUNDED
+    idempotency_key = Column(String, unique=True, nullable=True)
+    qr_data = Column(Text, nullable=True)
+    gateway_response = Column(Text, nullable=True)
+    ip_address = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    verified_at = Column(DateTime, nullable=True)
+
+
+class RecruitmentAuditLog(Base):
+    __tablename__ = 'recruitment_audit_logs'
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    entity_type = Column(String, nullable=False) # APPLICATION, PAYMENT, VACANCY, ADMIT_CARD, REFUND
+    entity_id = Column(String, nullable=False)
+    action = Column(String, nullable=False) # CREATE, UPDATE, PAY_INITIATE, PAY_SUCCESS, VERIFY, ROLL_ASSIGN, REFUND
+    performed_by = Column(String, nullable=False) # CANDIDATE, SYSTEM, ADMIN
+    ip_address = Column(String, nullable=True)
+    details = Column(Text, nullable=True) # JSON or text notes
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class RecruitmentRefund(Base):
+    __tablename__ = 'recruitment_refunds'
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    payment_id = Column(String, index=True)
+    application_id = Column(String, index=True)
+    refund_amount = Column(Numeric(10, 2), nullable=False)
+    reason = Column(Text, nullable=False)
+    bank_info = Column(Text, nullable=True)
+    status = Column(String, default='REQUESTED') # REQUESTED, PROCESSED, REJECTED
+    processed_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
