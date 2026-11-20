@@ -467,6 +467,12 @@ def update_vacancy(
         if value is not None and hasattr(vac, key):
             setattr(vac, key, value)
 
+    # Sync post_title and vacancy_no to any existing applications linked to this vacancy
+    if "title" in update_dict and update_dict["title"]:
+        db.query(JobApplication).filter(JobApplication.vacancy_id == vac.id).update({JobApplication.post_title: update_dict["title"]})
+    if "vacancy_no" in update_dict and update_dict["vacancy_no"]:
+        db.query(JobApplication).filter(JobApplication.vacancy_id == vac.id).update({JobApplication.vacancy_no: update_dict["vacancy_no"]})
+
     db.commit()
     db.refresh(vac)
 
@@ -475,8 +481,8 @@ def update_vacancy(
         entity_type="VACANCY",
         entity_id=vac.id,
         action="UPDATE",
-        performed_by="ADMIN",
-        details=f"Updated vacancy: {vac.vacancy_no}",
+        performed_by=f"ADMIN:{current_user.email}",
+        details=f"Updated vacancy: {vac.vacancy_no} - {vac.title}, Exam: {vac.exam_date_bs}, Fee: {vac.application_fee}",
         ip_address=request.client.host if request.client else None
     )
 

@@ -338,6 +338,47 @@ export const RecruitmentPage: React.FC = () => {
     description: '',
   });
 
+  // Edit Vacancy Form State
+  const [editVacancyForm, setEditVacancyForm] = useState({
+    id: '',
+    vacancyNo: '',
+    title: '',
+    serviceGroup: 'प्रशासन / प्राविधिक',
+    level: 'सहायक पाँचौं (5th Level)',
+    openingsCount: 1,
+    employmentType: 'करार सेवा (Contract)',
+    applicationFee: 500,
+    inclusiveGroupFee: 200,
+    minQualification: '',
+    publishDateBs: '२०८१-०५-०१',
+    deadlineDateBs: '२०८१-०५-२५',
+    examDateBs: '२०८१-०६-१५ बिहान ११:०० बजे',
+    status: 'खुला (Active)',
+    description: '',
+  });
+
+  const openEditVacancyModal = (vac: any) => {
+    setEditingVacancy(vac);
+    setEditVacancyForm({
+      id: vac.id,
+      vacancyNo: vac.vacancyNo || vac.vacancy_no || '',
+      title: vac.title || '',
+      serviceGroup: vac.serviceGroup || vac.service_group || 'प्रशासन / प्राविधिक',
+      level: vac.level || 'सहायक पाँचौं (5th Level)',
+      openingsCount: Number(vac.openingsCount || vac.openings_count || 1),
+      employmentType: vac.employmentType || vac.employment_type || 'करार सेवा (Contract)',
+      applicationFee: Number(vac.applicationFee || (vac as any).application_fee || 500),
+      inclusiveGroupFee: Number(vac.inclusiveGroupFee || (vac as any).inclusive_group_fee || 200),
+      minQualification: vac.minQualification || vac.min_qualification || '',
+      publishDateBs: vac.publishDateBs || vac.publish_date_bs || '',
+      deadlineDateBs: vac.deadlineDateBs || vac.deadline_date_bs || '',
+      examDateBs: vac.examDateBs || vac.exam_date_bs || '',
+      status: vac.status || 'खुला (Active)',
+      description: vac.description || '',
+    });
+    setShowEditVacancyModal(true);
+  };
+
   // Verify Form
   const [verifyForm, setVerifyForm] = useState({
     status: 'स्वीकृत (Approved)',
@@ -734,6 +775,23 @@ const createVacancyMutation = useMutation({
   },
   onError: (err: any) => {
     alert('विज्ञापन प्रकाशन असफल: ' + (err?.response?.data?.detail || err.message));
+  }
+});
+
+// Vacancy Update Mutation
+const updateVacancyMutation = useMutation({
+  mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    return await api.put(`/recruitment/vacancies/${encodeURIComponent(id)}`, data);
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['recruitment-vacancies'] });
+    queryClient.invalidateQueries({ queryKey: ['recruitment-summary'] });
+    setShowEditVacancyModal(false);
+    setEditingVacancy(null);
+    alert('विज्ञापन विवरण सफलतापूर्वक संशोधन (Update) गरियो!');
+  },
+  onError: (err: any) => {
+    alert('विज्ञापन संशोधन असफल भयो: ' + (err?.response?.data?.detail || err.message));
   }
 });
 
@@ -1183,9 +1241,20 @@ return (
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
-            <Landmark size={15} color="#0284c7" />
-            <span>डिजिटल भुक्तानी: Fonepay QR, ConnectIPS, eSewa, Khalti स्वीकृत</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {!isPublicView && (
+              <button
+                onClick={() => setShowAddVacancyModal(true)}
+                className="rec-btn rec-btn-primary"
+                style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Plus size={15} /> नयाँ विज्ञापन थप्नुहोस्
+              </button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
+              <Landmark size={15} color="#0284c7" />
+              <span>डिजिटल भुक्तानी: Fonepay QR, ConnectIPS, eSewa, Khalti स्वीकृत</span>
+            </div>
           </div>
         </div>
 
@@ -1205,10 +1274,33 @@ return (
                       <span className="rec-vacancy-no">
                         विज्ञापन नं: {vac.vacancyNo || vac.vacancy_no}
                       </span>
-                      <span className={isActive ? 'rec-badge-active' : 'rec-badge-closed'}>
-                        <span className="rec-pulse-dot" />
-                        {vac.status}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {!isPublicView && (
+                          <button
+                            onClick={() => openEditVacancyModal(vac)}
+                            style={{
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              padding: '0.2rem 0.55rem',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              cursor: 'pointer'
+                            }}
+                            title="विज्ञापन संशोधन / सम्पादन गर्नुहोस्"
+                          >
+                            <Pencil size={12} /> सम्पादन
+                          </button>
+                        )}
+                        <span className={isActive ? 'rec-badge-active' : 'rec-badge-closed'}>
+                          <span className="rec-pulse-dot" />
+                          {vac.status}
+                        </span>
+                      </div>
                     </div>
 
                     <div>
@@ -1273,6 +1365,29 @@ return (
                       >
                         <Eye size={14} /> विवरण
                       </button>
+
+                      {!isPublicView && (
+                        <button
+                          onClick={() => openEditVacancyModal(vac)}
+                          className="rec-btn"
+                          style={{
+                            background: '#fef3c7',
+                            color: '#92400e',
+                            border: '1px solid #fde68a',
+                            fontSize: '0.78rem',
+                            padding: '0.4rem 0.75rem',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                          }}
+                          title="विज्ञापन संशोधन / सम्पादन गर्नुहोस्"
+                        >
+                          <Pencil size={13} /> संशोधन (Edit)
+                        </button>
+                      )}
                     </div>
 
                     {isActive ? (
@@ -3188,6 +3303,17 @@ return (
                             onChange={(val) => setVacancyForm({ ...vacancyForm, deadlineDateBs: val })}
                           />
                         </div>
+
+                        <div className="rec-field-group" style={{ gridColumn: 'span 2' }}>
+                          <label className="rec-label">परीक्षा मिति र समय (Exam Date & Time)</label>
+                          <input
+                            type="text"
+                            placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
+                            value={vacancyForm.examDateBs}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, examDateBs: e.target.value })}
+                            className="rec-input-control"
+                          />
+                        </div>
                       </div>
 
                       <div className="rec-field-group">
@@ -3209,6 +3335,265 @@ return (
                       </button>
                       <button type="submit" disabled={createVacancyMutation.isPending} className="rec-btn rec-btn-primary">
                         {createVacancyMutation.isPending ? 'प्रकाशन हुँदैछ...' : 'विज्ञापन प्रकाशन गर्नुहोस्'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 11B. MODAL: EDIT VACANCY ANNOUNCEMENT (विज्ञापन संशोधन) */}
+            {/* ============================================================== */}
+            {showEditVacancyModal && editingVacancy && (
+              <div className="rec-modal-backdrop">
+                <div className="rec-modal-panel" style={{ maxWidth: '720px' }}>
+                  <div className="rec-modal-header" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
+                        <Pencil size={18} color="#38bdf8" /> विज्ञापन विवरण संशोधन / सम्पादन (Edit Vacancy)
+                      </h3>
+                      <span style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem', display: 'block' }}>
+                        विज्ञापन नं: {editVacancyForm.vacancyNo || editingVacancy.vacancyNo} | {editVacancyForm.title}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowEditVacancyModal(false);
+                        setEditingVacancy(null);
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      updateVacancyMutation.mutate({
+                        id: editingVacancy.id,
+                        data: {
+                          vacancyNo: editVacancyForm.vacancyNo,
+                          title: editVacancyForm.title,
+                          serviceGroup: editVacancyForm.serviceGroup,
+                          level: editVacancyForm.level,
+                          openingsCount: editVacancyForm.openingsCount,
+                          employmentType: editVacancyForm.employmentType,
+                          applicationFee: editVacancyForm.applicationFee,
+                          inclusiveGroupFee: editVacancyForm.inclusiveGroupFee,
+                          minQualification: editVacancyForm.minQualification,
+                          publishDateBs: editVacancyForm.publishDateBs,
+                          deadlineDateBs: editVacancyForm.deadlineDateBs,
+                          examDateBs: editVacancyForm.examDateBs,
+                          status: editVacancyForm.status,
+                          description: editVacancyForm.description,
+                        }
+                      });
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
+                  >
+                    <div className="rec-modal-body" style={{ maxHeight: '72vh', overflowY: 'auto' }}>
+                      <div className="rec-form-grid-2">
+                        <div className="rec-field-group">
+                          <label className="rec-label">विज्ञापन नं (Vacancy No) <span className="rec-req">*</span></label>
+                          <input
+                            type="text"
+                            required
+                            value={editVacancyForm.vacancyNo}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, vacancyNo: e.target.value })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">पदको नाम (Post / Title) <span className="rec-req">*</span></label>
+                          <input
+                            type="text"
+                            required
+                            value={editVacancyForm.title}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, title: e.target.value })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">सेवा / समूह (Service Group)</label>
+                          <input
+                            type="text"
+                            value={editVacancyForm.serviceGroup}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, serviceGroup: e.target.value })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">तह / श्रेणी (Level / Grade)</label>
+                          <select
+                            value={editVacancyForm.level}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, level: e.target.value })}
+                            className="rec-input-control"
+                          >
+                            <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
+                            <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
+                            <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
+                            <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
+                            <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
+                            <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
+                          </select>
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">सेवा प्रकार (Employment Type)</label>
+                          <select
+                            value={editVacancyForm.employmentType}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, employmentType: e.target.value })}
+                            className="rec-input-control"
+                          >
+                            <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
+                            <option value="स्थायी सेवा (Permanent)">स्थायी सेवा (Permanent)</option>
+                            <option value="ज्यालादारी (Daily Wage)">ज्यालादारी (Daily Wage)</option>
+                            <option value="अन्य (Other)">अन्य (Other)</option>
+                          </select>
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">माग पद संख्या (Openings) <span className="rec-req">*</span></label>
+                          <input
+                            type="number"
+                            min="1"
+                            required
+                            value={editVacancyForm.openingsCount}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, openingsCount: parseInt(e.target.value) || 1 })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">आधार दरखास्त दस्तुर (रु.) <span className="rec-req">*</span></label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="50"
+                            required
+                            value={editVacancyForm.applicationFee}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">समावेशी थप शुल्क (रु.) <span className="rec-req">*</span></label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="50"
+                            required
+                            value={editVacancyForm.inclusiveGroupFee}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
+                            className="rec-input-control"
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">प्रकाशन मिति (वि.सं.)</label>
+                          <NepaliDatePicker
+                            value={editVacancyForm.publishDateBs}
+                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, publishDateBs: val })}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label">दरखास्त दिने अन्तिम मिति (वि.सं.) <span className="rec-req">*</span></label>
+                          <NepaliDatePicker
+                            value={editVacancyForm.deadlineDateBs}
+                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, deadlineDateBs: val })}
+                          />
+                        </div>
+
+                        {/* Exam Date & Time - Highlighted for easy editing */}
+                        <div className="rec-field-group" style={{ gridColumn: 'span 2', background: '#f0fdf4', padding: '0.85rem', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+                          <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 800 }}>
+                            <Clock size={16} color="#16a34a" /> परीक्षा मिति र समय (Exam Date & Time)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
+                            value={editVacancyForm.examDateBs}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, examDateBs: e.target.value })}
+                            className="rec-input-control"
+                            style={{ background: '#ffffff', borderColor: '#86efac' }}
+                          />
+                          <span style={{ fontSize: '0.72rem', color: '#15803d', marginTop: '0.25rem', display: 'block' }}>
+                            * यो मिति उम्मेदवारको विज्ञापन कार्ड तथा प्रवेशपत्रमा स्वतः प्रदर्शित हुनेछ।
+                          </span>
+                        </div>
+
+                        <div className="rec-field-group" style={{ gridColumn: 'span 2' }}>
+                          <label className="rec-label">विज्ञापन अवस्था (Status) <span className="rec-req">*</span></label>
+                          <select
+                            value={editVacancyForm.status}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, status: e.target.value })}
+                            className="rec-input-control"
+                            style={{ fontWeight: 700, color: editVacancyForm.status.includes('खुला') ? '#15803d' : '#b91c1c' }}
+                          >
+                            <option value="खुला (Active)">सक्रिय / खुला (Active) — दरखास्त खुला रहनेछ</option>
+                            <option value="म्याद सकिएको (Closed)">म्याद सकिएको (Closed) — नयाँ दरखास्त बन्द रहनेछ</option>
+                            <option value="स्थगित (Suspended)">स्थगित (Suspended) — प्रक्रिया हाल स्थगित रहनेछ</option>
+                            <option value="खारेज (Cancelled)">खारेज (Cancelled)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="rec-field-group">
+                        <label className="rec-label">न्यूनतम आवश्यक शैक्षिक योग्यता <span className="rec-req">*</span></label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={editVacancyForm.minQualification}
+                          onChange={(e) => setEditVacancyForm({ ...editVacancyForm, minQualification: e.target.value })}
+                          className="rec-input-control"
+                        />
+                      </div>
+
+                      <div className="rec-field-group">
+                        <label className="rec-label">विस्तृत विवरण / टिप्पणी (Description / Remarks)</label>
+                        <textarea
+                          rows={2}
+                          placeholder="कुनै थप नियम, शर्त वा आवश्यक अनुभव विवरण..."
+                          value={editVacancyForm.description}
+                          onChange={(e) => setEditVacancyForm({ ...editVacancyForm, description: e.target.value })}
+                          className="rec-input-control"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rec-modal-footer">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowEditVacancyModal(false);
+                          setEditingVacancy(null);
+                        }}
+                        className="rec-btn rec-btn-outline"
+                      >
+                        रद्द गर्नुहोस्
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updateVacancyMutation.isPending}
+                        className="rec-btn rec-btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.25rem' }}
+                      >
+                        {updateVacancyMutation.isPending ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" /> अद्यावधिक गरिँदैछ...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={16} /> परिवर्तन सुरक्षित गर्नुहोस् (Save Changes)
+                          </>
+                        )}
                       </button>
                     </div>
                   </form>
