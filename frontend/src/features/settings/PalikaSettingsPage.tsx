@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   Building2,
   Settings,
@@ -23,33 +24,58 @@ import {
   Flame,
   Shield,
   LifeBuoy,
+  FileText,
+  Printer,
+  Eye,
+  Check,
 } from 'lucide-react';
 import { toNepaliDigits } from '../../utils/nepaliCalendar';
+import {
+  CentralDocumentSheet,
+  CentralPrintPreviewModal,
+  printElement,
+} from '../../components/common/CentralLetterhead';
 
 export const PalikaSettingsPage: React.FC = () => {
   const { settings, updateSettings, reloadSettings } = useTenant();
-  const [activeTab, setActiveTab] = useState<'branding' | 'contact' | 'emergency' | 'system'>('branding');
+  const { user, hasRole } = useAuth();
+  const [activeTab, setActiveTab] = useState<'branding' | 'contact' | 'emergency' | 'system' | 'letterhead'>('branding');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [showLetterheadPreviewModal, setShowLetterheadPreviewModal] = useState(false);
+
+  const canEditSettings = !user || hasRole(['super_admin', 'admin', 'mayor', 'cao']);
 
   // Form State initialized from TenantContext settings
   const [form, setForm] = useState({
     palika_name: '',
     palika_name_en: '',
-    slogan: '',
-    logo_url: '',
-    emblem_url: '',
+    local_gov_type: '',
+    office_title: '',
+    location: '',
+    address: '',
+    province_country: '',
     province: '',
     district: '',
     headquarters: '',
     total_wards: '8',
-    address: '',
     phone: '',
     fax: '',
     email: '',
     website: '',
-    active_fiscal_year: '२०८१/०८२',
+    established_year: '',
+    active_fiscal_year: '२०८३/०८४',
+    patra_sankhya: '',
+    chalani_no: '',
+    slogan: '',
+    logo_url: '',
+    emblem_url: '',
+    letterhead_primary_color: '#dc2626',
+    letterhead_alignment: 'center',
+    letterhead_font_family: 'Mukta',
+    letterhead_show_nepal_sambat: 'true',
+    letterhead_show_qr: 'true',
     chief_officer_title: 'प्रमुख प्रशासकीय अधिकृत',
     emergency_ambulance: '',
     emergency_police: '',
@@ -63,19 +89,31 @@ export const PalikaSettingsPage: React.FC = () => {
       setForm({
         palika_name: settings.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका',
         palika_name_en: (settings.palika_name_en as string) || 'Panchpokhari Thangpal Rural Municipality',
-        slogan: settings.slogan || 'आधुनिक, सुशासनयुक्त र समृद्ध पालिका',
-        logo_url: settings.logo_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
-        emblem_url: (settings.emblem_url as string) || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png',
+        local_gov_type: (settings.local_gov_type as string) || 'स्थानीय सरकार',
+        office_title: (settings.office_title as string) || 'गाउँकार्यपालिकाको कार्यालय',
+        location: (settings.location as string) || (settings.headquarters as string) || 'थाङ्पालधाप, सिन्धुपाल्चोक',
+        address: settings.address || 'गाउँ कार्यपालिकाको कार्यालय, थाङ्पालधाप, सिन्धुपाल्चोक',
+        province_country: (settings.province_country as string) || 'वाग्मती प्रदेश, नेपाल',
         province: settings.province || 'बागमती प्रदेश',
         district: settings.district || 'सिन्धुपाल्चोक',
-        headquarters: (settings.headquarters as string) || 'थाङपालधाप, मानेखर्क',
+        headquarters: (settings.headquarters as string) || 'थाङ्पालधाप, मानेखर्क',
         total_wards: String(settings.total_wards || 8),
-        address: settings.address || 'गाउँ कार्यपालिकाको कार्यालय, थाङपालधाप, सिन्धुपाल्चोक',
-        phone: settings.phone || '०११-६९०१२३',
+        phone: settings.phone || '+9779851109808',
         fax: (settings.fax as string) || '०११-६९०१२४',
-        email: settings.email || 'info@panchpokharimun.gov.np',
-        website: settings.website || 'https://panchpokharimun.gov.np',
-        active_fiscal_year: (settings.active_fiscal_year as string) || '२०८१/०८२',
+        email: settings.email || 'ito.panchpokharithangpalmun@gmail.com',
+        website: settings.website || 'http://panchpokharithangpalmun.gov.np/',
+        established_year: (settings.established_year as string) || '२०७३',
+        active_fiscal_year: (settings.active_fiscal_year as string) || '२०८३/०८४',
+        patra_sankhya: (settings.patra_sankhya as string) || (settings.active_fiscal_year as string) || '२०८३/०८४',
+        chalani_no: (settings.chalani_no as string) || '',
+        slogan: settings.slogan || '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”',
+        logo_url: settings.logo_url || '/panchpokhari-logo.png',
+        emblem_url: (settings.emblem_url as string) || '/emblem-of-nepal.png',
+        letterhead_primary_color: (settings.letterhead_primary_color as string) || '#dc2626',
+        letterhead_alignment: (settings.letterhead_alignment as any) || 'center',
+        letterhead_font_family: (settings.letterhead_font_family as string) || 'Mukta',
+        letterhead_show_nepal_sambat: String(settings.letterhead_show_nepal_sambat ?? 'true') !== 'false' ? 'true' : 'false',
+        letterhead_show_qr: String(settings.letterhead_show_qr ?? 'true') !== 'false' ? 'true' : 'false',
         chief_officer_title: (settings.chief_officer_title as string) || 'प्रमुख प्रशासकीय अधिकृत',
         emergency_ambulance: (settings.emergency_ambulance as string) || '१०२ / ९८५११००१०२',
         emergency_police: (settings.emergency_police as string) || '१०० / ९८५११००१००',
@@ -114,6 +152,11 @@ export const PalikaSettingsPage: React.FC = () => {
       const updates: Record<string, string> = {
         palika_name: form.palika_name.trim(),
         palika_name_en: form.palika_name_en.trim(),
+        local_gov_type: form.local_gov_type.trim(),
+        office_title: form.office_title.trim(),
+        location: form.location.trim() || form.headquarters.trim(),
+        province_country: form.province_country.trim(),
+        established_year: form.established_year.trim(),
         slogan: form.slogan.trim(),
         logo_url: form.logo_url.trim(),
         emblem_url: form.emblem_url.trim(),
@@ -127,6 +170,13 @@ export const PalikaSettingsPage: React.FC = () => {
         email: form.email.trim(),
         website: form.website.trim(),
         active_fiscal_year: form.active_fiscal_year.trim(),
+        patra_sankhya: form.patra_sankhya.trim() || form.active_fiscal_year.trim(),
+        chalani_no: form.chalani_no.trim(),
+        letterhead_primary_color: form.letterhead_primary_color.trim(),
+        letterhead_alignment: form.letterhead_alignment,
+        letterhead_font_family: form.letterhead_font_family,
+        letterhead_show_nepal_sambat: form.letterhead_show_nepal_sambat,
+        letterhead_show_qr: form.letterhead_show_qr,
         chief_officer_title: form.chief_officer_title.trim(),
         emergency_ambulance: form.emergency_ambulance.trim(),
         emergency_police: form.emergency_police.trim(),
@@ -317,6 +367,13 @@ export const PalikaSettingsPage: React.FC = () => {
               subtitle: 'सक्रिय आ.व., वडा संख्या र सार्वजनिक पोर्टल',
               icon: <Calendar size={20} />,
               badge: 'Fiscal & Portal',
+            },
+            {
+              id: 'letterhead',
+              title: '५. केन्द्रीकृत लेटरहेड',
+              subtitle: 'आधिकारिक A4 लेटरहेड, लोगो, नारा र डिजाइन',
+              icon: <FileText size={20} />,
+              badge: 'Centralized Letterhead',
             },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
@@ -898,6 +955,385 @@ export const PalikaSettingsPage: React.FC = () => {
           </div>
         )}
 
+        {/* ─── TAB 5: CENTRALIZED LETTERHEAD MANAGEMENT ─── */}
+        {activeTab === 'letterhead' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: '1.5rem', alignItems: 'start' }}>
+            {/* Left Box: Controls & Settings */}
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '1.75rem',
+                boxShadow: '0 4px 15px rgba(15, 23, 42, 0.04)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem',
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: 800,
+                    color: '#1e293b',
+                    margin: '0 0 4px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <FileText size={20} color="#dc2626" />
+                  <span>केन्द्रीकृत आधिकारिक लेटरहेड व्यवस्थापन</span>
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
+                  यहाँबाट गरिएको सेटिङ अनुसार प्रवेश पत्र (Admit Card), दरखास्त फारम, राजस्व रसिद, सूचना तथा सिफारिस पत्रमा स्वचालित रूपमा यही लेटरहेड प्रयोग हुनेछ।
+                </p>
+              </div>
+
+              {!canEditSettings && (
+                <div style={{ padding: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', fontSize: '0.8rem', color: '#b91c1c' }}>
+                  तपाईंसँग लेटरहेड परिमार्जन गर्ने प्रशासनिक अधिकार छैन। केवल अवलोकन मात्र सम्भव छ।
+                </div>
+              )}
+
+              {/* 1. Header Typography & Color Palette */}
+              <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#334155', marginBottom: '0.5rem' }}>
+                  लेटरहेड रङ्ग तथा अलाइनमेन्ट (Header Color & Layout)
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                  {[
+                    { name: 'नेपाल रातो (Crimson)', hex: '#dc2626' },
+                    { name: 'गाढा म्यारून (Maroon)', hex: '#991b1b' },
+                    { name: 'प्रशासनिक निलो (Navy)', hex: '#1e3a8a' },
+                    { name: 'हरियो (Forest)', hex: '#15803d' },
+                    { name: 'कालो (Classic)', hex: '#0f172a' },
+                  ].map((c) => (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      onClick={() => setForm({ ...form, letterhead_primary_color: c.hex })}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '0.35rem 0.65rem',
+                        borderRadius: '8px',
+                        border: form.letterhead_primary_color === c.hex ? '2px solid #0f172a' : '1px solid #cbd5e1',
+                        background: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: c.hex, display: 'inline-block' }} />
+                      <span>{c.name}</span>
+                    </button>
+                  ))}
+                  <input
+                    type="color"
+                    value={form.letterhead_primary_color}
+                    onChange={(e) => setForm({ ...form, letterhead_primary_color: e.target.value })}
+                    style={{ width: '32px', height: '32px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                    title="Choose Custom Color"
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      शीर्षक अलाइनमेन्ट
+                    </label>
+                    <select
+                      className="dt-select"
+                      value={form.letterhead_alignment}
+                      onChange={(e) => setForm({ ...form, letterhead_alignment: e.target.value as any })}
+                      style={{ height: '34px', fontSize: '0.82rem' }}
+                    >
+                      <option value="center">केन्द्रित (Center - सिफारिस)</option>
+                      <option value="left">बायाँ (Left Aligned)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                      फन्ट छनोट (Font Family)
+                    </label>
+                    <select
+                      className="dt-select"
+                      value={form.letterhead_font_family}
+                      onChange={(e) => setForm({ ...form, letterhead_font_family: e.target.value })}
+                      style={{ height: '34px', fontSize: '0.82rem' }}
+                    >
+                      <option value="Mukta">मुक्ता (Mukta - Standard Nepali)</option>
+                      <option value="Noto Sans Devanagari">Noto Sans Devanagari</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Official Titles Matching Screenshot 2 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      स्थानीय सरकार तह (Top Heading) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.local_gov_type}
+                      onChange={(e) => setForm({ ...form, local_gov_type: e.target.value })}
+                      placeholder="स्थानीय सरकार"
+                      style={{ height: '36px', fontSize: '0.85rem', fontWeight: 700, color: form.letterhead_primary_color }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      स्थापना वर्ष (Est. Year) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.established_year}
+                      onChange={(e) => setForm({ ...form, established_year: e.target.value })}
+                      placeholder="२०७३"
+                      style={{ height: '36px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    गाउँ/नगरपालिकाको नाम (नेपालीमा) *
+                  </label>
+                  <input
+                    className="dt-input"
+                    value={form.palika_name}
+                    onChange={(e) => setForm({ ...form, palika_name: e.target.value })}
+                    placeholder="पाँचपोखरी थाङपाल गाउँपालिका"
+                    style={{ height: '38px', fontSize: '0.92rem', fontWeight: 800, color: form.letterhead_primary_color }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Municipality Name (English - UPPERCASE) *
+                  </label>
+                  <input
+                    className="dt-input"
+                    value={form.palika_name_en}
+                    onChange={(e) => setForm({ ...form, palika_name_en: e.target.value })}
+                    placeholder="PANCHPOKHARI THANGPAL RURAL MUNICIPALITY"
+                    style={{ height: '36px', fontSize: '0.85rem', fontWeight: 700, color: form.letterhead_primary_color }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      कार्यालयको नाम (Office Title) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.office_title}
+                      onChange={(e) => setForm({ ...form, office_title: e.target.value })}
+                      placeholder="गाउँकार्यपालिकाको कार्यालय"
+                      style={{ height: '36px', fontSize: '0.85rem', fontWeight: 700, color: form.letterhead_primary_color }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      ठेगाना / स्थान (Headquarters) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.location}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      placeholder="थाङ्पालधाप, सिन्धुपाल्चोक"
+                      style={{ height: '36px', fontSize: '0.85rem', fontWeight: 700, color: form.letterhead_primary_color }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      प्रदेश र देश (Province & Country) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.province_country}
+                      onChange={(e) => setForm({ ...form, province_country: e.target.value })}
+                      placeholder="वाग्मती प्रदेश, नेपाल"
+                      style={{ height: '36px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      पत्र संख्या (Fiscal Year Format) *
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.patra_sankhya}
+                      onChange={(e) => setForm({ ...form, patra_sankhya: e.target.value })}
+                      placeholder="२०८३/०८४"
+                      style={{ height: '36px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    मूल नारा (Municipal Slogan - Footer Center) *
+                  </label>
+                  <input
+                    className="dt-input"
+                    value={form.slogan}
+                    onChange={(e) => setForm({ ...form, slogan: e.target.value })}
+                    placeholder='“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”'
+                    style={{ height: '36px', fontSize: '0.85rem', fontWeight: 700, color: form.letterhead_primary_color }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.65rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      वेबसाइट
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.website}
+                      onChange={(e) => setForm({ ...form, website: e.target.value })}
+                      placeholder="http://panchpokharithangpalmun.gov.np/"
+                      style={{ height: '34px', fontSize: '0.78rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      इमेल
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="ito.panchpokharithangpalmun@gmail.com"
+                      style={{ height: '34px', fontSize: '0.78rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      फोन नं.
+                    </label>
+                    <input
+                      className="dt-input"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      placeholder="+9779851109808"
+                      style={{ height: '34px', fontSize: '0.78rem' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.25rem', padding: '0.5rem', background: '#f8fafc', borderRadius: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.letterhead_show_nepal_sambat === 'true'}
+                      onChange={(e) => setForm({ ...form, letterhead_show_nepal_sambat: e.target.checked ? 'true' : 'false' })}
+                    />
+                    <span>नेपाल संवत देखाउने (Show Nepal Sambat)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.letterhead_show_qr === 'true'}
+                      onChange={(e) => setForm({ ...form, letterhead_show_qr: e.target.checked ? 'true' : 'false' })}
+                    />
+                    <span>फुटरमा डिजिटल प्रमाणीकरण QR देखाउने</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Box: Live A4 Interactive Preview */}
+            <div style={{ position: 'sticky', top: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.9rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Eye size={17} color="#059669" />
+                  <span>लेटरहेड प्रत्यक्ष पूर्वावलोकन (Live A4 Preview)</span>
+                </h4>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowLetterheadPreviewModal(true)}
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', background: '#0284c7', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                  >
+                    <Eye size={14} />
+                    पूर्वावलोकन
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => printElement('live-preview-letterhead-sheet')}
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                  >
+                    <Printer size={14} />
+                    नमुना प्रिन्ट
+                  </button>
+                </div>
+              </div>
+
+              {/* Rendered Sheet Container */}
+              <div style={{ background: '#cbd5e1', padding: '1rem 0.5rem', borderRadius: '14px', border: '1px solid #94a3b8', maxHeight: '720px', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ transform: 'scale(0.78)', transformOrigin: 'top center', width: '210mm' }}>
+                  <CentralDocumentSheet
+                    id="live-preview-letterhead-sheet"
+                    palikaName={form.palika_name}
+                    palikaNameEn={form.palika_name_en}
+                    localGovType={form.local_gov_type}
+                    officeTitle={form.office_title}
+                    location={form.location || form.headquarters}
+                    provinceCountry={form.province_country}
+                    establishedYear={form.established_year}
+                    activeFiscalYear={form.active_fiscal_year}
+                    patraSankhya={form.patra_sankhya || form.active_fiscal_year}
+                    chalaniNo={form.chalani_no || '०१'}
+                    slogan={form.slogan}
+                    website={form.website}
+                    email={form.email}
+                    phone={form.phone}
+                    logoUrl={form.logo_url}
+                    emblemUrl={form.emblem_url}
+                    primaryColor={form.letterhead_primary_color}
+                    alignment={form.letterhead_alignment as any}
+                    fontFamily={form.letterhead_font_family}
+                    showNepalSambat={form.letterhead_show_nepal_sambat === 'true'}
+                    showFooterQr={form.letterhead_show_qr === 'true'}
+                    dateBs="२०८३/०८/०५"
+                    dateAd="2026-11-20"
+                    documentTitle="आधिकारिक नमुना सूचना (SAMPLE OFFICIAL NOTICE)"
+                  >
+                    <div style={{ padding: '1rem 0.5rem', minHeight: '180px' }}>
+                      <p style={{ fontWeight: 800, color: '#334155', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
+                        विषय: <span style={{ textDecoration: 'underline' }}>केन्द्रीकृत डायनामिक लेटरहेड प्रणाली कार्यान्वयन सम्बन्धी।</span>
+                      </p>
+                      <p style={{ fontSize: '0.88rem', lineHeight: '1.65', color: '#1e293b', textAlign: 'justify' }}>
+                        प्रस्तुत विषयमा यस <strong>{form.palika_name}</strong>को सम्पूर्ण आधिकारिक दस्तावेज, प्रवेश पत्र (Admit Card),
+                        दरखास्त फारम, विद्युतीय राजस्व रसिद, सूचना तथा सिफारिस पत्रहरूमा यही एकरूपता कायम भएको केन्द्रीकृत लेटरहेड प्रयोग हुने व्यहोरा जानकारी गराइन्छ।
+                      </p>
+                      <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ width: '150px', borderBottom: '1px dashed #64748b', marginBottom: '4px' }}></div>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>{form.chief_officer_title || 'प्रमुख प्रशासकीय अधिकृत'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CentralDocumentSheet>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ─── BOTTOM SAVE ACTION BAR ─── */}
         <div
           style={{
@@ -939,6 +1375,63 @@ export const PalikaSettingsPage: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* ─── MODAL: FULL A4 PRINT PREVIEW ─── */}
+      <CentralPrintPreviewModal
+        isOpen={showLetterheadPreviewModal}
+        onClose={() => setShowLetterheadPreviewModal(false)}
+        title="केन्द्रीकृत आधिकारिक लेटरहेड - A4 प्रिन्ट पूर्वावलोकन"
+        targetElementId="modal-letterhead-print-sheet"
+      >
+        <CentralDocumentSheet
+          id="modal-letterhead-print-sheet"
+          palikaName={form.palika_name}
+          palikaNameEn={form.palika_name_en}
+          localGovType={form.local_gov_type}
+          officeTitle={form.office_title}
+          location={form.location || form.headquarters}
+          provinceCountry={form.province_country}
+          establishedYear={form.established_year}
+          activeFiscalYear={form.active_fiscal_year}
+          patraSankhya={form.patra_sankhya || form.active_fiscal_year}
+          chalaniNo={form.chalani_no || '०१'}
+          slogan={form.slogan}
+          website={form.website}
+          email={form.email}
+          phone={form.phone}
+          logoUrl={form.logo_url}
+          emblemUrl={form.emblem_url}
+          primaryColor={form.letterhead_primary_color}
+          alignment={form.letterhead_alignment as any}
+          fontFamily={form.letterhead_font_family}
+          showNepalSambat={form.letterhead_show_nepal_sambat === 'true'}
+          showFooterQr={form.letterhead_show_qr === 'true'}
+          dateBs="२०८३/०८/०५"
+          dateAd="2026-11-20"
+          documentTitle="आधिकारिक नमुना सूचना (OFFICIAL NOTICE)"
+        >
+          <div style={{ padding: '1.5rem 1rem', minHeight: '320px' }}>
+            <p style={{ fontWeight: 800, color: '#334155', fontSize: '1rem', marginBottom: '1rem' }}>
+              विषय: <span style={{ textDecoration: 'underline' }}>केन्द्रीकृत डायनामिक लेटरहेड प्रणाली कार्यान्वयन सम्बन्धी।</span>
+            </p>
+            <p style={{ fontSize: '0.92rem', lineHeight: '1.7', color: '#1e293b', textAlign: 'justify', marginBottom: '1rem' }}>
+              प्रस्तुत विषयमा यस <strong>{form.palika_name}</strong>को सम्पूर्ण आधिकारिक डिजिटल प्रणाली, अनलाइन दरखास्त व्यवस्थापन,
+              प्रवेश पत्र (Admit Card), विद्युतीय राजस्व रसिद, सूचना तथा सिफारिस पत्रहरूमा नेपाल सरकारको आधिकारिक मापदण्ड अनुसार
+              तयार गरिएको यो केन्द्रीकृत लेटरहेड प्रयोग हुने व्यहोरा सम्पूर्ण नागरिक तथा सरोकारवालाहरूमा जानकारी गराइन्छ।
+            </p>
+            <p style={{ fontSize: '0.92rem', lineHeight: '1.7', color: '#1e293b', textAlign: 'justify' }}>
+              यस लेटरहेडमा पालिकाको नाम, ठेगाना, लोगो, निशाना छाप, आधिकारिक सम्पर्क विवरण तथा प्रमाणीकरण QR कोड एकीकृत गरिएको छ।
+            </p>
+            <div style={{ marginTop: '4rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: '180px', borderBottom: '1px dashed #64748b', marginBottom: '6px' }}></div>
+                <span style={{ fontSize: '0.88rem', fontWeight: 800, display: 'block' }}>{form.chief_officer_title || 'प्रमुख प्रशासकीय अधिकृत'}</span>
+                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{form.palika_name}</span>
+              </div>
+            </div>
+          </div>
+        </CentralDocumentSheet>
+      </CentralPrintPreviewModal>
     </div>
   );
 };

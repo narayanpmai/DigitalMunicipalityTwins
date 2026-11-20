@@ -1,0 +1,608 @@
+/* ==========================================================================
+   CENTRALIZED DYNAMIC LETTERHEAD & OFFICIAL A4 PRINT STYLES
+   Designed exactly according to Official Nepal Local Government Letterhead
+   ========================================================================== */
+
+:root {
+  --lh-primary: #dc2626;
+  --lh-text-dark: #0f172a;
+  --lh-border: #cbd5e1;
+  --lh-bg: #ffffff;
+}
+
+/* ─── A4 DOCUMENT SHEET CONTAINER ─── */
+.central-doc-sheet {
+  background-color: #ffffff;
+  color: #0f172a;
+  width: 100%;
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 10mm 14mm 8mm 14mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  font-family: 'Mukta', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+
+.central-doc-sheet.embedded {
+  box-shadow: none;
+  border: none;
+  padding: 6mm 10mm;
+  min-height: auto;
+}
+
+/* ─── WATERMARK ─── */
+.central-doc-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  height: 320px;
+  pointer-events: none;
+  opacity: 0.045;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.central-doc-watermark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ─── LETTERHEAD HEADER ─── */
+.central-lh-header {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.central-lh-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  gap: 0.75rem;
+}
+
+.central-lh-emblem-left {
+  width: 82px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.central-lh-emblem-img {
+  width: 80px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.central-lh-titles-center {
+  flex: 1;
+  text-align: center;
+  line-height: 1.22;
+  padding: 0 0.25rem;
+}
+
+.central-lh-local-gov {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 1px;
+  letter-spacing: 0.2px;
+}
+
+.central-lh-palika-name-np {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  margin-bottom: 1px;
+}
+
+.central-lh-palika-name-en {
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.central-lh-office-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 1px;
+}
+
+.central-lh-location {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.central-lh-logo-right {
+  width: 82px;
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.central-lh-logo-img {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  object-fit: contain;
+  display: block;
+  border: 1.5px solid rgba(220, 38, 38, 0.25);
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ─── SUB ROW: DISPATCH & FISCAL YEAR / PROVINCE ─── */
+.central-lh-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  padding: 0 2px;
+  line-height: 1.35;
+}
+
+.central-lh-sub-left {
+  text-align: left;
+}
+
+.central-lh-sub-right {
+  text-align: right;
+  font-weight: 800;
+}
+
+.central-lh-divider {
+  width: 100%;
+  height: 1.5px;
+  background: #0f172a;
+  margin: 0.35rem 0 0.3rem 0;
+}
+
+/* ─── DATE & NEPAL SAMBAT ROW ─── */
+.central-lh-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  margin-bottom: 0.5rem;
+  padding: 0 2px;
+}
+
+.central-lh-date-left {
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.central-lh-date-right {
+  text-align: right;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+/* ─── OPTIONAL BRANCH / COMMITTEE BANNER ─── */
+.central-lh-branch-title {
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-top: 0.15rem;
+  margin-bottom: 0.25rem;
+}
+
+.central-lh-branch-center {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.3px;
+  line-height: 1.35;
+}
+
+.central-lh-ribbon {
+  display: inline-block;
+  background: #1e3a8a;
+  color: #ffffff;
+  padding: 0.32rem 1.75rem;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(30, 58, 138, 0.25);
+  margin: 0.2rem auto 0.6rem auto;
+  text-align: center;
+}
+
+/* ─── BODY CONTAINER ─── */
+.central-doc-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── LETTERHEAD FOOTER ─── */
+.central-doc-footer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding-top: 0.35rem;
+  border-top: 1.5px solid #dc2626;
+}
+
+.central-lh-footer-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.central-lh-footer-spacer {
+  width: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+
+.central-lh-footer-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.central-lh-slogan {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin-bottom: 0.15rem;
+}
+
+.central-lh-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  gap: 0.5rem;
+}
+
+.central-lh-contact-info {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #334155;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.central-lh-contact-info a {
+  color: #0284c7;
+  text-decoration: underline;
+  margin: 0 0.15rem;
+  font-size: 0.68rem;
+}
+
+.central-lh-sep {
+  margin: 0 0.25rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.central-lh-qr-box {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.central-lh-qr-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── A5 DOCUMENT SHEET (FOR ADMIT CARDS & SLIPS) ─── */
+.central-doc-sheet.page-a5 {
+  max-width: 148mm;
+  min-height: 200mm;
+  padding: 4mm 6mm 3mm 6mm;
+  box-sizing: border-box;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  margin: 0 auto;
+}
+
+.central-doc-sheet.page-a5 .central-lh-header {
+  margin-bottom: 0.25rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-emblem-left {
+  width: 58px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-emblem-img {
+  width: 56px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-logo-right {
+  width: 58px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-logo-img {
+  width: 54px;
+  height: 54px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-local-gov {
+  font-size: 0.8rem;
+  margin-bottom: 0;
+}
+
+.central-doc-sheet.page-a5 .central-lh-palika-name-np {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+.central-doc-sheet.page-a5 .central-lh-palika-name-en {
+  font-size: 0.74rem;
+  letter-spacing: 0.3px;
+  margin-bottom: 1px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-office-title {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+.central-doc-sheet.page-a5 .central-lh-location {
+  font-size: 0.86rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-sub-row {
+  font-size: 0.74rem;
+  margin-top: 0.2rem;
+  line-height: 1.25;
+}
+
+.central-doc-sheet.page-a5 .central-lh-divider {
+  margin: 0.2rem 0;
+  height: 1px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-date-row {
+  font-size: 0.74rem;
+  margin-bottom: 0.25rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-ribbon {
+  padding: 0.2rem 1.15rem;
+  font-size: 0.78rem;
+  margin: 0.15rem auto 0.25rem auto;
+}
+
+.central-doc-sheet.page-a5 .central-lh-branch-center {
+  font-size: 0.82rem;
+  margin-top: 0.15rem;
+  margin-bottom: 0.25rem;
+}
+
+.central-doc-sheet.page-a5 .central-doc-footer {
+  margin-top: 0.35rem;
+  padding-top: 0.25rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-slogan {
+  font-size: 0.72rem;
+  margin-bottom: 1px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-contact-info {
+  font-size: 0.62rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-contact-info a {
+  font-size: 0.62rem;
+}
+
+.central-doc-sheet.page-a5 .central-lh-qr-box {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+}
+
+.central-doc-sheet.page-a5 .central-lh-footer-spacer {
+  width: 38px;
+  min-width: 38px;
+}
+
+/* ─── PRINT PREVIEW MODAL ─── */
+.central-print-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.central-print-modal-container {
+  background: #f1f5f9;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 900px;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.central-print-modal-header {
+  background: #1e293b;
+  color: #ffffff;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.central-print-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  background: #e2e8f0;
+}
+
+/* ─── UNIVERSAL PRINT MEDIA OPTIMIZATIONS ─── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  /* Reset body and html for zero distortion */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide app navigation and common non-printable UI */
+  nav,
+  header:not(.central-lh-header),
+  aside,
+  .sidebar,
+  .topbar,
+  .sidebar-desktop,
+  .sidebar-mobile,
+  .navbar,
+  .sidebar-mobile-toggle,
+  .rec-btn,
+  .rec-wizard-nav,
+  .rec-nav-pills,
+  .rec-admin-subtabs,
+  .rec-action-banner,
+  .rec-search-box,
+  button,
+  .no-print,
+  .central-print-modal-header,
+  .rec-modal-header {
+    display: none !important;
+  }
+
+  /* Enable designated printable sheets to render cleanly without clipping */
+  .central-doc-sheet,
+  #printable-admit-card,
+  #printable-receipt,
+  .central-printable-document {
+    display: flex !important;
+    visibility: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .central-doc-sheet * {
+    visibility: visible !important;
+  }
+
+  /* Preserve colors in print */
+  .central-lh-palika-name-np,
+  .central-lh-palika-name-en,
+  .central-lh-local-gov,
+  .central-lh-office-title,
+  .central-lh-location,
+  .central-lh-slogan,
+  .rec-admit-top-sub,
+  .rec-admit-title-main,
+  .rec-admit-sub-office {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Official Document Print Rules (A4 Default) */
+  .central-doc-sheet,
+  #printable-admit-card,
+  #modal-preview-admit-card {
+    max-width: 210mm !important;
+    width: 100% !important;
+    padding: 6mm 10mm 4mm 10mm !important;
+    margin: 0 auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* A5 Sheet Print Rules (Only if explicitly .page-a5) */
+  .central-doc-sheet.page-a5 {
+    max-width: 148mm !important;
+    width: 148mm !important;
+    padding: 3mm 5mm 2mm 5mm !important;
+    margin: 0 auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+}

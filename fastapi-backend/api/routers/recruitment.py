@@ -19,6 +19,7 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.pat
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.employee import Employee
 from models.recruitment import (
     VacancyAnnouncement,
@@ -74,11 +75,13 @@ def record_audit(
     action: str,
     performed_by: str,
     details: Optional[str] = None,
-    ip_address: Optional[str] = None
+    ip_address: Optional[str] = None,
+    tenant_id: Optional[str] = "panchpokhari"
 ):
     try:
         log = RecruitmentAuditLog(
             id=str(uuid.uuid4()),
+            tenant_id=tenant_id or "panchpokhari",
             entity_type=entity_type,
             entity_id=entity_id,
             action=action,
@@ -98,34 +101,41 @@ def record_audit(
 # 1. SUMMARY STATS (ENHANCED FOR FINANCIALS)
 # -------------------------------------------------------------
 @router.get("/summary")
-def get_recruitment_summary(db: Session = Depends(get_db)):
-    total_vacancies = db.query(VacancyAnnouncement).count()
-    active_vacancies = db.query(VacancyAnnouncement).filter(VacancyAnnouncement.status == "खुला (Active)").count()
-    
-    total_applications = db.query(JobApplication).count()
-    pending_applications = db.query(JobApplication).filter(JobApplication.status.like("%विचाराधीन%")).count()
-    approved_applications = db.query(JobApplication).filter(JobApplication.status.like("%स्वीकृत%")).count()
-    rejected_applications = db.query(JobApplication).filter(JobApplication.status.like("%अस्वीकृत%")).count()
+def get_recruitment_summary(
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    vac_query = ctx.filter_query(db.query(VacancyAnnouncement), VacancyAnnouncement)
+    app_query = ctx.filter_query(db.query(JobApplication), JobApplication)
+    pay_query = ctx.filter_query(db.query(RecruitmentPayment), RecruitmentPayment)
 
-    paid_applications = db.query(JobApplication).filter(
+    total_vacancies = vac_query.count()
+    active_vacancies = vac_query.filter(VacancyAnnouncement.status == "खुला (Active)").count()
+    
+    total_applications = app_query.count()
+    pending_applications = app_query.filter(JobApplication.status.like("%विचाराधीन%")).count()
+    approved_applications = app_query.filter(JobApplication.status.like("%स्वीकृत%")).count()
+    rejected_applications = app_query.filter(JobApplication.status.like("%अस्वीकृत%")).count()
+
+    paid_applications = app_query.filter(
         or_(
             JobApplication.payment_status == "PAID",
             JobApplication.receipt_no.isnot(None)
         )
     ).count()
 
-    unpaid_applications = db.query(JobApplication).filter(
+    unpaid_applications = app_query.filter(
         or_(
             JobApplication.payment_status == "UNPAID",
             JobApplication.payment_status == "FAILED"
         )
     ).count()
 
-    total_revenue = db.query(func.sum(RecruitmentPayment.amount)).filter(
+    total_revenue = pay_query.filter(
         RecruitmentPayment.status == "SUCCESS"
-    ).scalar() or 0.0
+    ).with_entities(func.sum(RecruitmentPayment.amount)).scalar() or 0.0
 
-    total_openings = db.query(VacancyAnnouncement).with_entities(VacancyAnnouncement.openings_count).all()
+    total_openings = vac_query.with_entities(VacancyAnnouncement.openings_count).all()
     sum_openings = sum([o[0] for o in total_openings if o[0]])
 
     return {
@@ -148,10 +158,11 @@ def get_recruitment_summary(db: Session = Depends(get_db)):
 @router.get("/export-excel")
 def export_recruitment_excel(
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    vacancies = db.query(VacancyAnnouncement).order_by(desc(VacancyAnnouncement.created_at)).all()
-    applications = db.query(JobApplication).order_by(desc(JobApplication.created_at)).all()
+    vacancies = ctx.filter_query(db.query(VacancyAnnouncement), VacancyAnnouncement).order_by(desc(VacancyAnnouncement.created_at)).all()
+    applications = ctx.filter_query(db.query(JobApplication), JobApplication).order_by(desc(JobApplication.created_at)).all()
 
     wb = openpyxl.Workbook()
 
@@ -284,9 +295,10 @@ def export_recruitment_excel(
 def get_admit_card(
     application_no: Optional[str] = None,
     phone_or_citizenship: Optional[str] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(JobApplication)
+    query = ctx.filter_query(db.query(JobApplication), JobApplication)
     if application_no:
         app = query.filter(JobApplication.application_no == application_no.strip()).first()
     elif phone_or_citizenship:
@@ -310,6 +322,38 @@ def get_admit_card(
             VacancyAnnouncement.vacancy_no == app.vacancy_no
         )
     ).first()
+
+    # Dynamic Exam Date & Center Synchronization: Ensure application reflects current vacancy schedule
+    need_commit = False
+    if vacancy:
+        if vacancy.exam_date_bs and app.exam_date_time != vacancy.exam_date_bs:
+            app.exam_date_time = vacancy.exam_date_bs
+            need_commit = True
+        elif not vacancy.exam_date_bs and app.exam_date_time:
+            app.exam_date_time = None
+            need_commit = True
+            
+        if vacancy.exam_center and app.exam_center != vacancy.exam_center:
+            app.exam_center = vacancy.exam_center
+            need_commit = True
+        elif not vacancy.exam_center and app.exam_center:
+            app.exam_center = None
+            need_commit = True
+
+    if not app.chalani_no and app.admit_card_roll_no:
+        import re
+        match = re.search(r'(\d+)$', app.admit_card_roll_no)
+        num = int(match.group(1)) if match else 1
+        nep_digits = {'0':'०', '1':'१', '2':'२', '3':'३', '4':'४', '5':'५', '6':'६', '7':'७', '8':'८', '9':'९'}
+        app.chalani_no = ''.join(nep_digits.get(ch, ch) for ch in str(num))
+        need_commit = True
+
+    if need_commit:
+        try:
+            db.commit()
+            db.refresh(app)
+        except Exception:
+            db.rollback()
 
     is_ready = (app.status == "स्वीकृत (Approved)" or bool(app.admit_card_roll_no))
 
@@ -372,9 +416,10 @@ async def upload_recruitment_document(file: UploadFile = File(...)):
 def list_vacancies(
     status: Optional[str] = None,
     search: Optional[str] = None,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(VacancyAnnouncement)
+    query = ctx.filter_query(db.query(VacancyAnnouncement), VacancyAnnouncement)
     if status and status != "all":
         query = query.filter(VacancyAnnouncement.status == status)
     if search:
@@ -394,14 +439,18 @@ def create_vacancy(
     data: VacancyAnnouncementCreate,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
+    eff_tenant = ctx.tenant_subdomain if (ctx.tenant_subdomain and ctx.tenant_subdomain != 'all') else (current_user.tenant_id or "panchpokhari")
     if not data.vacancy_no:
-        count = db.query(VacancyAnnouncement).count() + 1
-        data.vacancy_no = f"०{count}/२०८१/०८२"
+        count = ctx.filter_query(db.query(VacancyAnnouncement), VacancyAnnouncement).count() + 1
+        count_nepali = str(count).translate(str.maketrans("0123456789", "०१२३४५६७८९"))
+        data.vacancy_no = f"०{count_nepali}/२०८३/०८४"
 
     new_vac = VacancyAnnouncement(
         id=str(uuid.uuid4()),
+        tenant_id=eff_tenant,
         vacancy_no=data.vacancy_no,
         title=data.title,
         service_group=data.service_group,
@@ -413,7 +462,8 @@ def create_vacancy(
         min_qualification=data.min_qualification,
         publish_date_bs=data.publish_date_bs,
         deadline_date_bs=data.deadline_date_bs,
-        exam_date_bs=data.exam_date_bs,
+        exam_date_bs=data.exam_date_bs.strip() if (data.exam_date_bs and data.exam_date_bs.strip()) else None,
+        exam_center=data.exam_center.strip() if (data.exam_center and data.exam_center.strip()) else None,
         status=data.status or "खुला (Active)",
         description=data.description
     )
@@ -426,21 +476,26 @@ def create_vacancy(
         entity_type="VACANCY",
         entity_id=new_vac.id,
         action="CREATE",
-        performed_by="ADMIN",
-        details=f"Created vacancy: {new_vac.vacancy_no} - {new_vac.title}",
-        ip_address=request.client.host if request.client else None
+        performed_by=f"ADMIN:{current_user.email}",
+        details=f"Created vacancy: {new_vac.vacancy_no} - {new_vac.title} for palika: {eff_tenant}",
+        ip_address=request.client.host if request.client else None,
+        tenant_id=eff_tenant
     )
 
     return new_vac
 
 
 @router.get("/vacancies/{vacancy_id}", response_model=VacancyAnnouncementSchema)
-def get_vacancy(vacancy_id: str, db: Session = Depends(get_db)):
+def get_vacancy(
+    vacancy_id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     cond = [VacancyAnnouncement.vacancy_no == vacancy_id]
     if is_valid_uuid(vacancy_id) or len(vacancy_id) > 10:
         cond.append(VacancyAnnouncement.id == vacancy_id)
 
-    vac = db.query(VacancyAnnouncement).filter(or_(*cond)).first()
+    vac = ctx.filter_query(db.query(VacancyAnnouncement).filter(or_(*cond)), VacancyAnnouncement).first()
     if not vac:
         raise HTTPException(status_code=404, detail="विज्ञापन फेला परेन।")
     return vac
@@ -452,26 +507,48 @@ def update_vacancy(
     data: VacancyAnnouncementUpdate,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     cond = [VacancyAnnouncement.vacancy_no == vacancy_id]
     if is_valid_uuid(vacancy_id) or len(vacancy_id) > 10:
         cond.append(VacancyAnnouncement.id == vacancy_id)
 
-    vac = db.query(VacancyAnnouncement).filter(or_(*cond)).first()
+    vac = ctx.filter_query(db.query(VacancyAnnouncement).filter(or_(*cond)), VacancyAnnouncement).first()
     if not vac:
         raise HTTPException(status_code=404, detail="विज्ञापन फेला परेन।")
 
     update_dict = data.dict(exclude_unset=True)
     for key, value in update_dict.items():
-        if value is not None and hasattr(vac, key):
-            setattr(vac, key, value)
+        if hasattr(vac, key):
+            if key in ("exam_date_bs", "exam_center", "description"):
+                clean_str = value.strip() if isinstance(value, str) else value
+                setattr(vac, key, clean_str if clean_str else None)
+            elif value is not None:
+                setattr(vac, key, value)
 
-    # Sync post_title and vacancy_no to any existing applications linked to this vacancy
+    # Sync post_title, vacancy_no, exam_date_bs, and exam_center to any existing applications linked to this vacancy
+    app_sync = {}
     if "title" in update_dict and update_dict["title"]:
-        db.query(JobApplication).filter(JobApplication.vacancy_id == vac.id).update({JobApplication.post_title: update_dict["title"]})
+        app_sync[JobApplication.post_title] = update_dict["title"]
     if "vacancy_no" in update_dict and update_dict["vacancy_no"]:
-        db.query(JobApplication).filter(JobApplication.vacancy_id == vac.id).update({JobApplication.vacancy_no: update_dict["vacancy_no"]})
+        app_sync[JobApplication.vacancy_no] = update_dict["vacancy_no"]
+    if "exam_date_bs" in update_dict:
+        val = update_dict["exam_date_bs"]
+        clean_val = val.strip() if isinstance(val, str) else val
+        app_sync[JobApplication.exam_date_time] = (clean_val if clean_val else None)
+    if "exam_center" in update_dict:
+        val = update_dict["exam_center"]
+        clean_val = val.strip() if isinstance(val, str) else val
+        app_sync[JobApplication.exam_center] = (clean_val if clean_val else None)
+
+    if app_sync:
+        db.query(JobApplication).filter(
+            or_(
+                JobApplication.vacancy_id == vac.id,
+                JobApplication.vacancy_no == vac.vacancy_no
+            )
+        ).update(app_sync, synchronize_session=False)
 
     db.commit()
     db.refresh(vac)
@@ -483,7 +560,8 @@ def update_vacancy(
         action="UPDATE",
         performed_by=f"ADMIN:{current_user.email}",
         details=f"Updated vacancy: {vac.vacancy_no} - {vac.title}, Exam: {vac.exam_date_bs}, Fee: {vac.application_fee}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=vac.tenant_id
     )
 
     return vac
@@ -494,16 +572,18 @@ def delete_vacancy(
     vacancy_id: str,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     cond = [VacancyAnnouncement.vacancy_no == vacancy_id]
     if is_valid_uuid(vacancy_id) or len(vacancy_id) > 10:
         cond.append(VacancyAnnouncement.id == vacancy_id)
 
-    vac = db.query(VacancyAnnouncement).filter(or_(*cond)).first()
+    vac = ctx.filter_query(db.query(VacancyAnnouncement).filter(or_(*cond)), VacancyAnnouncement).first()
     if not vac:
         raise HTTPException(status_code=404, detail="विज्ञापन फेला परेन।")
 
+    vac_tenant = vac.tenant_id
     db.delete(vac)
     db.commit()
 
@@ -512,9 +592,10 @@ def delete_vacancy(
         entity_type="VACANCY",
         entity_id=vacancy_id,
         action="DELETE",
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"Deleted vacancy: {vacancy_id}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=vac_tenant
     )
 
     return {"message": "विज्ञापन सफलतापूर्वक हटाइयो।", "success": True}
@@ -528,6 +609,7 @@ def delete_vacancy(
 def submit_or_draft_application(
     data: JobApplicationCreate,
     request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     """
@@ -539,15 +621,19 @@ def submit_or_draft_application(
         cond = [VacancyAnnouncement.id == data.vacancy_id, VacancyAnnouncement.vacancy_no == data.vacancy_id]
         vac = db.query(VacancyAnnouncement).filter(or_(*cond)).first()
 
-    vacancy_no = data.vacancy_no or (vac.vacancy_no if vac else "२०८१/०८२")
+    vacancy_no = data.vacancy_no or (vac.vacancy_no if vac else "२०८३/०८४")
     post_title = data.post_title or (vac.title if vac else "पद")
+
+    # Determine tenant ownership: matches vacancy's tenant, or user's tenant context
+    app_tenant = vac.tenant_id if (vac and vac.tenant_id) else (ctx.tenant_subdomain if (ctx.tenant_subdomain and ctx.tenant_subdomain != 'all') else "panchpokhari")
 
     # Duplicate Application Check (prevent duplicate submission for same vacancy by same citizenship)
     if data.citizenship_no:
         existing = db.query(JobApplication).filter(
             JobApplication.vacancy_no == vacancy_no,
             JobApplication.citizenship_no == data.citizenship_no.strip(),
-            JobApplication.payment_status == "PAID"
+            JobApplication.payment_status == "PAID",
+            JobApplication.tenant_id == app_tenant
         ).first()
         if existing:
             raise HTTPException(
@@ -555,9 +641,18 @@ def submit_or_draft_application(
                 detail=f"उल्लेखित नागरिकता नं ({data.citizenship_no}) बाट यो विज्ञापनमा पहिले नै दरखास्त पेश भई दस्तुर भुक्तानी भइसकेको छ (दरखास्त नं: {existing.application_no})।"
             )
 
-    # Generate sequential application number: APP-2081-XXXX
-    count = db.query(JobApplication).count() + 1
-    application_no = f"APP-2081-{count:04d}"
+    # Generate sequential application number: PTRM-2083-XXXX (using active fiscal year and PTRM prefix)
+    fy_year = "2083"
+    if vac and vac.vacancy_no:
+        import re
+        m = re.search(r'(२०\d{2})', vac.vacancy_no)
+        if m:
+            nep_digits = {'०':'0', '१':'1', '२':'2', '३':'3', '४':'4', '५':'5', '६':'6', '7':'7', '८':'8', '९':'9'}
+            fy_year = ''.join(nep_digits.get(ch, ch) for ch in m.group(1))
+
+    prefix = "PTRM" if (app_tenant == "panchpokhari" or not app_tenant) else f"APP-{app_tenant.upper()}"
+    count = db.query(JobApplication).filter(JobApplication.tenant_id == app_tenant).count() + 1
+    application_no = f"{prefix}-{fy_year}-{count:04d}"
 
     # Calculate total fee: base fee + inclusive category fees
     base_fee = float(vac.application_fee) if vac and vac.application_fee else 500.0
@@ -573,10 +668,13 @@ def submit_or_draft_application(
 
     new_app = JobApplication(
         id=str(uuid.uuid4()),
+        tenant_id=app_tenant,
         application_no=application_no,
         vacancy_id=vac.id if vac else data.vacancy_id,
         vacancy_no=vacancy_no,
         post_title=post_title,
+        exam_center=vac.exam_center if vac else None,
+        exam_date_time=vac.exam_date_bs if vac else None,
         full_name_np=data.full_name_np,
         full_name_en=data.full_name_en,
         dob_bs=data.dob_bs,
@@ -620,7 +718,8 @@ def submit_or_draft_application(
         action="DRAFT_CREATED",
         performed_by="CANDIDATE",
         details=f"Draft application created for {new_app.full_name_np}, fee: Rs. {total_fee}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app_tenant
     )
 
     return new_app
@@ -769,6 +868,7 @@ def initiate_payment(
     # Store initiated transaction record
     new_payment = RecruitmentPayment(
         id=str(uuid.uuid4()),
+        tenant_id=app.tenant_id or "panchpokhari",
         application_id=app.id,
         application_no=app.application_no,
         transaction_uuid=txn_uuid,
@@ -795,7 +895,8 @@ def initiate_payment(
         action="PAY_INITIATE",
         performed_by="CANDIDATE",
         details=f"Payment initiated via {gateway_name} for {app.application_no}, amount: Rs. {amount}",
-        ip_address=ip
+        ip_address=ip,
+        tenant_id=app.tenant_id or "panchpokhari"
     )
 
     return PaymentInitiateResponse(
@@ -875,7 +976,8 @@ def verify_payment(
             action="PAY_PENDING_VERIFICATION",
             performed_by="CANDIDATE",
             details=f"Payment submitted for bank statement verification. App: {app.application_no}, Gateway: {pay.gateway}, Ref: {ref_id}",
-            ip_address=request.client.host if request.client else None
+            ip_address=request.client.host if request.client else None,
+            tenant_id=pay.tenant_id or app.tenant_id or "panchpokhari"
         )
 
         return PaymentVerifyResponse(
@@ -917,7 +1019,8 @@ def verify_payment(
         action="PAY_SUCCESS",
         performed_by="ADMIN" if is_admin else ("MOCK_AUTO_APPROVE" if allow_mock else "GATEWAY_CALLBACK"),
         details=f"Payment verified for {app.application_no}, receipt: {receipt_no}, amount: Rs. {pay.amount}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=pay.tenant_id or app.tenant_id or "panchpokhari"
     )
 
     return PaymentVerifyResponse(
@@ -936,6 +1039,7 @@ def verify_payment(
 def admin_confirm_payment(
     transaction_uuid: str,
     request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
@@ -943,14 +1047,14 @@ def admin_confirm_payment(
     Dedicated Municipal Admin/Cashier endpoint to confirm bank voucher or offline payment,
     generate official electronic revenue receipt, and activate admit card eligibility.
     """
-    pay = db.query(RecruitmentPayment).filter(
+    pay = ctx.filter_query(db.query(RecruitmentPayment).filter(
         RecruitmentPayment.transaction_uuid == transaction_uuid.strip()
-    ).first()
+    ), RecruitmentPayment).first()
 
     if not pay:
         raise HTTPException(status_code=404, detail="कारोबार रेकर्ड फेला परेन।")
 
-    app = db.query(JobApplication).filter(JobApplication.id == pay.application_id).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(JobApplication.id == pay.application_id), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="सम्बन्धित दरखास्त फेला परेन।")
 
@@ -960,7 +1064,7 @@ def admin_confirm_payment(
     pay.verified_at = datetime.datetime.utcnow()
 
     if not app.receipt_no:
-        count_receipts = db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)).count() + 1
+        count_receipts = ctx.filter_query(db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)), JobApplication).count() + 1
         receipt_no = f"RCPT-2081-{count_receipts:04d}"
         app.receipt_no = receipt_no
     else:
@@ -983,7 +1087,8 @@ def admin_confirm_payment(
         action="ADMIN_PAYMENT_CONFIRM",
         performed_by=f"ADMIN:{current_user.email}",
         details=f"Payment manually verified and confirmed by admin {current_user.email} for {app.application_no}, receipt: {receipt_no}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=pay.tenant_id or app.tenant_id or "panchpokhari"
     )
 
     return PaymentVerifyResponse(
@@ -1156,9 +1261,10 @@ def list_admin_payments(
     status: Optional[str] = None,
     search: Optional[str] = None,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(RecruitmentPayment).order_by(desc(RecruitmentPayment.created_at))
+    query = ctx.filter_query(db.query(RecruitmentPayment), RecruitmentPayment).order_by(desc(RecruitmentPayment.created_at))
     if gateway and gateway != "all":
         query = query.filter(RecruitmentPayment.gateway == gateway.upper())
     if status and status != "all":
@@ -1178,24 +1284,30 @@ def list_admin_payments(
 @router.get("/admin/reconciliation")
 def get_payment_reconciliation(
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     """
-    Returns financial breakdown by gateway, successful collections, pending, refunds.
+    Returns financial breakdown by gateway, successful collections, pending, refunds for the palika.
     """
-    total_successful_rev = db.query(func.sum(RecruitmentPayment.amount)).filter(
-        RecruitmentPayment.status == "SUCCESS"
-    ).scalar() or 0.0
+    pay_query = ctx.filter_query(db.query(RecruitmentPayment), RecruitmentPayment)
+    ref_query = ctx.filter_query(db.query(RecruitmentRefund), RecruitmentRefund)
 
-    by_gateway = db.query(
+    total_successful_rev = pay_query.filter(
+        RecruitmentPayment.status == "SUCCESS"
+    ).with_entities(func.sum(RecruitmentPayment.amount)).scalar() or 0.0
+
+    by_gateway = pay_query.filter(
+        RecruitmentPayment.status == "SUCCESS"
+    ).with_entities(
         RecruitmentPayment.gateway,
         func.count(RecruitmentPayment.id).label("count"),
         func.sum(RecruitmentPayment.amount).label("total")
-    ).filter(RecruitmentPayment.status == "SUCCESS").group_by(RecruitmentPayment.gateway).all()
+    ).group_by(RecruitmentPayment.gateway).all()
 
-    total_refunded = db.query(func.sum(RecruitmentRefund.refund_amount)).filter(
+    total_refunded = ref_query.filter(
         RecruitmentRefund.status == "PROCESSED"
-    ).scalar() or 0.0
+    ).with_entities(func.sum(RecruitmentRefund.refund_amount)).scalar() or 0.0
 
     rev_float = float(total_successful_rev or 0.0)
     ref_float = float(total_refunded or 0.0)
@@ -1219,9 +1331,10 @@ def process_refund(
     data: RefundCreateRequest,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    app = db.query(JobApplication).filter(JobApplication.application_no == data.application_no.strip()).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(JobApplication.application_no == data.application_no.strip()), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
 
@@ -1232,13 +1345,14 @@ def process_refund(
 
     new_refund = RecruitmentRefund(
         id=str(uuid.uuid4()),
+        tenant_id=app.tenant_id,
         payment_id=payment.id if payment else (data.payment_id or "UNKNOWN"),
         application_id=app.id,
         refund_amount=data.refund_amount,
         reason=data.reason,
         bank_info=data.bank_info,
         status="PROCESSED",
-        processed_by="ADMIN",
+        processed_by=f"ADMIN:{current_user.email}",
         created_at=datetime.datetime.utcnow()
     )
     db.add(new_refund)
@@ -1254,9 +1368,10 @@ def process_refund(
         entity_type="REFUND",
         entity_id=new_refund.id,
         action="REFUND_ISSUED",
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"Refund issued for {app.application_no}, amount: Rs. {data.refund_amount}, reason: {data.reason}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app.tenant_id
     )
 
     return {
@@ -1274,9 +1389,10 @@ def list_audit_logs(
     entity_type: Optional[str] = None,
     limit: int = 50,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    q = db.query(RecruitmentAuditLog).order_by(desc(RecruitmentAuditLog.created_at))
+    q = ctx.filter_query(db.query(RecruitmentAuditLog), RecruitmentAuditLog).order_by(desc(RecruitmentAuditLog.created_at))
     if entity_type and entity_type != "all":
         q = q.filter(RecruitmentAuditLog.entity_type == entity_type.upper())
     return q.limit(limit).all()
@@ -1292,9 +1408,10 @@ def list_applications(
     payment_status: Optional[str] = None,
     search: Optional[str] = None,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(JobApplication)
+    query = ctx.filter_query(db.query(JobApplication), JobApplication)
     if vacancy_id and vacancy_id != "all":
         query = query.filter(
             or_(
@@ -1327,13 +1444,14 @@ def verify_job_application(
     data: ApplicationVerificationUpdate,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     cond = [JobApplication.application_no == application_id]
     if is_valid_uuid(application_id) or len(application_id) > 10:
         cond.append(JobApplication.id == application_id)
 
-    app = db.query(JobApplication).filter(or_(*cond)).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
 
@@ -1341,16 +1459,41 @@ def verify_job_application(
     if data.rejection_reason is not None:
         app.rejection_reason = data.rejection_reason
 
-    # If approved, ensure admit card details are populated
+    # If approved, ensure admit card details and chalani are populated
     if "स्वीकृत" in data.status:
+        vac = db.query(VacancyAnnouncement).filter(
+            or_(
+                VacancyAnnouncement.id == app.vacancy_id,
+                VacancyAnnouncement.vacancy_no == app.vacancy_no
+            )
+        ).first()
+
+        fy_year = "2083"
+        if vac and vac.vacancy_no:
+            import re
+            m = re.search(r'(२०\d{2})', vac.vacancy_no)
+            if m:
+                nep_digits = {'०':'0', '१':'1', '२':'2', '३':'3', '४':'4', '५':'5', '६':'6', '7':'7', '८':'8', '९':'9'}
+                fy_year = ''.join(nep_digits.get(ch, ch) for ch in m.group(1))
+
         if data.admit_card_roll_no:
             app.admit_card_roll_no = data.admit_card_roll_no
         elif not app.admit_card_roll_no:
-            count = db.query(JobApplication).filter(JobApplication.admit_card_roll_no.isnot(None)).count() + 1
-            app.admit_card_roll_no = f"2081-ROLL-{count:03d}"
+            count = ctx.filter_query(db.query(JobApplication).filter(JobApplication.admit_card_roll_no.isnot(None)), JobApplication).count() + 1
+            app.admit_card_roll_no = f"{fy_year}-ROLL-{count:03d}"
 
-        app.exam_center = data.exam_center or app.exam_center or "पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक"
-        app.exam_date_time = data.exam_date_time or app.exam_date_time or "२०८१/०८/०५ बिहान ११:०० बजे"
+        # Populate chalani_no
+        if data.chalani_no:
+            app.chalani_no = data.chalani_no
+        elif not app.chalani_no:
+            import re
+            match = re.search(r'(\d+)$', app.admit_card_roll_no)
+            num = int(match.group(1)) if match else 1
+            nep_digits = {'0':'०', '1':'१', '2':'२', '3':'३', '4':'४', '5':'५', '6':'६', '7':'७', '8':'८', '9':'९'}
+            app.chalani_no = ''.join(nep_digits.get(ch, ch) for ch in str(num))
+
+        app.exam_center = data.exam_center or (vac.exam_center if vac and vac.exam_center else None) or app.exam_center
+        app.exam_date_time = data.exam_date_time or (vac.exam_date_bs if vac and vac.exam_date_bs else None) or app.exam_date_time
     elif "अस्वीकृत" in data.status:
         app.admit_card_roll_no = None
 
@@ -1362,9 +1505,10 @@ def verify_job_application(
         entity_type="APPLICATION",
         entity_id=app.application_no,
         action="DECISION_" + ("APPROVED" if "स्वीकृत" in data.status else "REJECTED"),
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"Verification decision: {data.status}, Roll: {app.admit_card_roll_no}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app.tenant_id
     )
 
     return app
@@ -1376,13 +1520,14 @@ def update_job_application(
     data: JobApplicationUpdate,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     cond = [JobApplication.application_no == application_id]
     if is_valid_uuid(application_id) or len(application_id) > 10:
         cond.append(JobApplication.id == application_id)
 
-    app = db.query(JobApplication).filter(or_(*cond)).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
 
@@ -1399,9 +1544,10 @@ def update_job_application(
         entity_type="APPLICATION",
         entity_id=app.application_no,
         action="UPDATE",
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"Application updated: {app.application_no}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app.tenant_id
     )
 
     return app
@@ -1412,17 +1558,19 @@ def delete_job_application(
     application_id: str,
     request: Request,
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     cond = [JobApplication.application_no == application_id]
     if is_valid_uuid(application_id) or len(application_id) > 10:
         cond.append(JobApplication.id == application_id)
 
-    app = db.query(JobApplication).filter(or_(*cond)).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
 
     app_no = app.application_no
+    app_tenant = app.tenant_id
     db.delete(app)
     db.commit()
 
@@ -1431,9 +1579,10 @@ def delete_job_application(
         entity_type="APPLICATION",
         entity_id=app_no,
         action="DELETE",
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"Application deleted: {app_no}",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app_tenant
     )
 
     return {"message": "दरखास्त आवेदन सफलतापूर्वक हटाइयो।", "success": True}
@@ -1444,6 +1593,7 @@ def onboard_candidate_to_hrms(
     application_id: str,
     data: OnboardToHrmsRequest,
     request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
     current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
     db: Session = Depends(get_db)
 ):
@@ -1455,18 +1605,18 @@ def onboard_candidate_to_hrms(
     if is_valid_uuid(application_id) or len(application_id) > 10:
         cond.append(JobApplication.id == application_id)
 
-    app = db.query(JobApplication).filter(or_(*cond)).first()
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
     if not app:
         raise HTTPException(status_code=404, detail="दरखास्त आवेदन फेला परेन।")
 
     # Determine or generate unique employeeId
     emp_id = (data.employee_id or "").strip()
     if not emp_id:
-        total_emp_count = db.query(Employee).count()
+        total_emp_count = ctx.filter_query(db.query(Employee), Employee).count()
         emp_id = f"EMP-2081-{total_emp_count + 1:04d}"
 
     # Check for existing employee with same ID
-    existing = db.query(Employee).filter(Employee.employee_id == emp_id).first()
+    existing = ctx.filter_query(db.query(Employee).filter(Employee.employee_id == emp_id), Employee).first()
     if existing:
         if app.onboarded_employee_id == emp_id:
             return {
@@ -1520,6 +1670,8 @@ def onboard_candidate_to_hrms(
             "remarks": f"अनुभव: {app.experience_years or 0} वर्ष"
         })
 
+    emp_tenant = app.tenant_id or (ctx.tenant_subdomain if ctx.tenant_subdomain != 'all' else 'panchpokhari')
+
     # Create new Employee in HRMS
     new_emp = Employee(
         id=str(uuid.uuid4()),
@@ -1543,7 +1695,7 @@ def onboard_candidate_to_hrms(
         status="Active",
         photo_url=app.photo_url,
         documents=docs_list,
-        tenant_id=getattr(app, 'tenant_id', None)
+        tenant_id=emp_tenant
     )
     db.add(new_emp)
 
@@ -1561,9 +1713,10 @@ def onboard_candidate_to_hrms(
         entity_type="HRMS_ONBOARDING",
         entity_id=app.application_no,
         action="ONBOARD_TO_HRMS",
-        performed_by="ADMIN",
+        performed_by=f"ADMIN:{current_user.email}",
         details=f"उम्मेदवार {app.full_name_np} (आवेदन: {app.application_no}) लाई नयाँ कर्मचारी संकेत नं {emp_id} मा पदस्थापन/दर्ता गरियो।",
-        ip_address=request.client.host if request.client else None
+        ip_address=request.client.host if request.client else None,
+        tenant_id=emp_tenant
     )
 
     return {

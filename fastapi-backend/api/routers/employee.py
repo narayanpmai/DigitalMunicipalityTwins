@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from core.database import get_db
+from core.tenant import TenantContext, get_tenant_context
 from models.employee import Employee
 from schemas.employee import EmployeeSchema, EmployeeCreate, EmployeeUpdate
 import uuid, os, shutil
@@ -22,9 +23,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def get_employees(
     department: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Employee)
+    query = ctx.filter_query(db.query(Employee), Employee)
     if department:
         query = query.filter(Employee.department == department)
     if status:
@@ -32,18 +34,29 @@ def get_employees(
     return query.order_by(Employee.employee_id.asc()).all()
 
 @router.get("/{id}", response_model=EmployeeSchema)
-def get_employee(id: str, db: Session = Depends(get_db)):
-    emp = db.query(Employee).filter(Employee.id == id).first()
+def get_employee(
+    id: str,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    emp = ctx.filter_query(db.query(Employee).filter(Employee.id == id), Employee).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found")
     return emp
 
 @router.post("", response_model=EmployeeSchema)
-def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
+def create_employee(
+    employee: EmployeeCreate,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
     emp_data = employee.model_dump(exclude_unset=True)
     if not emp_data.get("employee_id"):
-        count = db.query(Employee).count()
+        count = ctx.filter_query(db.query(Employee), Employee).count()
         emp_data["employee_id"] = f"EMP-{count + 1:04d}"
+
+    eff_tenant = ctx.tenant_subdomain if (ctx.tenant_subdomain and ctx.tenant_subdomain != 'all') else "panchpokhari"
+    emp_data["tenant_id"] = eff_tenant
 
     db_emp = Employee(
         id=str(uuid.uuid4()),

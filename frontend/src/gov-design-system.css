@@ -171,12 +171,22 @@ body {
 
 h1, h2, h3, h4, h5, h6,
 .gov-title-display, .gov-title-lg, .gov-title-md, .gov-title-sm {
-  font-family: var(--gov-font-english), var(--gov-font-nepali);
-  color: var(--gov-text-primary);
+  font-family: var(--gov-font-nepali), var(--gov-font-english);
+  color: inherit;
   font-weight: 700;
   line-height: 1.25;
   margin-top: 0;
   letter-spacing: -0.015em;
+}
+
+/* Dark banners, hero sections and modal headers must always have crisp white headings */
+[class*="hero"] h1, [class*="hero"] h2, [class*="hero"] h3,
+[style*="linear-gradient"] h1, [style*="linear-gradient"] h2, [style*="linear-gradient"] h3,
+[style*="color: #ffffff"] h1, [style*="color: #ffffff"] h2, [style*="color: #ffffff"] h3,
+[style*="color: #fff"] h1, [style*="color: #fff"] h2, [style*="color: #fff"] h3,
+.rec-modal-header h1, .rec-modal-header h2, .rec-modal-header h3,
+.rec-form-header h1, .rec-form-header h2, .rec-form-header h3 {
+  color: #ffffff !important;
 }
 
 .gov-title-display { font-size: 2.25rem; font-weight: 800; }
@@ -632,13 +642,14 @@ h1, h2, h3, h4, h5, h6,
 
 /* ── PROGRESS REPORT OFFICIAL PRINT STYLES ────────────────────────────── */
 @media print {
-  body * {
+  body.printing-progress-report * {
     visibility: hidden;
   }
-  #printable-progress-report, #printable-progress-report * {
+  body.printing-progress-report #printable-progress-report,
+  body.printing-progress-report #printable-progress-report * {
     visibility: visible;
   }
-  #printable-progress-report {
+  body.printing-progress-report #printable-progress-report {
     position: absolute;
     left: 0;
     top: 0;

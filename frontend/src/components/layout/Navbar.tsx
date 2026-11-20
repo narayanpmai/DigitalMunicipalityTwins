@@ -20,15 +20,15 @@ import {
 } from 'lucide-react';
 import { adToBs } from '../../utils/nepaliCalendar';
 
-// ── Navbar Design Tokens ────────────────────────────────────────────
+// ── Navbar Design Tokens (Nepal Government Official Standards) ──────
 const N = {
   bg: '#ffffff',
   border: '#e2e8f0',
   text: '#0f172a',
-  textMuted: '#64748b',
-  primary: '#0284c7',
-  primaryLight: '#e0f2fe',
-  height: '64px',
+  textMuted: '#475569',
+  primary: '#0F4C81',
+  primaryLight: '#ebf3fa',
+  height: '68px',
 };
 
 interface NavbarProps {
@@ -145,40 +145,32 @@ export const Navbar: React.FC<NavbarProps> = ({ isPublic = false }) => {
         gap: '1rem',
       }}
     >
-      {/* ── Left: Brand ────────────────────────────────────── */}
+      {/* ── Left: Palika Official Identity (Palika Logo Only) ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+        {/* Palika Official Logo Only */}
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
-            alt="Logo"
-            style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '8px' }}
+            alt="पालिका लोगो"
+            style={{ width: '44px', height: '44px', objectFit: 'contain' }}
           />
         ) : (
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #0d2757, #0284c7)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(2,132,199,0.35)',
-            }}
-          >
-            P5
-          </div>
+          <img
+            src="/emblem-of-nepal.png"
+            alt="पालिका लोगो"
+            style={{ width: '44px', height: '44px', objectFit: 'contain' }}
+          />
         )}
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: N.text, lineHeight: 1.2 }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '0.66rem', fontWeight: 700, color: '#dc2626', letterSpacing: '0.02em', lineHeight: 1.15 }}>
+            {settings?.province_name || (isGaushalaTenant ? 'स्थानीय सरकार • मधेश प्रदेश' : 'स्थानीय सरकार • बागमती प्रदेश')}
+          </div>
+          <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.01em' }}>
             {palikaName}
           </div>
-          <div className="dt-hide-on-mobile" style={{ fontSize: '0.7rem', color: N.textMuted, lineHeight: 1.3 }}>
-            {slogan}
+          <div className="dt-hide-on-mobile" style={{ fontSize: '0.68rem', color: '#475569', fontWeight: 600, lineHeight: 1.2 }}>
+            {palikaName.includes('गाउँपालिका') ? 'गाउँकार्यपालिकाको कार्यालय' : 'नगरकार्यपालिकाको कार्यालय'} • {slogan}
           </div>
         </div>
       </div>

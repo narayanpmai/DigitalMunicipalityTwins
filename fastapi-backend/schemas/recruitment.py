@@ -4,6 +4,7 @@ from datetime import datetime
 
 class VacancyAnnouncementSchema(BaseModel):
     id: Any
+    tenant_id: Optional[str] = Field("panchpokhari", alias="tenantId")
     vacancy_no: str = Field(alias="vacancyNo", default="")
     title: str
     service_group: str = Field(alias="serviceGroup", default="प्रशासन/प्राविधिक")
@@ -16,6 +17,7 @@ class VacancyAnnouncementSchema(BaseModel):
     publish_date_bs: str = Field(alias="publishDateBs")
     deadline_date_bs: str = Field(alias="deadlineDateBs")
     exam_date_bs: Optional[str] = Field(None, alias="examDateBs")
+    exam_center: Optional[str] = Field(None, alias="examCenter")
     status: Optional[str] = "खुला (Active)"
     description: Optional[str] = None
     created_at: Optional[datetime] = Field(None, alias="createdAt")
@@ -38,6 +40,7 @@ class VacancyAnnouncementCreate(BaseModel):
     publish_date_bs: str = Field(alias="publishDateBs")
     deadline_date_bs: str = Field(alias="deadlineDateBs")
     exam_date_bs: Optional[str] = Field(None, alias="examDateBs")
+    exam_center: Optional[str] = Field(None, alias="examCenter")
     status: Optional[str] = "खुला (Active)"
     description: Optional[str] = None
 
@@ -47,6 +50,7 @@ class VacancyAnnouncementCreate(BaseModel):
 
 class JobApplicationSchema(BaseModel):
     id: Any
+    tenant_id: Optional[str] = Field("panchpokhari", alias="tenantId")
     application_no: str = Field(alias="applicationNo", default="")
     vacancy_id: str = Field(alias="vacancyId")
     vacancy_no: str = Field(alias="vacancyNo")
@@ -82,6 +86,7 @@ class JobApplicationSchema(BaseModel):
     application_status: Optional[str] = Field("SUBMITTED", alias="applicationStatus")
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
     admit_card_roll_no: Optional[str] = Field(None, alias="admitCardRollNo")
+    chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
     
@@ -143,6 +148,7 @@ class ApplicationVerificationUpdate(BaseModel):
     status: str # स्वीकृत (Approved), अस्वीकृत (Rejected), विचाराधीन (Pending)
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
     admit_card_roll_no: Optional[str] = Field(None, alias="admitCardRollNo")
+    chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
 
@@ -163,6 +169,7 @@ class VacancyAnnouncementUpdate(BaseModel):
     publish_date_bs: Optional[str] = Field(None, alias="publishDateBs")
     deadline_date_bs: Optional[str] = Field(None, alias="deadlineDateBs")
     exam_date_bs: Optional[str] = Field(None, alias="examDateBs")
+    exam_center: Optional[str] = Field(None, alias="examCenter")
     status: Optional[str] = None
     description: Optional[str] = None
 
@@ -194,6 +201,7 @@ class JobApplicationUpdate(BaseModel):
     status: Optional[str] = None
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
     admit_card_roll_no: Optional[str] = Field(None, alias="admitCardRollNo")
+    chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
     photo_url: Optional[str] = Field(None, alias="photoUrl")

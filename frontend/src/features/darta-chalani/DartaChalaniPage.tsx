@@ -817,14 +817,14 @@ export const DartaChalaniPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 900, margin: '0 0 0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.25)' }}>
+          <h1 style={{ fontSize: '1.85rem', fontWeight: 900, margin: '0 0 0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem', letterSpacing: '-0.01em', lineHeight: 1.2, color: '#ffffff' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.3)' }}>
               <FileText size={26} color="#ffffff" />
             </div>
-            <span>डिजिटल दर्ता तथा चलानी व्यवस्थापन प्रणाली</span>
+            <span style={{ color: '#ffffff' }}>डिजिटल दर्ता तथा चलानी व्यवस्थापन प्रणाली</span>
           </h1>
 
-          <p style={{ margin: 0, opacity: 0.9, fontSize: '0.92rem', lineHeight: 1.5 }}>
+          <p style={{ margin: 0, opacity: 0.95, fontSize: '0.92rem', lineHeight: 1.5, color: '#f1f5f9' }}>
             पाँचपोखरी थाङपाल गाउँपालिका — अधिकारिक तोक आदेश, सरकारी लेटरहेड, डिजिटल QR प्रमाणीकरण र नागरिक पावती रसिद
           </p>
         </div>
@@ -837,15 +837,15 @@ export const DartaChalaniPage: React.FC = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
               color: '#ffffff',
               fontWeight: 700,
               fontSize: '0.88rem',
               padding: '0.65rem 1.15rem',
               borderRadius: '10px',
-              border: '1px solid rgba(255,255,255,0.25)',
+              border: '1px solid rgba(255,255,255,0.35)',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.45)',
               transition: 'all 0.2s ease',
             }}
           >

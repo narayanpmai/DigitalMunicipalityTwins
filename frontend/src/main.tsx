@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './styles/app.css';
+import './gov-design-system.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

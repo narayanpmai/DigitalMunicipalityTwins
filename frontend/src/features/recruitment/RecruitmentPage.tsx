@@ -62,6 +62,15 @@ import {
   Lock,
   ArrowLeft
 } from 'lucide-react';
+import {
+  CentralDocumentSheet,
+  CentralLetterheadHeader,
+  CentralLetterheadFooter,
+  CentralPrintPreviewModal,
+  printElement,
+  computeNepalSambat,
+} from '../../components/common/CentralLetterhead';
+import { bsToAd, toEnglishDigits } from '../../utils/nepaliCalendar';
 
 interface Vacancy {
   id: string;
@@ -290,7 +299,27 @@ export const RecruitmentPage: React.FC = () => {
   const dynamicEmblemUrl =
     localOverride.emblem_url?.trim() ||
     tenantSettings?.emblem_url?.trim() ||
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
+    '/emblem-of-nepal.png';
+
+  const dynamicSlogan =
+    localOverride.slogan?.trim() ||
+    tenantSettings?.slogan?.trim() ||
+    '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”';
+
+  const dynamicWebsite =
+    localOverride.website?.trim() ||
+    tenantSettings?.website?.trim() ||
+    'http://panchpokharithangpalmun.gov.np/';
+
+  const dynamicEmail =
+    localOverride.email?.trim() ||
+    tenantSettings?.email?.trim() ||
+    'ito.panchpokharithangpalmun@gmail.com';
+
+  const dynamicPhone =
+    localOverride.phone?.trim() ||
+    tenantSettings?.phone?.trim() ||
+    '+9779851109808';
 
   // Detect whether page is public or admin
   const isPublicView = location.pathname === '/recruitment';
@@ -341,6 +370,46 @@ export const RecruitmentPage: React.FC = () => {
   const [admitCardResult, setAdmitCardResult] = useState<any>(null);
   const [isAdmitSearching, setIsAdmitSearching] = useState(false);
   const [admitSearchError, setAdmitSearchError] = useState('');
+
+  // Centralized Official Documents Preview & Print Modals
+  const [showAdmitCardPreviewModal, setShowAdmitCardPreviewModal] = useState(false);
+  const [showApprovalLetterModal, setShowApprovalLetterModal] = useState(false);
+  const [selectedApprovalApp, setSelectedApprovalApp] = useState<any>(null);
+  const [showExamNoticeModal, setShowExamNoticeModal] = useState(false);
+  const [selectedNoticeVacancy, setSelectedNoticeVacancy] = useState<any>(null);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [selectedAppointmentApp, setSelectedAppointmentApp] = useState<any>(null);
+
+  // Helper to format Exam Date in both BS and AD
+  const getExamDateTimeDetails = (app: any, vac: any) => {
+    const rawDate = (app?.examDateTime || app?.exam_date_time || vac?.examDateBs || vac?.exam_date_bs || '').trim();
+    if (!rawDate) {
+      return { bs: '', ad: '' };
+    }
+    const western = toEnglishDigits(rawDate);
+    const dateMatch = western.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+
+    let adDateStr = '';
+    if (dateMatch) {
+      try {
+        adDateStr = bsToAd(parseInt(dateMatch[1], 10), parseInt(dateMatch[2], 10), parseInt(dateMatch[3], 10));
+      } catch {}
+    }
+
+    let timeAd = '';
+    if (rawDate.includes('बिहान')) {
+      const timeMatch = western.match(/(\d{1,2}):(\d{2})/);
+      timeAd = timeMatch ? `${timeMatch[1]}:${timeMatch[2]} AM` : '11:00 AM';
+    } else if (rawDate.includes('दिउँसो') || rawDate.includes('दिउसो') || rawDate.includes('अपराह्न')) {
+      const timeMatch = western.match(/(\d{1,2}):(\d{2})/);
+      timeAd = timeMatch ? `${timeMatch[1]}:${timeMatch[2]} PM` : '01:00 PM';
+    }
+
+    return {
+      bs: rawDate,
+      ad: adDateStr ? `${adDateStr} ${timeAd}`.trim() : ''
+    };
+  };
 
   // -------------------------------------------------------------
   // 5-STEP WIZARD STATE
@@ -404,9 +473,10 @@ export const RecruitmentPage: React.FC = () => {
     applicationFee: 500,
     inclusiveGroupFee: 200,
     minQualification: '',
-    publishDateBs: '२०८१-०५-०१',
-    deadlineDateBs: '२०८१-०५-२५',
-    examDateBs: '२०८१-०६-१५ बिहान ११:०० बजे',
+    publishDateBs: '२०८३-०५-०१',
+    deadlineDateBs: '२०८३-०५-२५',
+    examDateBs: '',
+    examCenter: '',
     status: 'खुला (Active)',
     description: '',
   });
@@ -423,9 +493,10 @@ export const RecruitmentPage: React.FC = () => {
     applicationFee: 500,
     inclusiveGroupFee: 200,
     minQualification: '',
-    publishDateBs: '२०८१-०५-०१',
-    deadlineDateBs: '२०८१-०५-२५',
-    examDateBs: '२०८१-०६-१५ बिहान ११:०० बजे',
+    publishDateBs: '२०८३-०५-०१',
+    deadlineDateBs: '२०८३-०५-२५',
+    examDateBs: '',
+    examCenter: '',
     status: 'खुला (Active)',
     description: '',
   });
@@ -445,7 +516,8 @@ export const RecruitmentPage: React.FC = () => {
       minQualification: vac.minQualification || vac.min_qualification || '',
       publishDateBs: vac.publishDateBs || vac.publish_date_bs || '',
       deadlineDateBs: vac.deadlineDateBs || vac.deadline_date_bs || '',
-      examDateBs: vac.examDateBs || vac.exam_date_bs || '',
+      examDateBs: vac.examDateBs !== undefined && vac.examDateBs !== null ? vac.examDateBs : (vac.exam_date_bs || ''),
+      examCenter: vac.examCenter !== undefined && vac.examCenter !== null ? vac.examCenter : (vac.exam_center || ''),
       status: vac.status || 'खुला (Active)',
       description: vac.description || '',
     });
@@ -457,8 +529,8 @@ export const RecruitmentPage: React.FC = () => {
     status: 'स्वीकृत (Approved)',
     rejectionReason: '',
     admitCardRollNo: '',
-    examCenter: 'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक',
-    examDateTime: '२०८१/०६/१५ बिहान ११:०० बजे',
+    examCenter: '',
+    examDateTime: '',
   });
 
   // HRMS Onboarding State
@@ -532,7 +604,7 @@ export const RecruitmentPage: React.FC = () => {
   // QR Code Generator Effect for NIMB Account 18301400000109 with Instant Fallback
   useEffect(() => {
     const rawQr = activePaymentTxn?.qr_data || activePaymentTxn?.qrData || activePaymentTxn?.parameters?.qrData;
-    const appNo = savedDraftApp?.applicationNo || savedDraftApp?.application_no || activePaymentTxn?.application_no || 'APP-2081-XXXX';
+    const appNo = savedDraftApp?.applicationNo || savedDraftApp?.application_no || activePaymentTxn?.application_no || 'PTRM-2083-XXXX';
     const amountVal = Number(activePaymentTxn?.amount || calculatedFee || 1000).toFixed(2);
 
     // Standard EMVCo & Fonepay/NepalPay QR payload for NIMB Account 18301400000109
@@ -1348,27 +1420,6 @@ return (
                         विज्ञापन नं: {vac.vacancyNo || vac.vacancy_no}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        {!isPublicView && (
-                          <button
-                            onClick={() => openEditVacancyModal(vac)}
-                            style={{
-                              background: '#eff6ff',
-                              color: '#1d4ed8',
-                              border: '1px solid #bfdbfe',
-                              padding: '0.2rem 0.55rem',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              borderRadius: '6px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.3rem',
-                              cursor: 'pointer'
-                            }}
-                            title="विज्ञापन संशोधन / सम्पादन गर्नुहोस्"
-                          >
-                            <Pencil size={12} /> सम्पादन
-                          </button>
-                        )}
                         <span className={isActive ? 'rec-badge-active' : 'rec-badge-closed'}>
                           <span className="rec-pulse-dot" />
                           {vac.status}
@@ -1437,6 +1488,18 @@ return (
                         style={{ color: '#334155', background: '#e2e8f0', borderColor: '#cbd5e1', fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
                       >
                         <Eye size={14} /> विवरण
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedNoticeVacancy(vac);
+                          setShowExamNoticeModal(true);
+                        }}
+                        className="rec-btn rec-btn-outline"
+                        style={{ color: '#1e3a8a', background: '#eff6ff', borderColor: '#bfdbfe', fontSize: '0.78rem', padding: '0.4rem 0.75rem', fontWeight: 700 }}
+                        title="केन्द्रीकृत लेटरहेडमा आधिकारिक परीक्षा सूचना हेर्नुहोस् र प्रिन्ट गर्नुहोस्"
+                      >
+                        <FileText size={14} /> परीक्षा सूचना
                       </button>
 
                       {!isPublicView && (
@@ -1699,9 +1762,9 @@ return (
                                 setVerifyForm({
                                   status: app.status.includes('स्वीकृत') ? app.status : 'स्वीकृत (Approved)',
                                   rejectionReason: app.rejectionReason || app.rejection_reason || '',
-                                  admitCardRollNo: app.admitCardRollNo || app.admit_card_roll_no || `2081-ROLL-${String(Math.floor(Math.random() * 899) + 100)}`,
-                                  examCenter: app.examCenter || app.exam_center || 'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक',
-                                  examDateTime: app.examDateTime || app.exam_date_time || '२०८१/०६/१५ बिहान ११:०० बजे',
+                                  admitCardRollNo: app.admitCardRollNo || app.admit_card_roll_no || `2083-ROLL-${String(Math.floor(Math.random() * 899) + 100)}`,
+                                  examCenter: app.examCenter || app.exam_center || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.examCenter || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.exam_center || '',
+                                  examDateTime: app.examDateTime || app.exam_date_time || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.examDateBs || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.exam_date_bs || '',
                                 });
                                 setShowVerifyModal(true);
                               }}
@@ -1711,15 +1774,43 @@ return (
                               <ShieldCheck size={15} />
                             </button>
 
+                            {/* Approval Letter Action */}
+                            {app.status.includes('स्वीकृत') && (
+                              <button
+                                onClick={() => {
+                                  setSelectedApprovalApp(app);
+                                  setShowApprovalLetterModal(true);
+                                }}
+                                className="rec-icon-btn"
+                                style={{ background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
+                                title="आधिकारिक आवेदन स्वीकृति पत्र (Approval Letter) हेर्नुहोस् र प्रिन्ट गर्नुहोस्"
+                              >
+                                <FileCheck size={15} />
+                              </button>
+                            )}
+
                             {/* HRMS Onboarding Action */}
                             {app.onboardedEmployeeId || app.onboarded_employee_id ? (
-                              <a
-                                href="/app/employees"
-                                className="rec-icon-btn rec-icon-btn-onboarded"
-                                title={`HRMS मा दर्ता सम्पन्न (संकेत नं: ${app.onboardedEmployeeId || app.onboarded_employee_id}) - HRMS प्रोफाइल हेर्नुहोस्`}
-                              >
-                                <UserCheck size={15} />
-                              </a>
+                              <>
+                                <a
+                                  href="/app/employees"
+                                  className="rec-icon-btn rec-icon-btn-onboarded"
+                                  title={`HRMS मा दर्ता सम्पन्न (संकेत नं: ${app.onboardedEmployeeId || app.onboarded_employee_id}) - HRMS प्रोफाइल हेर्नुहोस्`}
+                                >
+                                  <UserCheck size={15} />
+                                </a>
+                                <button
+                                  onClick={() => {
+                                    setSelectedAppointmentApp(app);
+                                    setShowAppointmentModal(true);
+                                  }}
+                                  className="rec-icon-btn"
+                                  style={{ background: '#fef3c7', color: '#b45309', borderColor: '#fde68a' }}
+                                  title="करार नियुक्ति तथा पदस्थापन पत्र (Appointment Letter) हेर्नुहोस् र प्रिन्ट गर्नुहोस्"
+                                >
+                                  <Award size={15} />
+                                </button>
+                              </>
                             ) : (
                               <button
                                 onClick={() => openOnboardModal(app)}
@@ -2789,7 +2880,7 @@ return (
                     डिजिटल प्रवेशपत्र, रसिद खोज तथा आवेदन स्थिति ट्र्याकिङ
                   </h3>
                   <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
-                    तपाईंको दरखास्त नम्बर (उदा: APP-2081-0001) वा नागरिकता नम्बर वा मोबाइल नम्बर प्रविष्ट गरी खोजी गर्नुहोस्।
+                    तपाईंको दरखास्त नम्बर (उदा: PTRM-2083-0001) वा नागरिकता नम्बर वा मोबाइल नम्बर प्रविष्ट गरी खोजी गर्नुहोस्।
                   </p>
 
                   <form onSubmit={handleSearchAdmitCard} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
@@ -2878,216 +2969,255 @@ return (
                           </button>
                         )}
                         {admitCardResult.is_admit_card_ready && (
-                          <button onClick={() => window.print()} className="rec-btn rec-btn-primary" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
-                            <Printer size={15} />
-                            प्रवेशपत्र प्रिन्ट (Print)
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowAdmitCardPreviewModal(true)}
+                              className="rec-btn"
+                              style={{
+                                fontSize: '0.8rem',
+                                padding: '0.45rem 0.85rem',
+                                background: '#0284c7',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Eye size={15} />
+                              प्रवेशपत्र पूर्वावलोकन (Preview)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => printElement('printable-admit-card', 'A4')}
+                              className="rec-btn rec-btn-primary"
+                              style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              <Printer size={15} />
+                              प्रवेशपत्र प्रिन्ट (Print)
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Printable Official Admit Card */}
-                    {admitCardResult.is_admit_card_ready && (
-                      <div id="printable-admit-card" className="rec-admit-official-card">
-                        <div className="rec-admit-watermark">
-                          <img
-                            src={dynamicPalikaLogo}
-                            alt="Watermark"
-                            className="rec-admit-watermark-img"
-                            onError={(e: any) => {
-                              e.currentTarget.src = '/panchpokhari-logo.png';
-                            }}
-                          />
-                        </div>
+                    {/* Printable Official Admit Card (Centralized Letterhead Sheet) */}
+                    {admitCardResult.is_admit_card_ready && (() => {
+                      const schedule = getExamDateTimeDetails(admitCardResult.application, admitCardResult.vacancy);
+                      const rollNumber = admitCardResult.application.admitCardRollNo || admitCardResult.application.admit_card_roll_no || '2083-ROLL-001';
+                      const chalaniNumber = admitCardResult.application.chalaniNo ||
+                        admitCardResult.application.chalani_no ||
+                        (rollNumber.includes('-') ? rollNumber.split('-').pop() : '३५२');
+                      const examCenterVal = (admitCardResult.vacancy?.examCenter ||
+                        admitCardResult.vacancy?.exam_center ||
+                        admitCardResult.application?.examCenter ||
+                        admitCardResult.application?.exam_center || '').trim();
+                      const examDateVal = (admitCardResult.vacancy?.examDateBs ||
+                        admitCardResult.vacancy?.exam_date_bs ||
+                        admitCardResult.application?.examDateTime ||
+                        admitCardResult.application?.exam_date_time || '').trim();
+                      const showExamScheduleBanner = Boolean(examCenterVal || examDateVal);
 
-                        <div className="rec-admit-header">
-                          <div className="rec-admit-logos-left">
-                            <div className="rec-admit-emblem-wrap" title="नेपाल सरकारको आधिकारिक निशान छाप">
-                              <img
-                                src={dynamicEmblemUrl}
-                                alt="नेपाल सरकार निशान छाप"
-                                className="rec-admit-emblem-img"
-                                onError={(e: any) => {
-                                  e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
-                                }}
-                              />
-                            </div>
-                            <div className="rec-admit-palika-logo-wrap" title={`${dynamicPalikaName}को आधिकारिक लोगो (Palika Setup बाट डायनामिक)`}>
-                              <img
-                                src={dynamicPalikaLogo}
-                                alt="गाउँपालिकाको आधिकारिक लोगो"
-                                className="rec-admit-palika-logo-img"
-                                onError={(e: any) => {
-                                  e.currentTarget.src = '/panchpokhari-logo.png';
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="rec-admit-title-center">
-                            <div className="rec-admit-top-sub">स्थानीय सरकार / अनुसूची तथा पदपूर्ति सञ्चालन</div>
-                            <h2 className="rec-admit-title-main">{dynamicPalikaName}</h2>
-                            <div className="rec-admit-title-en">{dynamicPalikaNameEn}</div>
-                            <h3 className="rec-admit-sub-office">{dynamicOfficeTitle}</h3>
-                            <p className="rec-admit-sub-province">{dynamicAddress}, {dynamicProvinceCountry}</p>
-                            <div className="rec-admit-branch-title">कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति</div>
-                            <div className="rec-admit-ribbon">प्रवेशपत्र (ADMIT CARD)</div>
-                          </div>
-
-                          <div className="rec-photo-paste-box">
-                            {admitCardResult.application.photoUrl || admitCardResult.application.photo_url ? (
-                              <img
-                                src={admitCardResult.application.photoUrl || admitCardResult.application.photo_url}
-                                alt="उम्मेदवार फोटो"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-                              />
-                            ) : (
-                              <>
-                                <span>फोटो</span>
-                                <span>टाँस्नुहोस्</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="rec-admit-content-grid">
-                          <div>
-                            <div className="rec-admit-roll-banner">
-                              <div>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', display: 'block' }}>रोल नम्बर (Roll No.):</span>
-                                <span className="rec-admit-roll-no">
-                                  {admitCardResult.application.admitCardRollNo ||
-                                    admitCardResult.application.admit_card_roll_no ||
-                                    'ROLL-2081-001'}
-                                </span>
+                      return (
+                        <CentralDocumentSheet
+                          id="printable-admit-card"
+                          className="rec-admit-official-card"
+                          paperSize="A4"
+                          palikaName={dynamicPalikaName}
+                          palikaNameEn={dynamicPalikaNameEn}
+                          localGovType="स्थानीय सरकार"
+                          officeTitle={dynamicOfficeTitle}
+                          location={dynamicAddress}
+                          provinceCountry={dynamicProvinceCountry}
+                          establishedYear="२०७३"
+                          activeFiscalYear="२०८३/०८४"
+                          patraSankhya="२०८३/०८४"
+                          chalaniNo={chalaniNumber}
+                          branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                          branchPlacement="below-title"
+                          documentTitle="प्रवेशपत्र (ADMIT CARD)"
+                          slogan={dynamicSlogan}
+                          website={dynamicWebsite}
+                          email={dynamicEmail}
+                          phone={dynamicPhone}
+                          logoUrl={dynamicPalikaLogo}
+                          emblemUrl={dynamicEmblemUrl}
+                          dateBs="२०८३/०८/०५"
+                          dateAd="2026-11-20"
+                          showWatermark={true}
+                          showFooter={true}
+                        >
+                          {/* Candidate Grid with Photo, Table and QR */}
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
+                            {/* Table on Left */}
+                            <div style={{ flex: 1 }}>
+                              <div className="rec-admit-roll-banner" style={{ marginBottom: '0.45rem' }}>
+                                <div>
+                                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', display: 'block' }}>रोल नम्बर (Roll No.):</span>
+                                  <span className="rec-admit-roll-no">{rollNumber}</span>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', display: 'block' }}>दरखास्त नं:</span>
+                                  <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#334155', fontSize: '0.95rem' }}>
+                                    {admitCardResult.application.applicationNo || admitCardResult.application.application_no}
+                                  </span>
+                                </div>
                               </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', display: 'block' }}>दरखास्त नं:</span>
-                                <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#334155', fontSize: '0.95rem' }}>
-                                  {admitCardResult.application.applicationNo ||
-                                    admitCardResult.application.application_no}
-                                </span>
-                              </div>
+
+                              <table className="rec-admit-table">
+                                <tbody>
+                                  <tr>
+                                    <td className="label-col">उम्मेदवारको नाम:</td>
+                                    <td className="val-col">
+                                      <strong>{admitCardResult.application.fullNameNp || admitCardResult.application.full_name_np}</strong>
+                                      {admitCardResult.application.fullNameEn && ` (${admitCardResult.application.fullNameEn})`}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="label-col">विज्ञापन नं:</td>
+                                    <td className="val-col" style={{ color: '#0369a1', fontWeight: 700 }}>
+                                      {admitCardResult.application.vacancyNo || admitCardResult.application.vacancy_no}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="label-col">पद / सेवा / तह:</td>
+                                    <td className="val-col">
+                                      <strong>{admitCardResult.application.postTitle || admitCardResult.application.post_title}</strong>
+                                      {admitCardResult.vacancy?.level && ` - ${admitCardResult.vacancy.level}`}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="label-col">नागरिकता नं र जिल्ला:</td>
+                                    <td className="val-col">
+                                      {admitCardResult.application.citizenshipNo || admitCardResult.application.citizenship_no} (
+                                      {admitCardResult.application.citizenshipDistrict || admitCardResult.application.citizenship_district})
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="label-col">स्थायी ठेगाना:</td>
+                                    <td className="val-col">
+                                      {admitCardResult.application.permanentAddress || admitCardResult.application.permanent_address}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
 
-                            <table className="rec-admit-table">
-                              <tbody>
-                                <tr>
-                                  <td className="label-col">उम्मेदवारको नाम:</td>
-                                  <td className="val-col">
-                                    {admitCardResult.application.fullNameNp || admitCardResult.application.full_name_np}
-                                    {admitCardResult.application.fullNameEn && ` (${admitCardResult.application.fullNameEn})`}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="label-col">विज्ञापन नं:</td>
-                                  <td className="val-col" style={{ color: '#0369a1' }}>
-                                    {admitCardResult.application.vacancyNo || admitCardResult.application.vacancy_no}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="label-col">पद / सेवा / तह:</td>
-                                  <td className="val-col">
-                                    {admitCardResult.application.postTitle || admitCardResult.application.post_title}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="label-col">नागरिकता नं र जिल्ला:</td>
-                                  <td className="val-col">
-                                    {admitCardResult.application.citizenshipNo || admitCardResult.application.citizenship_no} (
-                                    {admitCardResult.application.citizenshipDistrict || admitCardResult.application.citizenship_district})
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="label-col">स्थायी ठेगाना:</td>
-                                  <td className="val-col">
-                                    {admitCardResult.application.permanentAddress || admitCardResult.application.permanent_address}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="rec-admit-qr-col">
-                            <div>
-                              <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
-                                आधिकारिक QR प्रमाणीकरण
-                              </span>
-                              <div className="rec-qr-img-wrap">
-                                <img
-                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
-                                    `Paanchpokhari e-Recruitment | Roll: ${admitCardResult.application.admitCardRollNo ||
-                                    admitCardResult.application.admit_card_roll_no
-                                    } | Name: ${admitCardResult.application.fullNameNp ||
-                                    admitCardResult.application.full_name_np
-                                    } | Post: ${admitCardResult.application.postTitle ||
-                                    admitCardResult.application.post_title
-                                    }`
-                                  )}`}
-                                  alt="Admit Card QR"
-                                  style={{ width: '105px', height: '105px', display: 'block' }}
-                                />
-                              </div>
-                            </div>
-
-                            <div style={{ width: '100%', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #cbd5e1' }}>
-                              <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>उम्मेदवारको हस्ताक्षर</span>
-                              <div style={{ height: '32px', marginTop: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {admitCardResult.application.signatureUrl || admitCardResult.application.signature_url ? (
+                            {/* Candidate Photo and Signature on Right */}
+                            <div style={{ width: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.45rem' }}>
+                              <div className="rec-photo-paste-box" style={{ width: '110px', height: '130px', margin: 0 }}>
+                                {admitCardResult.application.photoUrl || admitCardResult.application.photo_url ? (
                                   <img
-                                    src={admitCardResult.application.signatureUrl || admitCardResult.application.signature_url}
-                                    alt="हस्ताक्षर"
-                                    style={{ maxHeight: '30px', maxWidth: '100%', objectFit: 'contain' }}
+                                    src={admitCardResult.application.photoUrl || admitCardResult.application.photo_url}
+                                    alt="उम्मेदवार फोटो"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
                                   />
                                 ) : (
-                                  <div style={{ width: '100%', borderBottom: '1px dashed #94a3b8', height: '100%' }}></div>
+                                  <>
+                                    <span>फोटो</span>
+                                    <span>टाँस्नुहोस्</span>
+                                  </>
                                 )}
+                              </div>
+
+                              {/* Candidate Signature Box */}
+                              <div style={{ width: '100%', textAlign: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '4px' }}>
+                                <span style={{ fontSize: '0.68rem', color: '#64748b', display: 'block' }}>उम्मेदवारको हस्ताक्षर</span>
+                                <div style={{ height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {admitCardResult.application.signatureUrl || admitCardResult.application.signature_url ? (
+                                    <img
+                                      src={admitCardResult.application.signatureUrl || admitCardResult.application.signature_url}
+                                      alt="हस्ताक्षर"
+                                      style={{ maxHeight: '26px', maxWidth: '100%', objectFit: 'contain' }}
+                                    />
+                                  ) : (
+                                    <div style={{ width: '90%', borderBottom: '1px dashed #94a3b8', height: '100%' }} />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="rec-admit-exam-banner">
-                          <div>
-                            <span className="rec-exam-detail-title">परीक्षा केन्द्र (Exam Center):</span>
-                            <div className="rec-exam-detail-val">
-                              {admitCardResult.application.examCenter ||
-                                admitCardResult.application.exam_center ||
-                                'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक'}
+                          {/* Exam Schedule Banner with BS and AD dates (Shown only if exam date or center is specified) */}
+                          {showExamScheduleBanner && (
+                            <div className="rec-admit-exam-banner" style={{ margin: '0.45rem 0' }}>
+                              {Boolean(examCenterVal) && (
+                                <div>
+                                  <span className="rec-exam-detail-title">परीक्षा केन्द्र (Exam Center):</span>
+                                  <div className="rec-exam-detail-val" style={{ fontWeight: 800, color: '#0f172a' }}>
+                                    {examCenterVal}
+                                  </div>
+                                </div>
+                              )}
+                              {Boolean(examDateVal) && (
+                                <div>
+                                  <span className="rec-exam-detail-title">परीक्षा मिति तथा समय (Exam Schedule):</span>
+                                  <div className="rec-exam-detail-val rec-exam-time-val" style={{ fontWeight: 800 }}>
+                                    <div>नेपाली (BS): <strong>{schedule.bs}</strong></div>
+                                    {schedule.ad && <div style={{ fontSize: '0.8rem', color: '#0369a1', marginTop: '2px' }}>English (AD): {schedule.ad}</div>}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Instructions: Summarized from Official 14 Rules for perfect A4 fit */}
+                          <div className="rec-admit-instructions" style={{ padding: '0.45rem 0.85rem', margin: '0.45rem 0', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                              <strong style={{ color: '#0f172a', fontSize: '0.76rem' }}>
+                                उम्मेदवारले पालना गर्नुपर्ने नियमहरू (Rules & Instructions for Candidates):
+                              </strong>
+                              <span style={{ fontSize: '0.66rem', color: '#64748b', fontWeight: 600 }}>परीक्षा आचारसंहिता</span>
+                            </div>
+                            <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.72rem', lineHeight: '1.45', color: '#1e293b' }}>
+                              <li style={{ marginBottom: '2.5px' }}>
+                                <strong>प्रवेशपत्र र पहिचान:</strong> परीक्षा दिन आउँदा यो प्रवेशपत्र र सक्कल नेपाली नागरिकता अनिवार्य साथमा ल्याउनुपर्नेछ (प्रवेशपत्र विना परीक्षामा बस्न पाइने छैन)। प्रयोगात्मक परीक्षा तथा अन्तर्वार्तामा समेत प्रवेशपत्र अनिवार्य छ।
+                              </li>
+                              <li style={{ marginBottom: '2.5px' }}>
+                                <strong>समय पालना:</strong> परीक्षा सुरु हुनुभन्दा ३० मिनेट अगावै हलमा प्रवेश गर्नुपर्नेछ। वस्तुगत परीक्षा सुरु भएको १५ मिनेट र विषयगत परीक्षा सुरु भएको ३० मिनेटपछि आउने उम्मेदवारलाई परीक्षामा बस्न दिइने छैन।
+                              </li>
+                              <li style={{ marginBottom: '2.5px' }}>
+                                <strong>निषेधित सामग्री:</strong> परीक्षा हलभित्र मोबाइल फोन, क्यालकुलेटर, स्मार्टवाच, कुनै पनि विद्युतीय उपकरण, पुस्तक, कापी वा चिट लैजान तथा आपसमा कुराकानी वा संकेत गर्न पूर्ण निषेध छ।
+                              </li>
+                              <li style={{ marginBottom: '2.5px' }}>
+                                <strong>उत्तरपुस्तिका र "की" (Key):</strong> वस्तुगत परीक्षाको उत्तरपुस्तिकामा आफूलाई प्राप्त प्रश्नपत्रको "की" (Key) अनिवार्य लेख्नुपर्नेछ; नलेखेमा उत्तरपुस्तिका स्वतः रद्द हुनेछ। समावेशी समूहको व्यहोरा समेत खुलाउनुपर्नेछ।
+                              </li>
+                              <li>
+                                <strong>मर्यादा र हाजिर:</strong> परीक्षामा दैनिक हाजिर अनिवार्य छ। परीक्षाको मर्यादा विपरीत कार्य गरेमा केन्द्राध्यक्षले तत्काल निष्कासन गरी कानुन बमोजिम कारबाही गर्नेछ।
+                              </li>
+                            </ol>
+                          </div>
+
+                          {/* Official Signatures Row */}
+                          <div className="rec-admit-signatures" style={{ marginTop: '0.75rem', padding: '0 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                            {/* Candidate Signature */}
+                            <div style={{ textAlign: 'center', minWidth: '160px' }}>
+                              <div style={{ height: '36px' }}></div>
+                              <div className="rec-sig-line" style={{ width: '160px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
+                              <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a' }}>उम्मेदवारको हस्ताक्षर</span>
+                            </div>
+
+                            {/* Committee / CAO Signature & Stamp Area */}
+                            <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                              <div style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '0.66rem', color: '#94a3b8', fontStyle: 'italic' }}>[ हस्ताक्षर तथा कार्यालयको छाप ]</span>
+                              </div>
+                              <div className="rec-sig-line" style={{ width: '220px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
+                              <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a', display: 'block', whiteSpace: 'nowrap' }}>
+                                पदपूर्ति समिति / प्रमुख प्रशासकीय अधिकृत
+                              </span>
+                              <span style={{ fontSize: '0.74rem', color: '#475569', display: 'block', marginTop: '0.12rem', fontWeight: 600 }}>
+                                {dynamicPalikaName}
+                              </span>
                             </div>
                           </div>
-                          <div>
-                            <span className="rec-exam-detail-title">परीक्षा मिति तथा समय:</span>
-                            <div className="rec-exam-detail-val rec-exam-time-val">
-                              {admitCardResult.application.examDateTime ||
-                                admitCardResult.application.exam_date_time ||
-                                '२०८१/०६/१५ बिहान ११:०० बजे'}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="rec-admit-instructions">
-                          <strong style={{ color: '#0f172a' }}>परीक्षार्थीहरूका लागि आवश्यक निर्देशनहरू:</strong>
-                          <ol>
-                            <li>परीक्षा हलमा प्रवेश गर्दा यो प्रवेशपत्र र सक्कल नेपाली नागरिकताको प्रमाणपत्र अनिवार्य साथमा ल्याउनुपर्नेछ।</li>
-                            <li>परीक्षा सुरु हुनुभन्दा कम्तीमा ३० मिनेट अगावै तोकिएको परीक्षा केन्द्रमा उपस्थित भइसक्नुपर्नेछ।</li>
-                            <li>परीक्षा भवनभित्र मोबाइल फोन, स्मार्टवाच वा कुनै पनि विद्युतीय उपकरण लैजान पूर्ण निषेध गरिएको छ।</li>
-                          </ol>
-                        </div>
-
-                        <div className="rec-admit-signatures">
-                          <div style={{ textAlign: 'center' }}>
-                            <div className="rec-sig-line"></div>
-                            <span style={{ fontWeight: 800 }}>उम्मेदवारको हस्ताक्षर</span>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <div className="rec-sig-line"></div>
-                            <span style={{ fontWeight: 800, display: 'block' }}>पदपूर्ति समिति / प्रमुख प्रशासकीय अधिकृत</span>
-                            <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '0.15rem' }}>{dynamicPalikaName}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        </CentralDocumentSheet>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -3131,7 +3261,7 @@ return (
                             alt="नेपाल सरकार निशाना छाप"
                             style={{ width: '56px', height: '56px', objectFit: 'contain' }}
                             onError={(e: any) => {
-                              e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
+                              e.currentTarget.src = '/emblem-of-nepal.png';
                             }}
                           />
                           <div style={{ flex: 1, textAlign: 'center' }}>
@@ -3222,7 +3352,7 @@ return (
                   </div>
 
                   <div className="rec-modal-footer">
-                    <button onClick={() => window.print()} className="rec-btn rec-btn-primary">
+                    <button onClick={() => printElement('printable-receipt')} className="rec-btn rec-btn-primary">
                       <Printer size={16} /> रसिद प्रिन्ट गर्नुहोस्
                     </button>
                     <button onClick={() => setShowReceiptModal(false)} className="rec-btn rec-btn-outline">
@@ -3321,12 +3451,30 @@ return (
             {/* ============================================================== */}
             {showAddVacancyModal && (
               <div className="rec-modal-backdrop">
-                <div className="rec-modal-panel">
-                  <div className="rec-modal-header">
-                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Plus size={18} /> नयाँ कर्मचारी पदपूर्ति विज्ञापन आह्वान
+                <div
+                  className="rec-modal-panel"
+                  style={{
+                    width: '95%',
+                    maxWidth: '960px',
+                    borderRadius: '14px',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    className="rec-modal-header"
+                    style={{
+                      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                      padding: '0.75rem 1.25rem',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#ffffff' }}>
+                      <Plus size={18} color="#38bdf8" /> नयाँ कर्मचारी पदपूर्ति विज्ञापन आह्वान (Create Vacancy)
                     </h3>
-                    <button onClick={() => setShowAddVacancyModal(false)} style={{ background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>
+                    <button onClick={() => setShowAddVacancyModal(false)} style={{ background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '4px' }}>
                       <X size={20} />
                     </button>
                   </div>
@@ -3336,23 +3484,37 @@ return (
                       e.preventDefault();
                       createVacancyMutation.mutate(vacancyForm);
                     }}
-                    style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
+                    style={{ display: 'flex', flexDirection: 'column', flex: 1, margin: 0 }}
                   >
-                    <div className="rec-modal-body">
-                      <div className="rec-form-grid-2">
+                    <div
+                      className="rec-modal-body"
+                      style={{
+                        padding: '0.85rem 1.25rem',
+                        gap: '0.65rem',
+                        overflowY: 'visible',
+                        maxHeight: 'none',
+                      }}
+                    >
+                      {/* Row 1: Basic Classification (3 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr 1fr', gap: '0.75rem' }}>
                         <div className="rec-field-group">
-                          <label className="rec-label">विज्ञापन नं (Vacancy No)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विज्ञापन नं (Vacancy No)
+                          </label>
                           <input
                             type="text"
-                            placeholder="उदा: ०६/२०८१/०८२ (खाली छाडे स्वतः बन्नेछ)"
+                            placeholder="उदा: ०६/२०८३/०८४ (खाली छाडे स्वतः बन्नेछ)"
                             value={vacancyForm.vacancyNo}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, vacancyNo: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">पदको नाम (Post Title) <span className="rec-req">*</span></label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            पदको नाम (Post Title) <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="text"
                             required
@@ -3360,25 +3522,19 @@ return (
                             value={vacancyForm.title}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, title: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">सेवा / समूह</label>
-                          <input
-                            type="text"
-                            value={vacancyForm.serviceGroup}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, serviceGroup: e.target.value })}
-                            className="rec-input-control"
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label">तह / श्रेणी (Level)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            तह / श्रेणी (Level)
+                          </label>
                           <select
                             value={vacancyForm.level}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, level: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
                             <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
                             <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
@@ -3386,9 +3542,44 @@ return (
                             <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
                           </select>
                         </div>
+                      </div>
+
+                      {/* Row 2: Service, Employment Type, Openings & Status (4 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 1.2fr', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            सेवा / समूह
+                          </label>
+                          <input
+                            type="text"
+                            value={vacancyForm.serviceGroup}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, serviceGroup: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
+                          />
+                        </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">माग पद संख्या</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            सेवा प्रकार (Employment Type)
+                          </label>
+                          <select
+                            value={vacancyForm.employmentType}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, employmentType: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
+                          >
+                            <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
+                            <option value="स्थायी सेवा (Permanent)">स्थायी सेवा (Permanent)</option>
+                            <option value="ज्यालादारी (Daily Wage)">ज्यालादारी (Daily Wage)</option>
+                            <option value="अन्य (Other)">अन्य (Other)</option>
+                          </select>
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            माग पद संख्या <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="number"
                             min="1"
@@ -3396,11 +3587,32 @@ return (
                             value={vacancyForm.openingsCount}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, openingsCount: parseInt(e.target.value) || 1 })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">आधार दरखास्त दस्तुर (रु.)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विज्ञापन अवस्था (Status)
+                          </label>
+                          <select
+                            value={vacancyForm.status}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, status: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem', fontWeight: 700, color: '#15803d' }}
+                          >
+                            <option value="खुला (Active)">सक्रिय / खुला (Active) — दरखास्त खुला रहनेछ</option>
+                            <option value="म्याद सकिएको (Closed)">म्याद सकिएको (Closed)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Row 3: Fees & Dates (4 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            आधार दरखास्त दस्तुर (रु.) <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="number"
                             min="0"
@@ -3409,11 +3621,14 @@ return (
                             value={vacancyForm.applicationFee}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">समावेशी थप शुल्क (रु.)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            समावेशी थप शुल्क (रु.) <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="number"
                             min="0"
@@ -3422,11 +3637,14 @@ return (
                             value={vacancyForm.inclusiveGroupFee}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">प्रकाशन मिति (वि.सं.)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            प्रकाशन मिति (वि.सं.)
+                          </label>
                           <NepaliDatePicker
                             value={vacancyForm.publishDateBs}
                             onChange={(val) => setVacancyForm({ ...vacancyForm, publishDateBs: val })}
@@ -3434,43 +3652,120 @@ return (
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">दरखास्त दिने अन्तिम मिति</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            दरखास्त दिने अन्तिम मिति <span className="rec-req">*</span>
+                          </label>
                           <NepaliDatePicker
                             value={vacancyForm.deadlineDateBs}
                             onChange={(val) => setVacancyForm({ ...vacancyForm, deadlineDateBs: val })}
                           />
                         </div>
+                      </div>
 
-                        <div className="rec-field-group" style={{ gridColumn: 'span 2' }}>
-                          <label className="rec-label">परीक्षा मिति र समय (Exam Date & Time)</label>
-                          <input
-                            type="text"
-                            placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
-                            value={vacancyForm.examDateBs}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, examDateBs: e.target.value })}
+                      {/* Row 4: Exam Schedule & Center Compact Highlight Box */}
+                      <div
+                        style={{
+                          background: '#f0fdf4',
+                          padding: '0.55rem 0.85rem',
+                          borderRadius: '8px',
+                          border: '1px solid #bbf7d0',
+                        }}
+                      >
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: '0.75rem', alignItems: 'center' }}>
+                          <div>
+                            <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.15rem' }}>
+                              <Clock size={14} color="#16a34a" /> परीक्षा मिति र समय (Exam Date & Time)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
+                              value={vacancyForm.examDateBs}
+                              onChange={(e) => setVacancyForm({ ...vacancyForm, examDateBs: e.target.value })}
+                              className="rec-input-control"
+                              style={{ background: '#ffffff', borderColor: '#86efac', padding: '0.35rem 0.65rem', fontSize: '0.84rem' }}
+                            />
+                          </div>
+                          <div>
+                            <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.15rem' }}>
+                              <MapPin size={14} color="#16a34a" /> परीक्षा केन्द्र (Exam Center)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="उदा: पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक"
+                              value={vacancyForm.examCenter}
+                              onChange={(e) => setVacancyForm({ ...vacancyForm, examCenter: e.target.value })}
+                              className="rec-input-control"
+                              style={{ background: '#ffffff', borderColor: '#86efac', padding: '0.35rem 0.65rem', fontSize: '0.84rem' }}
+                            />
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: '#15803d', marginTop: '0.2rem', display: 'block', fontWeight: 500 }}>
+                          * परीक्षा मिति र केन्द्र तोकेको अवस्थामा मात्र उम्मेदवारको विज्ञापन कार्ड तथा प्रवेशपत्रमा स्वतः प्रदर्शित हुनेछ।
+                        </span>
+                      </div>
+
+                      {/* Row 5: Qualification & Description */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            न्यूनतम आवश्यक शैक्षिक योग्यता <span className="rec-req">*</span>
+                          </label>
+                          <textarea
+                            required
+                            rows={2}
+                            placeholder="उदा: मान्यता प्राप्त शिक्षण संस्थाबाट सम्बन्धित विषयमा प्रविणता प्रमाणपत्र तह..."
+                            value={vacancyForm.minQualification}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, minQualification: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.82rem', resize: 'vertical' }}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विस्तृत विवरण / टिप्पणी (Description / Remarks)
+                          </label>
+                          <textarea
+                            rows={2}
+                            placeholder="कुनै थप नियम, शर्त वा आवश्यक अनुभव विवरण..."
+                            value={vacancyForm.description}
+                            onChange={(e) => setVacancyForm({ ...vacancyForm, description: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.82rem', resize: 'vertical' }}
                           />
                         </div>
                       </div>
-
-                      <div className="rec-field-group">
-                        <label className="rec-label">न्यूनतम आवश्यक शैक्षिक योग्यता <span className="rec-req">*</span></label>
-                        <textarea
-                          required
-                          rows={2}
-                          placeholder="उदा: मान्यता प्राप्त शिक्षण संस्थाबाट सम्बन्धित विषयमा प्रविणता प्रमाणपत्र तह..."
-                          value={vacancyForm.minQualification}
-                          onChange={(e) => setVacancyForm({ ...vacancyForm, minQualification: e.target.value })}
-                          className="rec-input-control"
-                        />
-                      </div>
                     </div>
 
-                    <div className="rec-modal-footer">
-                      <button type="button" onClick={() => setShowAddVacancyModal(false)} className="rec-btn rec-btn-outline">
-                        रद्द
+                    <div
+                      className="rec-modal-footer"
+                      style={{
+                        padding: '0.65rem 1.25rem',
+                        background: '#f8fafc',
+                        borderTop: '1px solid #e2e8f0',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setShowAddVacancyModal(false)}
+                        className="rec-btn"
+                        style={{
+                          padding: '0.45rem 1.15rem',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          background: '#f1f5f9',
+                          color: '#334155',
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        रद्द गर्नुहोस्
                       </button>
-                      <button type="submit" disabled={createVacancyMutation.isPending} className="rec-btn rec-btn-primary">
+                      <button type="submit" disabled={createVacancyMutation.isPending} className="rec-btn rec-btn-primary" style={{ padding: '0.45rem 1.25rem', fontSize: '0.85rem' }}>
                         {createVacancyMutation.isPending ? 'प्रकाशन हुँदैछ...' : 'विज्ञापन प्रकाशन गर्नुहोस्'}
                       </button>
                     </div>
@@ -3484,8 +3779,26 @@ return (
             {/* ============================================================== */}
             {showEditVacancyModal && editingVacancy && (
               <div className="rec-modal-backdrop">
-                <div className="rec-modal-panel" style={{ maxWidth: '720px' }}>
-                  <div className="rec-modal-header" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+                <div
+                  className="rec-modal-panel"
+                  style={{
+                    width: '95%',
+                    maxWidth: '960px',
+                    borderRadius: '14px',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    className="rec-modal-header"
+                    style={{
+                      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                      padding: '0.75rem 1.25rem',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
                     <div>
                       <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
                         <Pencil size={18} color="#38bdf8" /> विज्ञापन विवरण संशोधन / सम्पादन (Edit Vacancy)
@@ -3522,54 +3835,63 @@ return (
                           minQualification: editVacancyForm.minQualification,
                           publishDateBs: editVacancyForm.publishDateBs,
                           deadlineDateBs: editVacancyForm.deadlineDateBs,
-                          examDateBs: editVacancyForm.examDateBs,
+                          examDateBs: editVacancyForm.examDateBs !== undefined ? editVacancyForm.examDateBs.trim() : '',
+                          examCenter: editVacancyForm.examCenter !== undefined ? editVacancyForm.examCenter.trim() : '',
                           status: editVacancyForm.status,
                           description: editVacancyForm.description,
                         }
                       });
                     }}
-                    style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
+                    style={{ display: 'flex', flexDirection: 'column', flex: 1, margin: 0 }}
                   >
-                    <div className="rec-modal-body" style={{ maxHeight: '72vh', overflowY: 'auto' }}>
-                      <div className="rec-form-grid-2">
+                    <div
+                      className="rec-modal-body"
+                      style={{
+                        padding: '0.85rem 1.25rem',
+                        gap: '0.65rem',
+                        overflowY: 'visible',
+                        maxHeight: 'none',
+                      }}
+                    >
+                      {/* Row 1: Basic Classification (3 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr 1fr', gap: '0.75rem' }}>
                         <div className="rec-field-group">
-                          <label className="rec-label">विज्ञापन नं (Vacancy No) <span className="rec-req">*</span></label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विज्ञापन नं (Vacancy No) <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="text"
                             required
                             value={editVacancyForm.vacancyNo}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, vacancyNo: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">पदको नाम (Post / Title) <span className="rec-req">*</span></label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            पदको नाम (Post / Title) <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="text"
                             required
                             value={editVacancyForm.title}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, title: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">सेवा / समूह (Service Group)</label>
-                          <input
-                            type="text"
-                            value={editVacancyForm.serviceGroup}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, serviceGroup: e.target.value })}
-                            className="rec-input-control"
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label">तह / श्रेणी (Level / Grade)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            तह / श्रेणी (Level / Grade)
+                          </label>
                           <select
                             value={editVacancyForm.level}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, level: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
                             <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
                             <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
@@ -3579,13 +3901,32 @@ return (
                             <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
                           </select>
                         </div>
+                      </div>
+
+                      {/* Row 2: Service, Employment Type, Openings & Status (4 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 1.2fr', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            सेवा / समूह (Service Group)
+                          </label>
+                          <input
+                            type="text"
+                            value={editVacancyForm.serviceGroup}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, serviceGroup: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
+                          />
+                        </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">सेवा प्रकार (Employment Type)</label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            सेवा प्रकार (Employment Type)
+                          </label>
                           <select
                             value={editVacancyForm.employmentType}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, employmentType: e.target.value })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
                             <option value="करार सेवा (Contract)">करार सेवा (Contract)</option>
                             <option value="स्थायी सेवा (Permanent)">स्थायी सेवा (Permanent)</option>
@@ -3595,7 +3936,9 @@ return (
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">माग पद संख्या (Openings) <span className="rec-req">*</span></label>
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            माग पद संख्या <span className="rec-req">*</span>
+                          </label>
                           <input
                             type="number"
                             min="1"
@@ -3603,76 +3946,24 @@ return (
                             value={editVacancyForm.openingsCount}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, openingsCount: parseInt(e.target.value) || 1 })}
                             className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
                         </div>
 
                         <div className="rec-field-group">
-                          <label className="rec-label">आधार दरखास्त दस्तुर (रु.) <span className="rec-req">*</span></label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="50"
-                            required
-                            value={editVacancyForm.applicationFee}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
-                            className="rec-input-control"
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label">समावेशी थप शुल्क (रु.) <span className="rec-req">*</span></label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="50"
-                            required
-                            value={editVacancyForm.inclusiveGroupFee}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
-                            className="rec-input-control"
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label">प्रकाशन मिति (वि.सं.)</label>
-                          <NepaliDatePicker
-                            value={editVacancyForm.publishDateBs}
-                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, publishDateBs: val })}
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label">दरखास्त दिने अन्तिम मिति (वि.सं.) <span className="rec-req">*</span></label>
-                          <NepaliDatePicker
-                            value={editVacancyForm.deadlineDateBs}
-                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, deadlineDateBs: val })}
-                          />
-                        </div>
-
-                        {/* Exam Date & Time - Highlighted for easy editing */}
-                        <div className="rec-field-group" style={{ gridColumn: 'span 2', background: '#f0fdf4', padding: '0.85rem', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
-                          <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 800 }}>
-                            <Clock size={16} color="#16a34a" /> परीक्षा मिति र समय (Exam Date & Time)
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विज्ञापन अवस्था (Status) <span className="rec-req">*</span>
                           </label>
-                          <input
-                            type="text"
-                            placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
-                            value={editVacancyForm.examDateBs}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, examDateBs: e.target.value })}
-                            className="rec-input-control"
-                            style={{ background: '#ffffff', borderColor: '#86efac' }}
-                          />
-                          <span style={{ fontSize: '0.72rem', color: '#15803d', marginTop: '0.25rem', display: 'block' }}>
-                            * यो मिति उम्मेदवारको विज्ञापन कार्ड तथा प्रवेशपत्रमा स्वतः प्रदर्शित हुनेछ।
-                          </span>
-                        </div>
-
-                        <div className="rec-field-group" style={{ gridColumn: 'span 2' }}>
-                          <label className="rec-label">विज्ञापन अवस्था (Status) <span className="rec-req">*</span></label>
                           <select
                             value={editVacancyForm.status}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, status: e.target.value })}
                             className="rec-input-control"
-                            style={{ fontWeight: 700, color: editVacancyForm.status.includes('खुला') ? '#15803d' : '#b91c1c' }}
+                            style={{
+                              padding: '0.38rem 0.65rem',
+                              fontSize: '0.84rem',
+                              fontWeight: 700,
+                              color: editVacancyForm.status.includes('खुला') ? '#15803d' : '#b91c1c',
+                            }}
                           >
                             <option value="खुला (Active)">सक्रिय / खुला (Active) — दरखास्त खुला रहनेछ</option>
                             <option value="म्याद सकिएको (Closed)">म्याद सकिएको (Closed) — नयाँ दरखास्त बन्द रहनेछ</option>
@@ -3682,37 +3973,163 @@ return (
                         </div>
                       </div>
 
-                      <div className="rec-field-group">
-                        <label className="rec-label">न्यूनतम आवश्यक शैक्षिक योग्यता <span className="rec-req">*</span></label>
-                        <textarea
-                          required
-                          rows={3}
-                          value={editVacancyForm.minQualification}
-                          onChange={(e) => setEditVacancyForm({ ...editVacancyForm, minQualification: e.target.value })}
-                          className="rec-input-control"
-                        />
+                      {/* Row 3: Fees & Dates (4 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            आधार दरखास्त शुल्क (रु.) <span className="rec-req">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="50"
+                            required
+                            value={editVacancyForm.applicationFee}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            समावेशी थप शुल्क (रु.) <span className="rec-req">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="50"
+                            required
+                            value={editVacancyForm.inclusiveGroupFee}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
+                            className="rec-input-control"
+                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            प्रकाशन मिति (वि.सं.)
+                          </label>
+                          <NepaliDatePicker
+                            value={editVacancyForm.publishDateBs}
+                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, publishDateBs: val })}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            दरखास्त दिने अन्तिम मिति (वि.सं.) <span className="rec-req">*</span>
+                          </label>
+                          <NepaliDatePicker
+                            value={editVacancyForm.deadlineDateBs}
+                            onChange={(val) => setEditVacancyForm({ ...editVacancyForm, deadlineDateBs: val })}
+                          />
+                        </div>
                       </div>
 
-                      <div className="rec-field-group">
-                        <label className="rec-label">विस्तृत विवरण / टिप्पणी (Description / Remarks)</label>
-                        <textarea
-                          rows={2}
-                          placeholder="कुनै थप नियम, शर्त वा आवश्यक अनुभव विवरण..."
-                          value={editVacancyForm.description}
-                          onChange={(e) => setEditVacancyForm({ ...editVacancyForm, description: e.target.value })}
-                          className="rec-input-control"
-                        />
+                      {/* Row 4: Exam Schedule & Center Compact Highlight Box */}
+                      <div
+                        style={{
+                          background: '#f0fdf4',
+                          padding: '0.55rem 0.85rem',
+                          borderRadius: '8px',
+                          border: '1px solid #bbf7d0',
+                        }}
+                      >
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: '0.75rem', alignItems: 'center' }}>
+                          <div>
+                            <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.15rem' }}>
+                              <Clock size={14} color="#16a34a" /> परीक्षा मिति र समय (Exam Date & Time)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="उदा: २०८१-०६-१५ बिहान ११:०० बजे"
+                              value={editVacancyForm.examDateBs}
+                              onChange={(e) => setEditVacancyForm({ ...editVacancyForm, examDateBs: e.target.value })}
+                              className="rec-input-control"
+                              style={{ background: '#ffffff', borderColor: '#86efac', padding: '0.35rem 0.65rem', fontSize: '0.84rem' }}
+                            />
+                          </div>
+                          <div>
+                            <label className="rec-label" style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 800, fontSize: '0.78rem', marginBottom: '0.15rem' }}>
+                              <MapPin size={14} color="#16a34a" /> परीक्षा केन्द्र (Exam Center)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="उदा: पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक"
+                              value={editVacancyForm.examCenter}
+                              onChange={(e) => setEditVacancyForm({ ...editVacancyForm, examCenter: e.target.value })}
+                              className="rec-input-control"
+                              style={{ background: '#ffffff', borderColor: '#86efac', padding: '0.35rem 0.65rem', fontSize: '0.84rem' }}
+                            />
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: '#15803d', marginTop: '0.2rem', display: 'block', fontWeight: 500 }}>
+                          * परीक्षा मिति र केन्द्र तोकेको अवस्थामा मात्र उम्मेदवारको विज्ञापन कार्ड तथा प्रवेशपत्रमा स्वतः प्रदर्शित हुनेछ।
+                        </span>
+                      </div>
+
+                      {/* Row 5: Qualification & Description (2 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '0.75rem' }}>
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            न्यूनतम आवश्यक शैक्षिक योग्यता <span className="rec-req">*</span>
+                          </label>
+                          <textarea
+                            required
+                            rows={2}
+                            value={editVacancyForm.minQualification}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, minQualification: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.82rem', resize: 'vertical' }}
+                          />
+                        </div>
+
+                        <div className="rec-field-group">
+                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
+                            विस्तृत विवरण / टिप्पणी (Description / Remarks)
+                          </label>
+                          <textarea
+                            rows={2}
+                            placeholder="कुनै थप नियम, शर्त वा आवश्यक अनुभव विवरण..."
+                            value={editVacancyForm.description}
+                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, description: e.target.value })}
+                            className="rec-input-control"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.82rem', resize: 'vertical' }}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div className="rec-modal-footer">
+                    <div
+                      className="rec-modal-footer"
+                      style={{
+                        padding: '0.65rem 1.25rem',
+                        background: '#f8fafc',
+                        borderTop: '1px solid #e2e8f0',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '0.75rem',
+                      }}
+                    >
                       <button
                         type="button"
                         onClick={() => {
                           setShowEditVacancyModal(false);
                           setEditingVacancy(null);
                         }}
-                        className="rec-btn rec-btn-outline"
+                        className="rec-btn"
+                        style={{
+                          padding: '0.45rem 1.15rem',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          background: '#f1f5f9',
+                          color: '#334155',
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                        }}
                       >
                         रद्द गर्नुहोस्
                       </button>
@@ -3720,7 +4137,7 @@ return (
                         type="submit"
                         disabled={updateVacancyMutation.isPending}
                         className="rec-btn rec-btn-primary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.25rem' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1.25rem', fontSize: '0.85rem' }}
                       >
                         {updateVacancyMutation.isPending ? (
                           <>
@@ -4345,6 +4762,462 @@ return (
                 </div>
               </div>
             )}
+
+            {/* ─── MODAL 1: ADMIT CARD PRINT PREVIEW ─── */}
+            <CentralPrintPreviewModal
+              isOpen={showAdmitCardPreviewModal}
+              onClose={() => setShowAdmitCardPreviewModal(false)}
+              title="प्रवेशपत्र (Admit Card) - A4 प्रिन्ट पूर्वावलोकन"
+              targetElementId="modal-preview-admit-card"
+              paperFormat="A4"
+              onPrint={() => printElement('modal-preview-admit-card', 'A4')}
+            >
+              {admitCardResult && admitCardResult.is_admit_card_ready && (() => {
+                const schedule = getExamDateTimeDetails(admitCardResult.application, admitCardResult.vacancy);
+                const rollNumber = admitCardResult.application.admitCardRollNo || admitCardResult.application.admit_card_roll_no || '2083-ROLL-001';
+                const chalaniNumber = admitCardResult.application.chalaniNo ||
+                  admitCardResult.application.chalani_no ||
+                  (rollNumber.includes('-') ? rollNumber.split('-').pop() : '३५२');
+                const examCenterVal = (admitCardResult.vacancy?.examCenter ||
+                  admitCardResult.vacancy?.exam_center ||
+                  admitCardResult.application?.examCenter ||
+                  admitCardResult.application?.exam_center || '').trim();
+                const examDateVal = (admitCardResult.vacancy?.examDateBs ||
+                  admitCardResult.vacancy?.exam_date_bs ||
+                  admitCardResult.application?.examDateTime ||
+                  admitCardResult.application?.exam_date_time || '').trim();
+                const showExamScheduleBanner = Boolean(examCenterVal || examDateVal);
+
+                return (
+                  <CentralDocumentSheet
+                    id="modal-preview-admit-card"
+                    className="rec-admit-official-card"
+                    paperSize="A4"
+                    palikaName={dynamicPalikaName}
+                    palikaNameEn={dynamicPalikaNameEn}
+                    localGovType="स्थानीय सरकार"
+                    officeTitle={dynamicOfficeTitle}
+                    location={dynamicAddress}
+                    provinceCountry={dynamicProvinceCountry}
+                    establishedYear="२०७३"
+                    activeFiscalYear="२०८३/०८४"
+                    patraSankhya="२०८३/०८४"
+                    chalaniNo={chalaniNumber}
+                    branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                    branchPlacement="below-title"
+                    documentTitle="प्रवेशपत्र (ADMIT CARD)"
+                    slogan={dynamicSlogan}
+                    website={dynamicWebsite}
+                    email={dynamicEmail}
+                    phone={dynamicPhone}
+                    logoUrl={dynamicPalikaLogo}
+                    emblemUrl={dynamicEmblemUrl}
+                    dateBs="२०८३/०८/०५"
+                    dateAd="2026-11-20"
+                    showWatermark={true}
+                    showFooter={true}
+                  >
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <div className="rec-admit-roll-banner" style={{ marginBottom: '0.45rem' }}>
+                          <div>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', display: 'block' }}>रोल नम्बर (Roll No.):</span>
+                            <span className="rec-admit-roll-no">{rollNumber}</span>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', display: 'block' }}>दरखास्त नं:</span>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#334155', fontSize: '0.95rem' }}>
+                              {admitCardResult.application.applicationNo || admitCardResult.application.application_no}
+                            </span>
+                          </div>
+                        </div>
+
+                        <table className="rec-admit-table">
+                          <tbody>
+                            <tr>
+                              <td className="label-col">उम्मेदवारको नाम:</td>
+                              <td className="val-col">
+                                <strong>{admitCardResult.application.fullNameNp || admitCardResult.application.full_name_np}</strong>
+                                {admitCardResult.application.fullNameEn && ` (${admitCardResult.application.fullNameEn})`}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="label-col">विज्ञापन नं:</td>
+                              <td className="val-col" style={{ color: '#0369a1', fontWeight: 700 }}>
+                                {admitCardResult.application.vacancyNo || admitCardResult.application.vacancy_no}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="label-col">पद / सेवा / तह:</td>
+                              <td className="val-col">
+                                <strong>{admitCardResult.application.postTitle || admitCardResult.application.post_title}</strong>
+                                {admitCardResult.vacancy?.level && ` - ${admitCardResult.vacancy.level}`}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="label-col">नागरिकता नं र जिल्ला:</td>
+                              <td className="val-col">
+                                {admitCardResult.application.citizenshipNo || admitCardResult.application.citizenship_no} (
+                                {admitCardResult.application.citizenshipDistrict || admitCardResult.application.citizenship_district})
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="label-col">स्थायी ठेगाना:</td>
+                              <td className="val-col">
+                                {admitCardResult.application.permanentAddress || admitCardResult.application.permanent_address}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div style={{ width: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.45rem' }}>
+                        <div className="rec-photo-paste-box" style={{ width: '110px', height: '130px', margin: 0 }}>
+                          {admitCardResult.application.photoUrl || admitCardResult.application.photo_url ? (
+                            <img
+                              src={admitCardResult.application.photoUrl || admitCardResult.application.photo_url}
+                              alt="उम्मेदवार फोटो"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
+                            />
+                          ) : (
+                            <>
+                              <span>फोटो</span>
+                              <span>टाँस्नुहोस्</span>
+                            </>
+                          )}
+                        </div>
+
+                        <div style={{ width: '100%', textAlign: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '4px' }}>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b', display: 'block' }}>उम्मेदवारको हस्ताक्षर</span>
+                          <div style={{ height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {admitCardResult.application.signatureUrl || admitCardResult.application.signature_url ? (
+                              <img
+                                src={admitCardResult.application.signatureUrl || admitCardResult.application.signature_url}
+                                alt="हस्ताक्षर"
+                                style={{ maxHeight: '26px', maxWidth: '100%', objectFit: 'contain' }}
+                              />
+                            ) : (
+                              <div style={{ width: '90%', borderBottom: '1px dashed #94a3b8', height: '100%' }} />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Exam Schedule Banner with BS and AD dates (Shown only if exam date or center is specified) */}
+                    {showExamScheduleBanner && (
+                      <div className="rec-admit-exam-banner" style={{ margin: '0.45rem 0' }}>
+                        {Boolean(examCenterVal) && (
+                          <div>
+                            <span className="rec-exam-detail-title">परीक्षा केन्द्र (Exam Center):</span>
+                            <div className="rec-exam-detail-val" style={{ fontWeight: 800, color: '#0f172a' }}>
+                              {examCenterVal}
+                            </div>
+                          </div>
+                        )}
+                        {Boolean(examDateVal) && (
+                          <div>
+                            <span className="rec-exam-detail-title">परीक्षा मिति तथा समय (Exam Schedule):</span>
+                            <div className="rec-exam-detail-val rec-exam-time-val" style={{ fontWeight: 800 }}>
+                              <div>नेपाली (BS): <strong>{schedule.bs}</strong></div>
+                              {schedule.ad && <div style={{ fontSize: '0.8rem', color: '#0369a1', marginTop: '2px' }}>English (AD): {schedule.ad}</div>}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Instructions: Summarized from Official 14 Rules for perfect A4 fit */}
+                    <div className="rec-admit-instructions" style={{ padding: '0.45rem 0.85rem', margin: '0.45rem 0', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                        <strong style={{ color: '#0f172a', fontSize: '0.76rem' }}>
+                          उम्मेदवारले पालना गर्नुपर्ने नियमहरू (Rules & Instructions for Candidates):
+                        </strong>
+                        <span style={{ fontSize: '0.66rem', color: '#64748b', fontWeight: 600 }}>परीक्षा आचारसंहिता</span>
+                      </div>
+                      <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.72rem', lineHeight: '1.45', color: '#1e293b' }}>
+                        <li style={{ marginBottom: '2.5px' }}>
+                          <strong>प्रवेशपत्र र पहिचान:</strong> परीक्षा दिन आउँदा यो प्रवेशपत्र र सक्कल नेपाली नागरिकता अनिवार्य साथमा ल्याउनुपर्नेछ (प्रवेशपत्र विना परीक्षामा बस्न पाइने छैन)। प्रयोगात्मक परीक्षा तथा अन्तर्वार्तामा समेत प्रवेशपत्र अनिवार्य छ।
+                        </li>
+                        <li style={{ marginBottom: '2.5px' }}>
+                          <strong>समय पालना:</strong> परीक्षा सुरु हुनुभन्दा ३० मिनेट अगावै हलमा प्रवेश गर्नुपर्नेछ। वस्तुगत परीक्षा सुरु भएको १५ मिनेट र विषयगत परीक्षा सुरु भएको ३० मिनेटपछि आउने उम्मेदवारलाई परीक्षामा बस्न दिइने छैन।
+                        </li>
+                        <li style={{ marginBottom: '2.5px' }}>
+                          <strong>निषेधित सामग्री:</strong> परीक्षा हलभित्र मोबाइल फोन, क्यालकुलेटर, स्मार्टवाच, कुनै पनि विद्युतीय उपकरण, पुस्तक, कापी वा चिट लैजान तथा आपसमा कुराकानी वा संकेत गर्न पूर्ण निषेध छ।
+                        </li>
+                        <li style={{ marginBottom: '2.5px' }}>
+                          <strong>उत्तरपुस्तिका र "की" (Key):</strong> वस्तुगत परीक्षाको उत्तरपुस्तिकामा आफूलाई प्राप्त प्रश्नपत्रको "की" (Key) अनिवार्य लेख्नुपर्नेछ; नलेखेमा उत्तरपुस्तिका स्वतः रद्द हुनेछ। समावेशी समूहको व्यहोरा समेत खुलाउनुपर्नेछ।
+                        </li>
+                        <li>
+                          <strong>मर्यादा र हाजिर:</strong> परीक्षामा दैनिक हाजिर अनिवार्य छ। परीक्षाको मर्यादा विपरीत कार्य गरेमा केन्द्राध्यक्षले तत्काल निष्कासन गरी कानुन बमोजिम कारबाही गर्नेछ।
+                        </li>
+                      </ol>
+                    </div>
+
+                    {/* Official Signatures Row */}
+                    <div className="rec-admit-signatures" style={{ marginTop: '0.75rem', padding: '0 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      {/* Candidate Signature */}
+                      <div style={{ textAlign: 'center', minWidth: '160px' }}>
+                        <div style={{ height: '36px' }}></div>
+                        <div className="rec-sig-line" style={{ width: '160px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
+                        <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a' }}>उम्मेदवारको हस्ताक्षर</span>
+                      </div>
+
+                      {/* Committee / CAO Signature & Stamp Area */}
+                      <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                        <div style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '0.66rem', color: '#94a3b8', fontStyle: 'italic' }}>[ हस्ताक्षर तथा कार्यालयको छाप ]</span>
+                        </div>
+                        <div className="rec-sig-line" style={{ width: '220px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
+                        <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a', display: 'block', whiteSpace: 'nowrap' }}>
+                          पदपूर्ति समिति / प्रमुख प्रशासकीय अधिकृत
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: '#475569', display: 'block', marginTop: '0.12rem', fontWeight: 600 }}>
+                          {dynamicPalikaName}
+                        </span>
+                      </div>
+                    </div>
+                  </CentralDocumentSheet>
+                );
+              })()}
+            </CentralPrintPreviewModal>
+
+            {/* ─── MODAL 2: APPLICATION APPROVAL LETTER PREVIEW ─── */}
+            <CentralPrintPreviewModal
+              isOpen={showApprovalLetterModal}
+              onClose={() => setShowApprovalLetterModal(false)}
+              title="आवेदन स्वीकृति पत्र (Application Acceptance Letter) - A4"
+              targetElementId="printable-approval-letter-sheet"
+            >
+              {selectedApprovalApp && (
+                <CentralDocumentSheet
+                  id="printable-approval-letter-sheet"
+                  palikaName={dynamicPalikaName}
+                  palikaNameEn={dynamicPalikaNameEn}
+                  localGovType="स्थानीय सरकार"
+                  officeTitle={dynamicOfficeTitle}
+                  location={dynamicAddress}
+                  provinceCountry={dynamicProvinceCountry}
+                  establishedYear="२०७३"
+                  activeFiscalYear="२०८३/०८४"
+                  patraSankhya="२०८३/०८४"
+                  chalaniNo={selectedApprovalApp.chalaniNo || selectedApprovalApp.chalani_no || '३५२'}
+                  branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                  documentTitle="दरखास्त फारम स्वीकृति पत्र (APPLICATION ACCEPTANCE LETTER)"
+                  slogan={dynamicSlogan}
+                  website={dynamicWebsite}
+                  email={dynamicEmail}
+                  phone={dynamicPhone}
+                  logoUrl={dynamicPalikaLogo}
+                  emblemUrl={dynamicEmblemUrl}
+                  dateBs="२०८३/०८/०५"
+                  dateAd="2026-11-20"
+                  showWatermark={true}
+                  showFooter={true}
+                >
+                  <div style={{ padding: '1.25rem 0.5rem', minHeight: '360px' }}>
+                    <div style={{ marginBottom: '1rem', lineHeight: 1.6, fontSize: '0.92rem', color: '#1e293b' }}>
+                      <div>श्री <strong>{selectedApprovalApp.fullNameNp || selectedApprovalApp.full_name_np}</strong></div>
+                      <div>ठेगाना: {selectedApprovalApp.permanentAddress || selectedApprovalApp.permanent_address}</div>
+                      <div>नागरिकता नं: {selectedApprovalApp.citizenshipNo || selectedApprovalApp.citizenship_no}</div>
+                    </div>
+
+                    <p style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem', marginBottom: '1rem', textAlign: 'center' }}>
+                      विषय: <span style={{ textDecoration: 'underline' }}>दरखास्त फारम स्वीकृत भएको तथा परीक्षामा सम्मिलित हुने सम्बन्धी।</span>
+                    </p>
+
+                    <p style={{ fontSize: '0.9rem', lineHeight: '1.75', color: '#1e293b', textAlign: 'justify', marginBottom: '1rem' }}>
+                      महोदय / महोदया,<br />
+                      यस <strong>{dynamicPalikaName}</strong>द्वारा प्रकाशित विज्ञापन नं. <strong>{selectedApprovalApp.vacancyNo || selectedApprovalApp.vacancy_no}</strong>,
+                      पद: <strong>{selectedApprovalApp.postTitle || selectedApprovalApp.post_title}</strong> को लागि तपाईंले पेस गर्नुभएको
+                      अनलाइन दरखास्त फारम (दरखास्त नं: {selectedApprovalApp.applicationNo || selectedApprovalApp.application_no}) तथा संलग्न आवश्यक शैक्षिक योग्यता र कागजातहरू
+                      प्रारम्भिक रुजु गर्दा रीतपूर्वक प्राप्त भएकोले यो <strong>स्वीकृति पत्र</strong> जारी गरिएको छ।
+                    </p>
+
+                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.86rem' }}>
+                        <div><strong>रोल नम्बर:</strong> <span style={{ fontFamily: 'monospace', color: '#1d4ed8', fontWeight: 800 }}>{selectedApprovalApp.admitCardRollNo || selectedApprovalApp.admit_card_roll_no || '2083-ROLL-352'}</span></div>
+                        <div><strong>राजस्व स्थिति:</strong> <span style={{ color: '#059669', fontWeight: 800 }}>भुक्तानी सम्पन्न (PAID)</span></div>
+                        <div><strong>परीक्षा केन्द्र:</strong> {selectedApprovalApp.examCenter || selectedApprovalApp.exam_center || 'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक'}</div>
+                        <div><strong>परीक्षा मिति (BS):</strong> {selectedApprovalApp.examDateTime || selectedApprovalApp.exam_date_time || '२०८३-०९-१५ बिहान ११:०० बजे'}</div>
+                      </div>
+                    </div>
+
+                    <p style={{ fontSize: '0.88rem', lineHeight: '1.7', color: '#1e293b', textAlign: 'justify' }}>
+                      तपाईंले पोर्टलमा लगइन गरी वा नागरिकता नम्बर प्रविष्ट गरी आधिकारिक प्रवेश पत्र (Admit Card) डाउनलोड तथा प्रिन्ट गरी तोकिएको मिति र समयमा परीक्षा केन्द्रमा उपस्थित हुन सूचित गरिन्छ।
+                    </p>
+
+                    <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block' }}>बोधार्थ:</span>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>१. प्रशासन शाखा, {dynamicPalikaName}</span>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '160px', borderBottom: '1px dashed #64748b', marginBottom: '4px' }}></div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>सदस्य सचिव / अधिकृत</span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>कर्मचारी पदपूर्ति समिति</span>
+                      </div>
+                    </div>
+                  </div>
+                </CentralDocumentSheet>
+              )}
+            </CentralPrintPreviewModal>
+
+            {/* ─── MODAL 3: OFFICIAL EXAM NOTICE PREVIEW ─── */}
+            <CentralPrintPreviewModal
+              isOpen={showExamNoticeModal}
+              onClose={() => setShowExamNoticeModal(false)}
+              title="परीक्षा सम्बन्धी आधिकारिक सूचना (Official Exam Notice) - A4"
+              targetElementId="printable-exam-notice-sheet"
+            >
+              {selectedNoticeVacancy && (
+                <CentralDocumentSheet
+                  id="printable-exam-notice-sheet"
+                  palikaName={dynamicPalikaName}
+                  palikaNameEn={dynamicPalikaNameEn}
+                  localGovType="स्थानीय सरकार"
+                  officeTitle={dynamicOfficeTitle}
+                  location={dynamicAddress}
+                  provinceCountry={dynamicProvinceCountry}
+                  establishedYear="२०७३"
+                  activeFiscalYear="२०८३/०८४"
+                  patraSankhya="२०८३/०८४"
+                  chalaniNo={selectedNoticeVacancy.vacancyNo || selectedNoticeVacancy.vacancy_no || '०४/२०८३/०८४'}
+                  branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                  documentTitle="लिखित तथा प्रयोगात्मक परीक्षा सञ्चालन सम्बन्धी अत्यन्त जरुरी सूचना"
+                  slogan={dynamicSlogan}
+                  website={dynamicWebsite}
+                  email={dynamicEmail}
+                  phone={dynamicPhone}
+                  logoUrl={dynamicPalikaLogo}
+                  emblemUrl={dynamicEmblemUrl}
+                  dateBs="२०८३/०८/०५"
+                  dateAd="2026-11-20"
+                  showWatermark={true}
+                  showFooter={true}
+                >
+                  <div style={{ padding: '1.25rem 0.5rem', minHeight: '360px' }}>
+                    <p style={{ fontSize: '0.9rem', lineHeight: '1.8', color: '#1e293b', textAlign: 'justify', marginBottom: '1.25rem' }}>
+                      यस <strong>{dynamicPalikaName}</strong>को रिक्त पदपूर्ति गर्ने प्रयोजनका लागि प्रकाशित विज्ञापन नं. <strong>{selectedNoticeVacancy.vacancyNo || selectedNoticeVacancy.vacancy_no}</strong>,
+                      पद: <strong>{selectedNoticeVacancy.title || 'नापी अधिकृत'}</strong> तह: <strong>{selectedNoticeVacancy.level || 'सहायक पाँचौं (5th Level)'}</strong> पदको खुला तथा समावेशी प्रतियोगितात्मक लिखित तथा प्रयोगात्मक परीक्षा निम्नानुसारको मिति, समय तथा परीक्षा केन्द्रमा सञ्चालन हुने व्यहोरा सम्बन्धित सबै उम्मेदवारहरूको जानकारीका लागि यो सूचना प्रकाशित गरिएको छ।
+                    </p>
+
+                    <table className="rec-admit-table" style={{ marginBottom: '1.25rem', border: '1px solid #cbd5e1' }}>
+                      <tbody>
+                        <tr>
+                          <td className="label-col" style={{ width: '25%', background: '#f8fafc' }}>विज्ञापन नं:</td>
+                          <td className="val-col" style={{ fontWeight: 800, color: '#0369a1' }}>{selectedNoticeVacancy.vacancyNo || selectedNoticeVacancy.vacancy_no}</td>
+                        </tr>
+                        <tr>
+                          <td className="label-col" style={{ background: '#f8fafc' }}>पद, सेवा र तह:</td>
+                          <td className="val-col" style={{ fontWeight: 800 }}>{selectedNoticeVacancy.title} ({selectedNoticeVacancy.level || 'सहायक पाँचौं'})</td>
+                        </tr>
+                        <tr>
+                          <td className="label-col" style={{ background: '#f8fafc' }}>परीक्षा मिति तथा समय (BS):</td>
+                          <td className="val-col" style={{ fontWeight: 800, color: '#dc2626' }}>{selectedNoticeVacancy.examDateBs || selectedNoticeVacancy.exam_date_bs || 'पछि तोकिनेछ (To be announced)'}</td>
+                        </tr>
+                        <tr>
+                          <td className="label-col" style={{ background: '#f8fafc' }}>Exam Date & Time (AD):</td>
+                          <td className="val-col" style={{ fontWeight: 700 }}>2026-12-30 11:00 AM</td>
+                        </tr>
+                        <tr>
+                          <td className="label-col" style={{ background: '#f8fafc' }}>परीक्षा केन्द्र (Exam Center):</td>
+                          <td className="val-col" style={{ fontWeight: 700 }}>पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '0.85rem', marginBottom: '1.5rem', fontSize: '0.82rem', lineHeight: 1.6 }}>
+                      <strong style={{ color: '#991b1b', display: 'block' }}>परीक्षार्थीहरूका लागि आवश्यक निर्देशनहरू:</strong>
+                      १. परीक्षा हलमा प्रवेश गर्दा डिजिटल प्रणालीबाट जारी भएको रंगिन प्रवेश पत्र (Admit Card) र सक्कल नागरिकता अनिवार्य ल्याउनुपर्नेछ।<br />
+                      २. परीक्षा सुरु हुनुभन्दा ३० मिनेट अगावै परीक्षा केन्द्रमा उपस्थित हुनुपर्नेछ।
+                    </div>
+
+                    <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '160px', borderBottom: '1px dashed #64748b', marginBottom: '4px' }}></div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, display: 'block' }}>सदस्य सचिव</span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>कर्मचारी पदपूर्ति समिति</span>
+                      </div>
+                    </div>
+                  </div>
+                </CentralDocumentSheet>
+              )}
+            </CentralPrintPreviewModal>
+
+            {/* ─── MODAL 4: APPOINTMENT & RECOMMENDATION LETTER PREVIEW ─── */}
+            <CentralPrintPreviewModal
+              isOpen={showAppointmentModal}
+              onClose={() => setShowAppointmentModal(false)}
+              title="करार नियुक्ति तथा पदस्थापन पत्र (Appointment Letter) - A4"
+              targetElementId="printable-appointment-sheet"
+            >
+              {selectedAppointmentApp && (
+                <CentralDocumentSheet
+                  id="printable-appointment-sheet"
+                  palikaName={dynamicPalikaName}
+                  palikaNameEn={dynamicPalikaNameEn}
+                  localGovType="स्थानीय सरकार"
+                  officeTitle={dynamicOfficeTitle}
+                  location={dynamicAddress}
+                  provinceCountry={dynamicProvinceCountry}
+                  establishedYear="२०७३"
+                  activeFiscalYear="२०८३/०८४"
+                  patraSankhya="२०८३/०८४"
+                  chalaniNo={selectedAppointmentApp.onboardedEmployeeId || selectedAppointmentApp.onboarded_employee_id || 'EMP-2081-001'}
+                  branchTitle="सामान्य प्रशासन तथा मानव संशाधन शाखा"
+                  documentTitle="करार पदस्थापन तथा नियुक्ति पत्र (OFFICIAL APPOINTMENT LETTER)"
+                  slogan={dynamicSlogan}
+                  website={dynamicWebsite}
+                  email={dynamicEmail}
+                  phone={dynamicPhone}
+                  logoUrl={dynamicPalikaLogo}
+                  emblemUrl={dynamicEmblemUrl}
+                  dateBs="२०८३/०८/०५"
+                  dateAd="2026-11-20"
+                  showWatermark={true}
+                  showFooter={true}
+                >
+                  <div style={{ padding: '1.25rem 0.5rem', minHeight: '360px' }}>
+                    <div style={{ marginBottom: '1rem', lineHeight: 1.6, fontSize: '0.92rem', color: '#1e293b' }}>
+                      <div>श्री <strong>{selectedAppointmentApp.fullNameNp || selectedAppointmentApp.full_name_np}</strong></div>
+                      <div>कर्मचारी संकेत नं: <strong style={{ color: '#047857' }}>{selectedAppointmentApp.onboardedEmployeeId || selectedAppointmentApp.onboarded_employee_id || 'EMP-2081-001'}</strong></div>
+                      <div>स्थायी ठेगाना: {selectedAppointmentApp.permanentAddress || selectedAppointmentApp.permanent_address}</div>
+                    </div>
+
+                    <p style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem', marginBottom: '1rem', textAlign: 'center' }}>
+                      विषय: <span style={{ textDecoration: 'underline' }}>करार सेवामा पदस्थापन तथा नियुक्ति गरिएको सम्बन्धी।</span>
+                    </p>
+
+                    <p style={{ fontSize: '0.9rem', lineHeight: '1.8', color: '#1e293b', textAlign: 'justify', marginBottom: '1.25rem' }}>
+                      यस <strong>{dynamicPalikaName}</strong>द्वारा सञ्चालित पदपूर्ति प्रक्रिया अनुसार विज्ञापन नं. <strong>{selectedAppointmentApp.vacancyNo || selectedAppointmentApp.vacancy_no}</strong> पद: <strong>{selectedAppointmentApp.postTitle || selectedAppointmentApp.post_title}</strong> मा छनोट हुनुभएकोमा कर्मचारी व्यवस्थापन कार्यविधि अनुसार तपाईंलाई देहाय बमोजिमको सेवा तथा सर्तमा रही कामकाज गर्न यो <strong>करार नियुक्ति पत्र</strong> प्रदान गरिएको छ।
+                    </p>
+
+                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem', fontSize: '0.86rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                        <div><strong>पद / तह:</strong> {selectedAppointmentApp.postTitle || selectedAppointmentApp.post_title}</div>
+                        <div><strong>कर्मचारी संकेत नं:</strong> {selectedAppointmentApp.onboardedEmployeeId || selectedAppointmentApp.onboarded_employee_id}</div>
+                        <div><strong>पदस्थापन शाखा:</strong> प्रशासन तथा सामान्य प्रशासन शाखा</div>
+                        <div><strong>नियुक्ति मिति:</strong> २०८३/०८/०५ (2026-11-20)</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block' }}>बोधार्थ:</span>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>१. मानव संशाधन व्यवस्थापन शाखा (HRMS File)</span><br />
+                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>२. आर्थिक प्रशासन शाखा (तलब भुक्तानी प्रयोजनार्थ)</span>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '160px', borderBottom: '1px dashed #64748b', marginBottom: '4px' }}></div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, display: 'block' }}>प्रमुख प्रशासकीय अधिकृत</span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{dynamicPalikaName}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CentralDocumentSheet>
+              )}
+            </CentralPrintPreviewModal>
           </div>
         );
 };

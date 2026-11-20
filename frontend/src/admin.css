@@ -4,8 +4,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&display=swap');
 
 :root, body.theme-dark {
-  --p5-blue: #2563eb;
-  --p5-blue-light: #38bdf8;
+  --p5-blue: #0F4C81;
+  --p5-blue-light: #1565C0;
   --p5-orange: #f59e0b;
   --dark-bg: #0b0f19;
   --dark-surface: #111827;
@@ -22,17 +22,17 @@
   --input-text: #f8fafc;
   --input-border: #293854;
   --input-placeholder: #64748b;
-  --brand-primary: #3b82f6;
-  --brand-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --brand-primary: #0F4C81;
+  --brand-gradient: linear-gradient(135deg, #0F4C81 0%, #0A3660 100%);
   --nav-item-bg: rgba(255, 255, 255, 0.03);
   --nav-item-hover: rgba(255, 255, 255, 0.08);
-  --font-primary: 'Outfit', 'Noto Sans Devanagari', sans-serif;
-  --font-nepali: 'Noto Sans Devanagari', 'Outfit', sans-serif;
+  --font-primary: 'Noto Sans Devanagari', 'Mukta', 'Inter', sans-serif;
+  --font-nepali: 'Noto Sans Devanagari', 'Mukta', 'Kalimati', sans-serif;
 }
 
 body.theme-light {
-  --p5-blue: #0284c7;
-  --p5-blue-light: #0ea5e9;
+  --p5-blue: #0F4C81;
+  --p5-blue-light: #1565C0;
   --p5-orange: #f97316;
   --dark-bg: #f8fafc;
   --dark-surface: #ffffff;
@@ -48,8 +48,8 @@ body.theme-light {
   --input-text: #0f172a;
   --input-border: #cbd5e1;
   --input-placeholder: #94a3b8;
-  --brand-primary: #0284c7;
-  --brand-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  --brand-primary: #0F4C81;
+  --brand-gradient: linear-gradient(135deg, #0F4C81 0%, #0A3660 100%);
   --nav-item-bg: #f8fafc;
   --nav-item-hover: #f1f5f9;
 }

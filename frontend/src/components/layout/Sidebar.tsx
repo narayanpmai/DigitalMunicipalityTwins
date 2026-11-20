@@ -55,18 +55,18 @@ import {
   Trophy,
 } from 'lucide-react';
 
-// ── Dark Sidebar Design Tokens ──────────────────────────────────────
+// ── Official Nepal Government Sidebar Tokens ─────────────────────────
 const S = {
-  bg: '#0d1f3c',
-  bgHover: '#1a3260',
-  bgActive: '#1e4d9b',
+  bg: '#0f172a',
+  bgHover: '#1e293b',
+  bgActive: '#0F4C81',
   border: 'rgba(255,255,255,0.08)',
-  sectionLabel: '#7ba3d4',
-  text: '#c8daf5',
+  sectionLabel: '#94a3b8',
+  text: '#cbd5e1',
   textActive: '#ffffff',
-  accent: '#3b82f6',
-  accentLight: 'rgba(59,130,246,0.15)',
-  shadow: '4px 0 24px rgba(0,0,0,0.25)',
+  accent: '#0F4C81',
+  accentLight: 'rgba(15,76,129,0.3)',
+  shadow: '4px 0 24px rgba(0,0,0,0.2)',
 };
 
 interface NavItem {
@@ -1174,9 +1174,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
                           borderRadius: '8px',
                           textDecoration: 'none',
                           fontSize: '0.825rem',
-                          fontWeight: isActive ? 600 : 400,
+                          fontWeight: isActive ? 700 : 400,
                           color: isActive ? S.textActive : S.text,
                           backgroundColor: isActive ? S.bgActive : 'transparent',
+                          borderLeft: isActive ? '3.5px solid #dc2626' : '3.5px solid transparent',
+                          boxShadow: isActive ? '0 2px 8px rgba(15,76,129,0.4)' : 'none',
                           transition: 'all 0.15s ease',
                           position: 'relative',
                         })}

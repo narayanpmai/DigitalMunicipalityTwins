@@ -526,6 +526,7 @@ export const App: React.FC = () => {
           <Route path="/app/employees" element={<ErrorBoundary><EmployeeManagementPage /></ErrorBoundary>} />
           <Route path="/app/tasks" element={<ErrorBoundary><TaskBoardPage /></ErrorBoundary>} />
           <Route path="/app/palika-settings" element={<ErrorBoundary><PalikaSettingsPage /></ErrorBoundary>} />
+          <Route path="/app/settings" element={<Navigate to="/app/palika-settings" replace />} />
           <Route path="/app/faq-help" element={<ErrorBoundary><FaqHelpPage /></ErrorBoundary>} />
           <Route path="/app/it-branch" element={<ErrorBoundary><ITBranchPage /></ErrorBoundary>} />
           <Route path="/app/audit-logs" element={<ErrorBoundary><SecurityAuditPage /></ErrorBoundary>} />

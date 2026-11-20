@@ -1,0 +1,1208 @@
+[
+  {
+    "table": "agriculture_advisories",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_farmers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_fertilizer_distributions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_fertilizer_stocks",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_market_items",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_market_prices",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_profiles",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_vet_ai_records",
+    "has_tenant_id": true,
+    "total_rows": 3,
+    "tenant_breakdown": {
+      "panchpokhari": 3
+    }
+  },
+  {
+    "table": "agriculture_vet_diagnoses",
+    "has_tenant_id": true,
+    "total_rows": 2,
+    "tenant_breakdown": {
+      "panchpokhari": 2
+    }
+  },
+  {
+    "table": "agriculture_vet_distributions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_vet_medicines",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "agriculture_vet_vaccinations",
+    "has_tenant_id": true,
+    "total_rows": 4,
+    "tenant_breakdown": {
+      "panchpokhari": 4
+    }
+  },
+  {
+    "table": "ai_cameras",
+    "has_tenant_id": true,
+    "total_rows": 4,
+    "tenant_breakdown": {
+      "panchpokhari": 4
+    }
+  },
+  {
+    "table": "ai_knowledge_base_documents",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "ai_prompt_logs",
+    "has_tenant_id": true,
+    "total_rows": 31,
+    "tenant_breakdown": {
+      "khadadevi": 2,
+      "gaushala": 10,
+      "panchpokhari": 16,
+      "benighatrorang": 3
+    }
+  },
+  {
+    "table": "assessments",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "audit_logs",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "branches",
+    "has_tenant_id": true,
+    "total_rows": 4,
+    "tenant_breakdown": {
+      "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06": 4
+    }
+  },
+  {
+    "table": "budgets",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "building_permits",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "business_inspections",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "business_renewals",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "businesses",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "c360_citizen_applications",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "c360_household_socio_economic",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "chalani",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "citizen_data_requests",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "citizen_services",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "citizens",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "complaints",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "contracts",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cooperative_financial_reports",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cooperative_inspections",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cooperative_members",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cooperative_regulatory_notices",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cooperatives",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "cultural_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dalit_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "darta",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dash_analytics_cache",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dash_open_data_publications",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "demographic_categories",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "demographic_indicators",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "demographic_values",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "disability_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "disaster_events",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "disaster_relief_funds",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "disaster_relief_inventory",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "document_archive",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "document_extraction",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "drrm_damage_reports",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "drrm_incidents",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "drrm_preparedness_items",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "drrm_recovery_projects",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dt_asset_assignments",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dt_asset_inspections",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dt_asset_maintenance_logs",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "dt_unified_assets",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "ebps_applications",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "ebps_design_scrutiny",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "ebps_field_inspections",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "ebps_workflow_steps",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "education_attendance",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "education_nutrition",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "emergency_broadcasts",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "emergency_contacts",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "employee_tasks",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "employees",
+    "has_tenant_id": true,
+    "total_rows": 1,
+    "tenant_breakdown": {
+      "NULL": 1
+    }
+  },
+  {
+    "table": "employment_labour_bank",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "employment_labour_demands",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "employment_projects",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "employment_work_logs",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "engineers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "eoffice_digital_signatures",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "eoffice_file_movements",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "eoffice_files",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "eoffice_tippani",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "esrv_applications",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "esrv_issued_certificates",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "esrv_payments",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "esrv_service_templates",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "event_calendar",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "fiscal_years",
+    "has_tenant_id": true,
+    "total_rows": 6,
+    "tenant_breakdown": {
+      "NULL": 6
+    }
+  },
+  {
+    "table": "gis_cadastre_parcels",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_environmental_risks",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_land_classifications",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_natural_resources",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_public_lands",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_tourism_heritage",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "gis_ward_boundaries",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_ambulances",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_dhis2_reports",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_discharge_summaries",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_facilities",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_insurance_claims",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_ipd_admissions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_lab_tests",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_medicine_batches",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_medicines",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_patients",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_pos_returns",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_pos_sales",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_prescriptions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_purchases",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_stock_transfers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "health_suppliers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "heritage_sites",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "household_registries",
+    "has_tenant_id": true,
+    "total_rows": 5357,
+    "tenant_breakdown": {
+      "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06": 5357
+    }
+  },
+  {
+    "table": "infrastructure",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "judicial_cases",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "judicial_cause_list",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "judicial_mediators",
+    "has_tenant_id": true,
+    "total_rows": 3,
+    "tenant_breakdown": {
+      "panchpokhari": 3
+    }
+  },
+  {
+    "table": "library_books",
+    "has_tenant_id": true,
+    "total_rows": 428,
+    "tenant_breakdown": {
+      "khadadevi": 8,
+      "panchpokhari": 46,
+      "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06": 374
+    }
+  },
+  {
+    "table": "library_borrow_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "livestock_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_addresses",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_assets",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_businesses",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_citizens",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_households",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_infrastructure",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_organizations",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_toles",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "mdm_wards",
+    "has_tenant_id": true,
+    "total_rows": 8,
+    "tenant_breakdown": {
+      "panchpokhari": 8
+    }
+  },
+  {
+    "table": "municipal_indicators",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "municipality_profile",
+    "has_tenant_id": true,
+    "total_rows": 7,
+    "tenant_breakdown": {
+      "khadadevi": 1,
+      "gaushala": 1,
+      "benighatrorang": 1,
+      "helambu": 1,
+      "e4a22081-43e7-40ae-b081-dec13630100d": 1,
+      "panchpokhari": 1,
+      "galchhi": 1
+    }
+  },
+  {
+    "table": "museum_assets",
+    "has_tenant_id": true,
+    "total_rows": 27,
+    "tenant_breakdown": {
+      "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06": 26,
+      "panchpokhari": 1
+    }
+  },
+  {
+    "table": "open_data_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "organizations",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "payments",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "plans",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "procurements",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "progress_indicator_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_budget_allocations",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_contracts",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_executions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_handovers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_measurement_books",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_payments",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_plan_proposals",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "proj_procurement_plans",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "projects",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "public_assets",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "recruitment_applications",
+    "has_tenant_id": true,
+    "total_rows": 6,
+    "tenant_breakdown": {
+      "NULL": 6
+    }
+  },
+  {
+    "table": "recruitment_audit_logs",
+    "has_tenant_id": false,
+    "total_rows": 31,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "recruitment_payments",
+    "has_tenant_id": false,
+    "total_rows": 8,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "recruitment_refunds",
+    "has_tenant_id": false,
+    "total_rows": 2,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "recruitment_vacancies",
+    "has_tenant_id": true,
+    "total_rows": 2,
+    "tenant_breakdown": {
+      "NULL": 2
+    }
+  },
+  {
+    "table": "representatives",
+    "has_tenant_id": true,
+    "total_rows": 49,
+    "tenant_breakdown": {
+      "benighatrorang": 13,
+      "panchpokhari": 11,
+      "khadadevi": 11,
+      "gaushala": 14
+    }
+  },
+  {
+    "table": "revenues",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "roles",
+    "has_tenant_id": true,
+    "total_rows": 24,
+    "tenant_breakdown": {
+      "NULL": 24
+    }
+  },
+  {
+    "table": "rti_requests",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "schools",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "sec_audit_logs",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "sec_user_roles",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "sec_users",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "sector_profile",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "senior_citizen_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "sensors",
+    "has_tenant_id": true,
+    "total_rows": 5,
+    "tenant_breakdown": {
+      "panchpokhari": 5
+    }
+  },
+  {
+    "table": "shelters",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "social_inclusion_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "social_security_beneficiaries",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "students",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "system_settings",
+    "has_tenant_id": true,
+    "total_rows": 120,
+    "tenant_breakdown": {
+      "gaushala": 22,
+      "NULL": 2,
+      "galchhi": 13,
+      "benighatrorang": 22,
+      "khadadevi": 22,
+      "panchpokhari": 39
+    }
+  },
+  {
+    "table": "teachers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tenants",
+    "has_tenant_id": false,
+    "total_rows": 7,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_destinations",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_hotels",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_local_products",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_packages",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_reservations",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "tourism_tourist_logs",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "users",
+    "has_tenant_id": true,
+    "total_rows": 34,
+    "tenant_breakdown": {
+      "galchhi": 1,
+      "050b8da4-61d2-49d0-b788-0729be064b26": 1,
+      "khadadevi": 1,
+      "gaushala": 1,
+      "helambu": 2,
+      "94bf02d3-9c23-4d84-a346-6461f414bcda": 1,
+      "benighatrorang": 1,
+      "all": 1,
+      "panchpokhari": 24,
+      "melamchi": 1
+    }
+  },
+  {
+    "table": "visitor_records",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "vital_events",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "vulnerable_settlements",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "wards",
+    "has_tenant_id": true,
+    "total_rows": 55,
+    "tenant_breakdown": {
+      "galchhi": 8,
+      "benighatrorang": 10,
+      "khadadevi": 9,
+      "panchpokhari": 8,
+      "melamchi": 8,
+      "gaushala": 12
+    }
+  },
+  {
+    "table": "waste_alerts",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_disposal_sites",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_rates",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_sanitation_workers",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_schedules",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_transactions",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_vehicles",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "waste_wallets",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "weather_station_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  },
+  {
+    "table": "women_children_data",
+    "has_tenant_id": true,
+    "total_rows": 0,
+    "tenant_breakdown": {}
+  }
+]
