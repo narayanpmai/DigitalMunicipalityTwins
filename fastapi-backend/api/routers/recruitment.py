@@ -47,6 +47,72 @@ from schemas.recruitment import (
 )
 from models.user import User, UserRole
 from api.routers.auth import get_current_user, require_roles, _get_token_payload
+from models.darta_chalani import Chalani
+
+
+def get_or_create_recruitment_chalani(db: Session, app: JobApplication, fiscal_year: str = '२०८३/०८४', tenant_id: str = None) -> str:
+    """
+    डिजिटल दर्ता तथा चलानी व्यवस्थापन प्रणाली (Darta-Chalani) सँग सिधै लिङ्क गरी
+    चालू आ.व. को आधिकारिक बहिर्गमन चलानी (Chalani) नम्बर स्वतः दाबी गर्ने र
+    चलानी किताबमा दर्ता गर्ने।
+    """
+    from datetime import datetime
+
+    nep_to_eng = {'०':'0', '१':'1', '२':'2', '३':'3', '४':'4', '५':'5', '६':'6', '७':'7', '८':'8', '९':'9'}
+    eng_to_nep = {'0':'०', '1':'१', '2':'२', '3':'३', '4':'४', '5':'५', '6':'६', '7':'७', '8':'८', '9':'९'}
+
+    def parse_nep_num(val):
+        if not val:
+            return 0
+        s = ''.join(nep_to_eng.get(ch, ch) for ch in str(val) if ch.isdigit() or ch in nep_to_eng)
+        return int(s) if s else 0
+
+    def format_nep_num(num):
+        return ''.join(eng_to_nep.get(ch, ch) for ch in str(num))
+
+    # 1. First check if a Chalani entry already exists for this application
+    if app.application_no:
+        existing = db.query(Chalani).filter(Chalani.letter_ref_no == app.application_no).first()
+        if existing and existing.dispatch_no:
+            return existing.dispatch_no
+
+    # 2. Find maximum existing dispatch number in this fiscal year
+    all_in_fy = db.query(Chalani).filter(Chalani.fiscal_year == fiscal_year).all()
+    max_num = max([parse_nep_num(c.dispatch_no) for c in all_in_fy if c.dispatch_no] + [0])
+    next_num = max_num + 1
+    next_chalani_no = format_nep_num(next_num)
+
+    # 3. Create official Outward Chalani record
+    eff_tenant = tenant_id or app.tenant_id or 'panchpokhari'
+    now_ad = datetime.utcnow()
+    new_chalani = Chalani(
+        id=str(uuid.uuid4()),
+        tenant_id=eff_tenant,
+        dispatch_no=str(next_chalani_no),
+        fiscal_year=fiscal_year,
+        dispatch_date=app.exam_date_time or "२०८३-०८-०५",
+        dispatch_date_ad=now_ad.strftime("%Y-%m-%d"),
+        letter_ref_no=app.application_no,
+        receiver_name=app.full_name_np or "उम्मेदवार",
+        receiver_address=f"{app.permanent_address or ''} (ना.नं: {app.citizenship_no or ''})".strip(),
+        receiver_contact=app.contact_phone,
+        receiver_email=app.email,
+        subject=f"प्रवेशपत्र तथा दरखास्त स्वीकृति — विज्ञापन नं: {app.vacancy_no or ''}, पद: {app.post_title or ''}",
+        department="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति",
+        signed_by="प्रमुख प्रशासकीय अधिकृत",
+        classification="प्रशासनिक / पदपूर्ति",
+        priority="जरुरी",
+        delivery_method="अनलाइन प्रणाली स्वतः जारी (Digital Auto Dispatch)",
+        verification_code=f"PTRM-CHALANI-{fiscal_year.replace('/', '-')}-{next_chalani_no}",
+        status="चलानी भएको",
+        approval_status="approved",
+        approved_by="SYSTEM:RECRUITMENT_AUTO",
+        approved_at=now_ad,
+        remarks=f"Recruitment Application Approved - Roll: {app.admit_card_roll_no or 'N/A'}"
+    )
+    db.add(new_chalani)
+    return str(next_chalani_no)
+
 
 RECRUITMENT_ADMIN_ROLES = (
     UserRole.SUPER_ADMIN,
@@ -340,12 +406,14 @@ def get_admit_card(
             app.exam_center = None
             need_commit = True
 
-    if not app.chalani_no and app.admit_card_roll_no:
-        import re
-        match = re.search(r'(\d+)$', app.admit_card_roll_no)
-        num = int(match.group(1)) if match else 1
-        nep_digits = {'0':'०', '1':'१', '2':'२', '3':'३', '4':'४', '5':'५', '6':'६', '7':'७', '8':'८', '9':'९'}
-        app.chalani_no = ''.join(nep_digits.get(ch, ch) for ch in str(num))
+    if not app.chalani_no and (app.status == "स्वीकृत (Approved)" or bool(app.admit_card_roll_no)):
+        fy = "२०८३/०८४"
+        if vacancy and vacancy.vacancy_no and "२०" in vacancy.vacancy_no:
+            import re
+            m = re.search(r'(२०\d{2}/\d{3})', vacancy.vacancy_no)
+            if m:
+                fy = m.group(1)
+        app.chalani_no = get_or_create_recruitment_chalani(db=db, app=app, fiscal_year=fy, tenant_id=app.tenant_id)
         need_commit = True
 
     if need_commit:
@@ -1482,15 +1550,17 @@ def verify_job_application(
             count = ctx.filter_query(db.query(JobApplication).filter(JobApplication.admit_card_roll_no.isnot(None)), JobApplication).count() + 1
             app.admit_card_roll_no = f"{fy_year}-ROLL-{count:03d}"
 
-        # Populate chalani_no
+        # Auto-claim official Chalani number from Darta-Chalani system
         if data.chalani_no:
             app.chalani_no = data.chalani_no
         elif not app.chalani_no:
-            import re
-            match = re.search(r'(\d+)$', app.admit_card_roll_no)
-            num = int(match.group(1)) if match else 1
-            nep_digits = {'0':'०', '1':'१', '2':'२', '3':'३', '4':'४', '5':'५', '6':'६', '7':'७', '8':'८', '9':'९'}
-            app.chalani_no = ''.join(nep_digits.get(ch, ch) for ch in str(num))
+            fy = "२०८३/०८४"
+            if vac and vac.vacancy_no:
+                import re
+                m = re.search(r'(२०\d{2}/\d{3})', vac.vacancy_no)
+                if m:
+                    fy = m.group(1)
+            app.chalani_no = get_or_create_recruitment_chalani(db=db, app=app, fiscal_year=fy, tenant_id=app.tenant_id)
 
         app.exam_center = data.exam_center or (vac.exam_center if vac and vac.exam_center else None) or app.exam_center
         app.exam_date_time = data.exam_date_time or (vac.exam_date_bs if vac and vac.exam_date_bs else None) or app.exam_date_time
