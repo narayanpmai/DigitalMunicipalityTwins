@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { useTenant } from '../../context/TenantContext';
 import { NepaliDatePicker } from '../../components/common/NepaliDatePicker';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
@@ -218,6 +219,78 @@ export const RecruitmentPage: React.FC = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Municipal Tenant Settings & Dynamic Branding (from Palika Setup / TenantContext)
+  let tenantSettings: any = null;
+  let activeTenantId = 'panchpokhari';
+  try {
+    const tenantCtx = useTenant();
+    tenantSettings = tenantCtx?.settings;
+    if (tenantCtx?.tenantId) {
+      activeTenantId = tenantCtx.tenantId;
+    }
+  } catch {
+    activeTenantId = localStorage.getItem('tenant_id') || 'panchpokhari';
+  }
+
+  const [palikaSync, setPalikaSync] = useState(0);
+  useEffect(() => {
+    const handleSettingsUpdate = () => setPalikaSync((prev) => prev + 1);
+    window.addEventListener('storage', handleSettingsUpdate);
+    window.addEventListener('palika-settings-updated', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('storage', handleSettingsUpdate);
+      window.removeEventListener('palika-settings-updated', handleSettingsUpdate);
+    };
+  }, []);
+
+  const localOverride = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem(`palika_settings_${activeTenantId}`);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }, [activeTenantId, palikaSync]);
+
+  const dynamicPalikaName =
+    localOverride.palika_name?.trim() ||
+    tenantSettings?.palika_name?.trim() ||
+    'पाँचपोखरी थाङपाल गाउँपालिका';
+
+  const dynamicPalikaNameEn =
+    localOverride.palika_name_en?.trim() ||
+    tenantSettings?.palika_name_en?.trim() ||
+    'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY';
+
+  const dynamicOfficeTitle =
+    localOverride.chief_officer_title?.trim() ||
+    tenantSettings?.office_title?.trim() ||
+    'गाउँ कार्यपालिकाको कार्यालय';
+
+  const dynamicAddress =
+    localOverride.headquarters?.trim() ||
+    localOverride.address?.trim() ||
+    tenantSettings?.headquarters?.trim() ||
+    tenantSettings?.address?.trim() ||
+    'थाङपालधाप, सिन्धुपाल्चोक';
+
+  const dynamicProvince =
+    localOverride.province?.trim() ||
+    tenantSettings?.province?.trim() ||
+    'बागमती प्रदेश';
+
+  const dynamicProvinceCountry = dynamicProvince.includes('नेपाल') ? dynamicProvince : `${dynamicProvince}, नेपाल`;
+
+  const dynamicPalikaLogo =
+    localOverride.logo_url?.trim() ||
+    tenantSettings?.logo_url?.trim() ||
+    '/panchpokhari-logo.png';
+
+  const dynamicEmblemUrl =
+    localOverride.emblem_url?.trim() ||
+    tenantSettings?.emblem_url?.trim() ||
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
 
   // Detect whether page is public or admin
   const isPublicView = location.pathname === '/recruitment';
@@ -920,13 +993,13 @@ return (
           <h1 className="rec-hero-title">
             <FileCheck size={32} color="#38bdf8" />
             {isPublicView
-              ? 'पाँचपोखरी थाङपाल गाउँपालिका — खुला अनलाइन दरखास्त तथा पदपूर्ति पोर्टल'
+              ? `${dynamicPalikaName} — खुला अनलाइन दरखास्त तथा पदपूर्ति पोर्टल`
               : 'अनलाइन दरखास्त, भुक्तानी तथा कर्मचारी पदपूर्ति व्यवस्थापन प्रणाली'}
           </h1>
           <p className="rec-hero-desc">
             {isPublicView
               ? 'खुला विज्ञापन तथा पदहरू हेर्नुहोस्, ५-चरणको अनलाइन आवेदन फारम भर्नुहोस्, Fonepay QR/eSewa/ConnectIPS बाट तत्काल शुल्क तिरी डिजिटल रसिद र प्रवेशपत्र प्राप्त गर्नुहोस्।'
-              : 'पाँचपोखरी थाङपाल गाउँ कार्यपालिका — रिक्त पदहरूमा विज्ञापन, डिजिटल राजस्व भुक्तानी रुजु, रोल नम्बर बाँडफाँड, परीक्षा केन्द्र तथा वित्तीय मेलमिलाप व्यवस्थापन।'}
+              : `${dynamicPalikaName} — रिक्त पदहरूमा विज्ञापन, डिजिटल राजस्व भुक्तानी रुजु, रोल नम्बर बाँडफाँड, परीक्षा केन्द्र तथा वित्तीय मेलमिलाप व्यवस्थापन।`}
           </p>
         </div>
 
@@ -2817,17 +2890,50 @@ return (
                     {admitCardResult.is_admit_card_ready && (
                       <div id="printable-admit-card" className="rec-admit-official-card">
                         <div className="rec-admit-watermark">
-                          <FileCheck size={420} />
+                          <img
+                            src={dynamicPalikaLogo}
+                            alt="Watermark"
+                            className="rec-admit-watermark-img"
+                            onError={(e: any) => {
+                              e.currentTarget.src = '/panchpokhari-logo.png';
+                            }}
+                          />
                         </div>
 
                         <div className="rec-admit-header">
-                          <div className="rec-gov-emblem-box">नेपाल सरकार</div>
+                          <div className="rec-admit-logos-left">
+                            <div className="rec-admit-emblem-wrap" title="नेपाल सरकारको आधिकारिक निशान छाप">
+                              <img
+                                src={dynamicEmblemUrl}
+                                alt="नेपाल सरकार निशान छाप"
+                                className="rec-admit-emblem-img"
+                                onError={(e: any) => {
+                                  e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
+                                }}
+                              />
+                            </div>
+                            <div className="rec-admit-palika-logo-wrap" title={`${dynamicPalikaName}को आधिकारिक लोगो (Palika Setup बाट डायनामिक)`}>
+                              <img
+                                src={dynamicPalikaLogo}
+                                alt="गाउँपालिकाको आधिकारिक लोगो"
+                                className="rec-admit-palika-logo-img"
+                                onError={(e: any) => {
+                                  e.currentTarget.src = '/panchpokhari-logo.png';
+                                }}
+                              />
+                            </div>
+                          </div>
+
                           <div className="rec-admit-title-center">
-                            <h2 className="rec-admit-title-main">पाँचपोखरी थाङपाल गाउँपालिका</h2>
-                            <h3 className="rec-admit-sub-office">गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक</h3>
-                            <p className="rec-admit-sub-province">बागमती प्रदेश, नेपाल</p>
+                            <div className="rec-admit-top-sub">स्थानीय सरकार / अनुसूची तथा पदपूर्ति सञ्चालन</div>
+                            <h2 className="rec-admit-title-main">{dynamicPalikaName}</h2>
+                            <div className="rec-admit-title-en">{dynamicPalikaNameEn}</div>
+                            <h3 className="rec-admit-sub-office">{dynamicOfficeTitle}</h3>
+                            <p className="rec-admit-sub-province">{dynamicAddress}, {dynamicProvinceCountry}</p>
+                            <div className="rec-admit-branch-title">कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति</div>
                             <div className="rec-admit-ribbon">प्रवेशपत्र (ADMIT CARD)</div>
                           </div>
+
                           <div className="rec-photo-paste-box">
                             {admitCardResult.application.photoUrl || admitCardResult.application.photo_url ? (
                               <img
@@ -2972,11 +3078,12 @@ return (
                         <div className="rec-admit-signatures">
                           <div style={{ textAlign: 'center' }}>
                             <div className="rec-sig-line"></div>
-                            <span>उम्मेदवारको हस्ताक्षर</span>
+                            <span style={{ fontWeight: 800 }}>उम्मेदवारको हस्ताक्षर</span>
                           </div>
                           <div style={{ textAlign: 'center' }}>
                             <div className="rec-sig-line"></div>
-                            <span>पदपूर्ति समिति / प्रमुख प्रशासकीय अधिकृत</span>
+                            <span style={{ fontWeight: 800, display: 'block' }}>पदपूर्ति समिति / प्रमुख प्रशासकीय अधिकृत</span>
+                            <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '0.15rem' }}>{dynamicPalikaName}</span>
                           </div>
                         </div>
                       </div>
@@ -3007,10 +3114,40 @@ return (
 
                   <div className="rec-modal-body" style={{ background: '#f8fafc' }}>
                     <div id="printable-receipt" className="rec-receipt-modal-wrapper">
+                      <div className="rec-receipt-watermark">
+                        <img
+                          src={dynamicPalikaLogo}
+                          alt="Watermark"
+                          style={{ width: '220px', height: '220px', objectFit: 'contain', opacity: 0.05, filter: 'grayscale(100%)' }}
+                          onError={(e: any) => {
+                            e.currentTarget.src = '/panchpokhari-logo.png';
+                          }}
+                        />
+                      </div>
                       <div className="rec-receipt-header">
-                        <p className="rec-receipt-title-gov">नेपाल सरकार | बागमती प्रदेश</p>
-                        <h2 className="rec-receipt-title-office">पाँचपोखरी थाङपाल गाउँपालिका</h2>
-                        <p className="rec-receipt-title-sub">गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                          <img
+                            src={dynamicEmblemUrl}
+                            alt="नेपाल सरकार निशाना छाप"
+                            style={{ width: '56px', height: '56px', objectFit: 'contain' }}
+                            onError={(e: any) => {
+                              e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png';
+                            }}
+                          />
+                          <div style={{ flex: 1, textAlign: 'center' }}>
+                            <p className="rec-receipt-title-gov">नेपाल सरकार | स्थानीय सरकार | {dynamicProvinceCountry}</p>
+                            <h2 className="rec-receipt-title-office">{dynamicPalikaName}</h2>
+                            <p className="rec-receipt-title-sub">{dynamicOfficeTitle}, {dynamicAddress}</p>
+                          </div>
+                          <img
+                            src={dynamicPalikaLogo}
+                            alt="पालिका लोगो"
+                            style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '50%', border: '1.5px solid #dc2626', background: '#ffffff', padding: '2px' }}
+                            onError={(e: any) => {
+                              e.currentTarget.src = '/panchpokhari-logo.png';
+                            }}
+                          />
+                        </div>
                         <span className="rec-receipt-ribbon">विद्युतीय राजस्व रसिद (REVENUE RECEIPT)</span>
                       </div>
 
@@ -3078,7 +3215,7 @@ return (
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ width: '160px', borderBottom: '1px dashed #0f172a', marginBottom: '0.35rem' }}></div>
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0f172a' }}>राजस्व अधिकृत / कम्प्युटर प्रणाली</span>
-                          <span style={{ fontSize: '0.68rem', color: '#64748b', display: 'block' }}>पाँचपोखरी थाङपाल गाउँपालिका</span>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b', display: 'block' }}>{dynamicPalikaName}</span>
                         </div>
                       </div>
                     </div>
