@@ -6,6 +6,7 @@ import { useTenant } from '../../context/TenantContext';
 import { NepaliDatePicker } from '../../components/common/NepaliDatePicker';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
+import JSZip from 'jszip';
 import './recruitment.css';
 import {
   FileCheck,
@@ -379,6 +380,107 @@ export const RecruitmentPage: React.FC = () => {
   const [selectedNoticeVacancy, setSelectedNoticeVacancy] = useState<any>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedAppointmentApp, setSelectedAppointmentApp] = useState<any>(null);
+
+  // Document Preview & Admin Download State
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; label: string; isImg?: boolean } | null>(null);
+  const [isZipping, setIsZipping] = useState(false);
+  const [downloadingDocKey, setDownloadingDocKey] = useState<string | null>(null);
+
+  const getAppDocuments = (app: Application | null) => {
+    if (!app) return [];
+    return [
+      { key: 'photo', label: 'पासपोर्ट साइजको फोटो', fileTag: 'फोटो_Photo', url: app.photoUrl || app.photo_url, isImg: true },
+      { key: 'signature', label: 'उम्मेदवारको दस्तखत', fileTag: 'दस्तखत_Signature', url: app.signatureUrl || app.signature_url, isImg: true },
+      { key: 'citizenship', label: 'नेपाली नागरिकता प्रमाणपत्र', fileTag: 'नागरिकता_Citizenship', url: app.citizenshipDocUrl || app.citizenship_doc_url },
+      { key: 'qualification', label: 'शैक्षिक प्रमाणपत्र / लब्धाङ्क', fileTag: 'शैक्षिक_योग्यता_Qualification', url: app.qualificationDocUrl || app.qualification_doc_url },
+      { key: 'council', label: 'काउन्सिल दर्ता प्रमाणपत्र', fileTag: 'काउन्सिल_दर्ता_Council', url: app.councilDocUrl || app.council_doc_url },
+      { key: 'experience', label: 'कार्य अनुभव तथा तालिम', fileTag: 'कार्य_अनुभव_Experience', url: app.experienceDocUrl || app.experience_doc_url },
+      { key: 'voucher', label: 'राजस्व भौचर / बैंक रसिद', fileTag: 'राजस्व_भौचर_Voucher', url: app.paymentVoucherDocUrl || app.payment_voucher_doc_url },
+    ].filter(d => Boolean(d.url));
+  };
+
+  const handleDownloadSingleDoc = async (url: string, fileTag: string, app: Application) => {
+    try {
+      setDownloadingDocKey(fileTag);
+      const appNo = (app.applicationNo || app.application_no || 'PTRM-APP').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const candidateName = (app.fullNameNp || app.full_name_np || app.fullNameEn || 'Applicant').replace(/[\s/\\:*?"<>|]/g, '_');
+      
+      const cleanUrl = url.split('?')[0];
+      let ext = 'jpg';
+      if (cleanUrl.includes('.')) {
+        ext = cleanUrl.split('.').pop()?.toLowerCase() || 'jpg';
+      }
+      const filename = `${appNo}_${fileTag}_${candidateName}.${ext}`;
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.warn('Direct download fallback to window.open', err);
+      window.open(url, '_blank');
+    } finally {
+      setDownloadingDocKey(null);
+    }
+  };
+
+  const handleDownloadAllDocsAsZip = async (app: Application) => {
+    const docs = getAppDocuments(app);
+    if (docs.length === 0) {
+      alert('कुनै कागजात संलग्न गरिएको छैन।');
+      return;
+    }
+    try {
+      setIsZipping(true);
+      const zip = new JSZip();
+      const appNo = (app.applicationNo || app.application_no || 'PTRM-APP').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const candidateName = (app.fullNameNp || app.full_name_np || 'Applicant').replace(/[\s/\\:*?"<>|]/g, '_');
+
+      const folder = zip.folder(`${appNo}_${candidateName}_कागजातहरू`);
+      const targetFolder = folder || zip;
+
+      await Promise.all(
+        docs.map(async (doc, idx) => {
+          try {
+            const res = await fetch(doc.url!);
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const cleanUrl = doc.url!.split('?')[0];
+            let ext = 'jpg';
+            if (cleanUrl.includes('.')) {
+              ext = cleanUrl.split('.').pop()?.toLowerCase() || 'jpg';
+            }
+            const filename = `${idx + 1}_${doc.fileTag}.${ext}`;
+            targetFolder.file(filename, blob);
+          } catch (e) {
+            console.error(`Failed to download ${doc.label}`, e);
+          }
+        })
+      );
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const zipUrl = window.URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = zipUrl;
+      a.download = `${appNo}_${candidateName}_सम्पूर्ण_कागजातहरू.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(zipUrl);
+    } catch (err) {
+      console.error('ZIP generation failed:', err);
+      alert('कागजातहरू जिप गर्दा समस्या आयो। कृपया व्यक्तिगत कागजात डाउनलोड गर्नुहोस्।');
+    } finally {
+      setIsZipping(false);
+    }
+  };
 
   // Helper to format Exam Date in both BS and AD
   const getExamDateTimeDetails = (app: any, vac: any) => {
@@ -4160,7 +4262,7 @@ return (
             {/* ============================================================== */}
             {showVerifyModal && selectedApp && (
               <div className="rec-modal-backdrop">
-                <div className="rec-modal-panel">
+                <div className="rec-modal-panel" style={{ maxWidth: '720px' }}>
                   <div className="rec-modal-header" style={{ background: '#0f172a' }}>
                     <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <ShieldCheck size={18} color="#34d399" />
@@ -4203,6 +4305,75 @@ return (
                             {(selectedApp.paymentStatus === 'PAID' || selectedApp.payment_status === 'PAID') ? 'PAID (रसिद नं: ' + (selectedApp.receiptNo || selectedApp.receipt_no) + ')' : 'UNPAID'}
                           </strong>
                         </div>
+                      </div>
+
+                      {/* Uploaded Documents for Scrutiny */}
+                      <div style={{ marginTop: '0.85rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <h4 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <Paperclip size={14} color="#0284c7" />
+                            छानबिनका लागि संलग्न कागजातहरू ({getAppDocuments(selectedApp).length} वटा):
+                          </h4>
+                          {getAppDocuments(selectedApp).length > 0 && (
+                            <button
+                              type="button"
+                              disabled={isZipping}
+                              onClick={() => handleDownloadAllDocsAsZip(selectedApp)}
+                              className="rec-btn"
+                              style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', background: '#f0fdf4', border: '1px solid #86efac', color: '#166534', fontWeight: 700 }}
+                              title="सबै संलग्न कागजातहरू संकलन गरी .ZIP फाइलमा डाउनलोड गर्नुहोस्"
+                            >
+                              {isZipping ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+                              {isZipping ? 'जिप तयार गरिँदैछ...' : 'एकमुष्ट ZIP डाउनलोड'}
+                            </button>
+                          )}
+                        </div>
+                        {(() => {
+                          const docs = getAppDocuments(selectedApp);
+                          if (docs.length === 0) {
+                            return <div style={{ color: '#94a3b8', fontSize: '0.78rem' }}>कुनै कागजात संलग्न गरिएको छैन।</div>;
+                          }
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }}>
+                              {docs.map((d, idx) => (
+                                <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                  <span style={{ fontSize: '0.73rem', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={d.label}>
+                                    {d.label}
+                                  </span>
+                                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewDoc(d)}
+                                      style={{ flex: 1, padding: '0.2rem 0.4rem', fontSize: '0.72rem', height: '26px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', fontWeight: 700, borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', cursor: 'pointer' }}
+                                      title="पूर्वावलोकन हेर्नुहोस्"
+                                    >
+                                      <Eye size={12} color="#0284c7" /> हेर्नुहोस्
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={downloadingDocKey === d.fileTag}
+                                      onClick={() => handleDownloadSingleDoc(d.url!, d.fileTag, selectedApp)}
+                                      style={{ flex: 1, padding: '0.2rem 0.4rem', fontSize: '0.72rem', height: '26px', background: '#eff6ff', border: '1px solid #93c5fd', color: '#1d4ed8', fontWeight: 700, borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', cursor: 'pointer' }}
+                                      title="कागजात डाउनलोड गर्नुहोस्"
+                                    >
+                                      {downloadingDocKey === d.fileTag ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} color="#1d4ed8" />}
+                                      डाउनलोड
+                                    </button>
+                                    <a
+                                      href={d.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ width: '26px', height: '26px', minWidth: '26px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', color: '#475569', borderRadius: '6px', textDecoration: 'none' }}
+                                      title="नयाँ ट्याबमा खोल्नुहोस्"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </a>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="rec-field-group" style={{ marginTop: '0.75rem' }}>
@@ -4272,7 +4443,7 @@ return (
             {/* ============================================================== */}
             {showDetailModal && selectedApp && (
               <div className="rec-modal-backdrop">
-                <div className="rec-modal-panel">
+                <div className="rec-modal-panel" style={{ maxWidth: '760px' }}>
                   <div className="rec-modal-header">
                     <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <UserCheck size={18} />
@@ -4309,40 +4480,72 @@ return (
                       </div>
                     </div>
 
-                    {/* Uploaded Documents Gallery */}
+                    {/* Uploaded Documents Gallery with Direct Download & ZIP */}
                     <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.85rem', marginTop: '0.85rem' }}>
-                      <h4 style={{ margin: '0 0 0.65rem 0', fontSize: '0.85rem', fontWeight: 800, color: '#1e293b' }}>
-                        संलग्न कागजातहरू तथा प्रमाणपत्रहरू:
-                      </h4>
-                      {(() => {
-                        const docs = [
-                          { label: 'पासपोर्ट साइजको फोटो', url: selectedApp.photoUrl || selectedApp.photo_url, isImg: true },
-                          { label: 'उम्मेदवारको दस्तखत', url: selectedApp.signatureUrl || selectedApp.signature_url, isImg: true },
-                          { label: 'नेपाली नागरिकता प्रमाणपत्र', url: selectedApp.citizenshipDocUrl || selectedApp.citizenship_doc_url },
-                          { label: 'शैक्षिक प्रमाणपत्र / लब्धाङ्क', url: selectedApp.qualificationDocUrl || selectedApp.qualification_doc_url },
-                          { label: 'काउन्सिल दर्ता प्रमाणपत्र', url: selectedApp.councilDocUrl || selectedApp.council_doc_url },
-                          { label: 'कार्य अनुभव तथा तालिम', url: selectedApp.experienceDocUrl || selectedApp.experience_doc_url },
-                          { label: 'राजस्व भौचर / रसिद', url: selectedApp.paymentVoucherDocUrl || selectedApp.payment_voucher_doc_url },
-                        ].filter(d => Boolean(d.url));
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <Paperclip size={15} color="#0284c7" />
+                          संलग्न कागजातहरू तथा प्रमाणपत्रहरू ({getAppDocuments(selectedApp).length} वटा):
+                        </h4>
+                        {getAppDocuments(selectedApp).length > 0 && (
+                          <button
+                            type="button"
+                            disabled={isZipping}
+                            onClick={() => handleDownloadAllDocsAsZip(selectedApp)}
+                            className="rec-btn"
+                            style={{ fontSize: '0.75rem', padding: '0.3rem 0.7rem', background: '#f0fdf4', border: '1px solid #86efac', color: '#166534', fontWeight: 800, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                            title="उम्मेदवारका सबै संलग्न कागजातहरू संकलन गरी .ZIP फाइलमा डाउनलोड गर्नुहोस्"
+                          >
+                            {isZipping ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                            {isZipping ? 'जिप तयार गरिँदैछ...' : 'सबै कागजात एकमुष्ट डाउनलोड (.ZIP)'}
+                          </button>
+                        )}
+                      </div>
 
+                      {(() => {
+                        const docs = getAppDocuments(selectedApp);
                         if (docs.length === 0) {
-                          return <div style={{ color: '#94a3b8' }}>कुनै कागजात संलग्न गरिएको छैन।</div>;
+                          return <div style={{ color: '#94a3b8', fontSize: '0.8rem', padding: '0.5rem 0' }}>कुनै कागजात संलग्न गरिएको छैन।</div>;
                         }
 
                         return (
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.65rem' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))', gap: '0.65rem' }}>
                             {docs.map((d, idx) => (
-                              <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#334155' }}>{d.label}</span>
-                                <a
-                                  href={d.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="rec-btn rec-btn-outline"
-                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', justifyContent: 'center' }}
-                                >
-                                  <ExternalLink size={12} /> हेर्नुहोस्
-                                </a>
+                              <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={d.label}>
+                                    {d.label}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewDoc(d)}
+                                    style={{ flex: 1, padding: '0.25rem 0.45rem', fontSize: '0.74rem', height: '28px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', fontWeight: 700, borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', cursor: 'pointer' }}
+                                    title="पूर्वावलोकन हेर्नुहोस्"
+                                  >
+                                    <Eye size={13} color="#0284c7" /> हेर्नुहोस्
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={downloadingDocKey === d.fileTag}
+                                    onClick={() => handleDownloadSingleDoc(d.url!, d.fileTag, selectedApp)}
+                                    style={{ flex: 1, padding: '0.25rem 0.45rem', fontSize: '0.74rem', height: '28px', background: '#eff6ff', border: '1px solid #93c5fd', color: '#1d4ed8', fontWeight: 700, borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', cursor: 'pointer' }}
+                                    title="कागजात सिधै डाउनलोड गर्नुहोस्"
+                                  >
+                                    {downloadingDocKey === d.fileTag ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} color="#1d4ed8" />}
+                                    डाउनलोड
+                                  </button>
+                                  <a
+                                    href={d.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ width: '28px', height: '28px', minWidth: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', color: '#475569', borderRadius: '6px', textDecoration: 'none' }}
+                                    title="नयाँ ट्याबमा खोल्नुहोस्"
+                                  >
+                                    <ExternalLink size={13} />
+                                  </a>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -5218,6 +5421,63 @@ return (
                 </CentralDocumentSheet>
               )}
             </CentralPrintPreviewModal>
+
+            {/* ─── MODAL: DOCUMENT PREVIEW MODAL ─── */}
+            {previewDoc && (
+              <div className="rec-modal-backdrop" style={{ zIndex: 99999 }}>
+                <div className="rec-modal-panel" style={{ maxWidth: '850px', maxHeight: '92vh', width: '95%' }}>
+                  <div className="rec-modal-header" style={{ background: '#1e3a8a', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Eye size={16} />
+                      कागजात पूर्वावलोकन: {previewDoc.label}
+                    </h3>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <a
+                        href={previewDoc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rec-btn"
+                        style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.4)' }}
+                      >
+                        <ExternalLink size={12} /> नयाँ विन्डोमा खोल्नुहोस्
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDoc(null)}
+                        style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.2rem' }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="rec-modal-body" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#0f172a', minHeight: '400px' }}>
+                    {previewDoc.isImg || previewDoc.url.match(/\.(jpg|jpeg|png|webp|gif)($|\?)/i) ? (
+                      <img
+                        src={previewDoc.url}
+                        alt={previewDoc.label}
+                        style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}
+                      />
+                    ) : (
+                      <iframe
+                        src={previewDoc.url}
+                        title={previewDoc.label}
+                        style={{ width: '100%', height: '72vh', border: 'none', background: '#fff', borderRadius: '4px' }}
+                      />
+                    )}
+                  </div>
+                  <div className="rec-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>{previewDoc.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc(null)}
+                      className="rec-btn rec-btn-outline"
+                    >
+                      बन्द गर्नुहोस्
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 };

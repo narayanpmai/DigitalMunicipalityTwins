@@ -3,47 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>अनलाइन दरखास्त कसरी दिने ? सचित्र निर्देशिका — पाँचपोखरी थाङपाल गाउँपालिका</title>
+  <title>अनलाइन दरखास्त कसरी दिने ? सचित्र प्रयोगकर्ता निर्देशिका — पाँचपोखरी थाङपाल गाउँपालिका</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --accent: #2563eb;
-      --success: #15803d;
-      --success-light: #dcfce7;
-      --warning: #b45309;
-      --warning-light: #fef3c7;
-      --danger: #b91c1c;
-      --danger-light: #fee2e2;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --border: #e2e8f0;
-      --bg-page: #f8fafc;
-      --bg-card: #ffffff;
+      --nepal-crimson: #dc2626;
+      --nepal-crimson-dark: #991b1b;
+      --nepal-crimson-light: #fef2f2;
+      --nepal-navy: #1e3a8a;
+      --nepal-navy-dark: #0f172a;
+      --nepal-navy-light: #eff6ff;
+      --nepal-gold: #f59e0b;
+      --nepal-gold-light: #fffbeb;
+      --gov-success: #15803d;
+      --gov-success-light: #f0fdf4;
+      --gov-border: #cbd5e1;
+      --gov-text: #0f172a;
+      --gov-muted: #475569;
+      --gov-bg: #f8fafc;
+      --gov-card: #ffffff;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-      --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
+      --shadow-md: 0 4px 14px rgba(15,23,42,0.08);
+      --shadow-lg: 0 12px 30px rgba(15,23,42,0.12);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Mukta', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: var(--bg-page);
-      color: var(--text-main);
+      background-color: var(--gov-bg);
+      color: var(--gov-text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
     .container {
-      max-width: 1040px;
+      max-width: 1060px;
       margin: 0 auto;
       padding: 1.5rem 1rem 4rem;
     }
-    /* Top Header Banner */
+
+    /* Government Top Banner */
+    .gov-top-strip {
+      background: #ffffff;
+      border-bottom: 2px solid var(--nepal-crimson);
+      padding: 0.6rem 1rem;
+      margin-bottom: 1.25rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .gov-strip-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--nepal-navy);
+    }
+    .gov-strip-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--gov-muted);
+    }
+
+    /* Header Hero Banner */
     .header-banner {
-      background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #b91c1c 100%);
       color: #ffffff;
       padding: 2.25rem 2rem;
       border-radius: 20px;
@@ -51,121 +82,149 @@
       margin-bottom: 2rem;
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
     }
     .header-banner::after {
       content: "";
       position: absolute;
       top: -60px;
       right: -60px;
-      width: 220px;
-      height: 220px;
-      background: rgba(255, 255, 255, 0.08);
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
     }
     .badge-top {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      background: rgba(255, 255, 255, 0.18);
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.16);
       backdrop-filter: blur(8px);
-      padding: 0.35rem 0.85rem;
+      padding: 0.4rem 0.95rem;
       border-radius: 999px;
       font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
+      font-weight: 800;
+      margin-bottom: 0.85rem;
       border: 1px solid rgba(255, 255, 255, 0.25);
+      letter-spacing: 0.3px;
+    }
+    .header-logos {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .header-logo-img {
+      height: 54px;
+      width: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
     .header-title {
-      font-size: 1.85rem;
+      font-size: 1.95rem;
       font-weight: 900;
       line-height: 1.3;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.5rem;
       color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     .header-subtitle {
-      font-size: 1.02rem;
-      opacity: 0.94;
-      max-width: 820px;
-      line-height: 1.5;
+      font-size: 1.05rem;
+      opacity: 0.95;
+      max-width: 860px;
+      line-height: 1.55;
     }
     .header-actions {
       display: flex;
-      gap: 0.75rem;
-      margin-top: 1.25rem;
+      gap: 0.85rem;
+      margin-top: 1.5rem;
       flex-wrap: wrap;
     }
     .btn-portal {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
       background: #facc15;
       color: #0f172a;
-      font-weight: 800;
-      padding: 0.65rem 1.25rem;
+      font-weight: 900;
+      padding: 0.75rem 1.4rem;
       border-radius: 10px;
       text-decoration: none;
       font-size: 0.95rem;
       transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(250, 204, 21, 0.35);
     }
     .btn-portal:hover {
       background: #eab308;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
     .btn-print {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      background: rgba(255,255,255,0.2);
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.18);
       color: #ffffff;
       font-weight: 700;
-      padding: 0.65rem 1.25rem;
+      padding: 0.75rem 1.3rem;
       border-radius: 10px;
       text-decoration: none;
       font-size: 0.95rem;
       cursor: pointer;
       border: 1px solid rgba(255,255,255,0.4);
+      transition: all 0.2s;
+    }
+    .btn-print:hover {
+      background: rgba(255,255,255,0.28);
     }
 
     /* Process Flow Overview */
     .flow-bar {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 0.65rem;
       margin-bottom: 2.25rem;
     }
     .flow-step {
       background: #ffffff;
-      padding: 1rem 0.85rem;
+      padding: 0.85rem 0.65rem;
       border-radius: 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--gov-border);
       text-align: center;
       box-shadow: var(--shadow-sm);
-      position: relative;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .flow-step:hover {
+      transform: translateY(-2px);
+      border-color: var(--nepal-crimson);
+      box-shadow: var(--shadow-md);
     }
     .flow-step-num {
       width: 28px;
       height: 28px;
-      background: var(--primary-light);
-      color: var(--primary-dark);
+      background: var(--nepal-navy-light);
+      color: var(--nepal-navy);
       font-weight: 900;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 0.4rem;
-      font-size: 0.9rem;
+      margin: 0 auto 0.35rem;
+      font-size: 0.88rem;
+      border: 1px solid #bfdbfe;
     }
     .flow-step-text {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-main);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--gov-text);
+      line-height: 1.35;
     }
 
     /* Step Card */
     .step-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      background: var(--gov-card);
+      border: 1px solid var(--gov-border);
       border-radius: 18px;
       padding: 2rem;
       margin-bottom: 2.5rem;
@@ -178,44 +237,46 @@
       gap: 1rem;
       margin-bottom: 1.25rem;
       padding-bottom: 1rem;
-      border-bottom: 2px solid var(--primary-light);
+      border-bottom: 2px solid var(--nepal-navy-light);
     }
     .step-badge {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--nepal-navy) 0%, var(--nepal-crimson) 100%);
       color: #ffffff;
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 900;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 4px 8px rgba(2, 132, 199, 0.35);
+      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
     }
     .step-title-wrap h2 {
-      font-size: 1.35rem;
+      font-size: 1.38rem;
       font-weight: 900;
-      color: var(--text-main);
+      color: var(--nepal-navy);
       margin-bottom: 0.25rem;
+      line-height: 1.3;
     }
     .step-title-wrap p {
-      font-size: 0.92rem;
-      color: var(--text-muted);
+      font-size: 0.94rem;
+      color: var(--gov-muted);
     }
 
     .instructions-list {
       margin: 1rem 0 1.25rem 1.25rem;
       color: #334155;
-      font-size: 0.95rem;
+      font-size: 0.96rem;
     }
     .instructions-list li {
-      margin-bottom: 0.5rem;
-      line-height: 1.55;
+      margin-bottom: 0.6rem;
+      line-height: 1.6;
     }
     .instructions-list strong {
-      color: var(--text-main);
+      color: var(--gov-text);
+      font-weight: 800;
     }
 
     /* Screenshot Container */
@@ -223,8 +284,8 @@
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
       border-radius: 14px;
-      padding: 0.6rem;
-      margin: 1.25rem 0 0.75rem;
+      padding: 0.65rem;
+      margin: 1.25rem 0 0.85rem;
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
     }
     .screenshot-box img {
@@ -233,100 +294,207 @@
       border-radius: 10px;
       display: block;
       border: 1px solid #e2e8f0;
+      max-height: 520px;
+      object-fit: contain;
+      background: #ffffff;
     }
     .screenshot-caption {
       text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      font-size: 0.82rem;
+      color: var(--gov-muted);
       margin-top: 0.5rem;
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    /* Alert / Tip Box */
+    /* Alert / Tip / Feature Boxes */
     .tip-box {
-      background: var(--primary-light);
-      border-left: 4px solid var(--primary);
-      padding: 0.85rem 1rem;
+      background: var(--nepal-navy-light);
+      border-left: 4px solid var(--nepal-navy);
+      padding: 0.9rem 1.1rem;
       border-radius: 0 10px 10px 0;
-      font-size: 0.88rem;
-      color: #0369a1;
+      font-size: 0.9rem;
+      color: #1e3a8a;
       margin: 1rem 0;
       display: flex;
       align-items: flex-start;
-      gap: 0.6rem;
+      gap: 0.65rem;
+      line-height: 1.55;
     }
     .warning-box {
-      background: var(--warning-light);
-      border-left: 4px solid var(--warning);
-      padding: 0.85rem 1rem;
+      background: var(--nepal-gold-light);
+      border-left: 4px solid var(--nepal-gold);
+      padding: 0.9rem 1.1rem;
       border-radius: 0 10px 10px 0;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: #92400e;
       margin: 1rem 0;
+      line-height: 1.55;
     }
-    .bank-card {
-      background: #eff6ff;
-      border: 1.5px solid #93c5fd;
-      border-radius: 12px;
-      padding: 1.25rem;
+    .success-box {
+      background: var(--gov-success-light);
+      border-left: 4px solid var(--gov-success);
+      padding: 0.9rem 1.1rem;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.9rem;
+      color: #166534;
       margin: 1rem 0;
+      line-height: 1.55;
+    }
+
+    /* Bank Account Card */
+    .bank-card {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1.5px solid #93c5fd;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .bank-card-title {
+      font-weight: 900;
+      color: var(--nepal-navy);
+      font-size: 1rem;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .bank-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.75rem;
+      gap: 0.85rem;
       margin-top: 0.5rem;
     }
     .bank-item-label {
-      font-size: 0.78rem;
-      color: #64748b;
-      font-weight: 600;
+      font-size: 0.8rem;
+      color: #475569;
+      font-weight: 700;
     }
     .bank-item-val {
-      font-size: 0.95rem;
-      font-weight: 800;
+      font-size: 1rem;
+      font-weight: 900;
       color: #1e3a8a;
     }
 
-    /* Footer Help */
+    /* Document Specs Table */
+    .doc-specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+    }
+    .doc-specs-table th {
+      background: var(--nepal-navy-light);
+      color: var(--nepal-navy);
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      font-weight: 800;
+      border: 1px solid #bfdbfe;
+    }
+    .doc-specs-table td {
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--gov-border);
+      color: #334155;
+    }
+    .doc-specs-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* FAQ Section */
+    .faq-item {
+      background: #f8fafc;
+      border: 1px solid var(--gov-border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .faq-q {
+      font-weight: 900;
+      color: var(--nepal-navy);
+      font-size: 0.98rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .faq-a {
+      font-size: 0.92rem;
+      color: #334155;
+      line-height: 1.55;
+    }
+
+    /* Help & Footer */
     .help-footer {
       background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.75rem;
+      border: 2px solid var(--nepal-crimson);
+      border-radius: 18px;
+      padding: 2rem;
       text-align: center;
       margin-top: 3rem;
+      box-shadow: var(--shadow-md);
     }
     .help-footer h3 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      color: var(--text-main);
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 0.65rem;
+      color: var(--nepal-crimson-dark);
     }
     .help-footer p {
-      font-size: 0.92rem;
-      color: var(--text-muted);
+      font-size: 0.95rem;
+      color: var(--gov-muted);
+      line-height: 1.6;
+    }
+
+    .footer-slogan {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #cbd5e1;
+      font-weight: 900;
+      color: var(--nepal-crimson);
+      font-size: 1.05rem;
     }
 
     @media print {
-      body { background: #fff; }
+      body { background: #fff; font-size: 10pt; }
       .container { max-width: 100%; padding: 0; }
-      .header-actions, .btn-print { display: none !important; }
-      .step-card { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
+      .gov-top-strip, .header-actions, .btn-print, .flow-bar { display: none !important; }
+      .header-banner { background: #fff !important; color: #000 !important; border: 1px solid #000; box-shadow: none; padding: 1rem; border-radius: 0; }
+      .header-title { color: #000 !important; text-shadow: none; font-size: 1.4rem; }
+      .header-subtitle { color: #333 !important; font-size: 0.9rem; }
+      .badge-top { background: #eee !important; color: #000 !important; border: 1px solid #999; }
+      .step-card { page-break-inside: avoid; border: 1px solid #999; box-shadow: none; margin-bottom: 1.25rem; border-radius: 0; padding: 1.2rem; }
+      .step-badge { background: #333 !important; color: #fff !important; box-shadow: none; border-radius: 4px; }
+      .screenshot-box { border: 1px solid #ccc; box-shadow: none; padding: 0.25rem; page-break-inside: avoid; }
+      .screenshot-box img { max-height: 280px; }
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Top Hero Banner -->
+    <!-- Top Government Strip -->
+    <div class="gov-top-strip">
+      <div class="gov-strip-left">
+        <span>🇳🇵</span> नेपाल सरकार • बागमती प्रदेश • पाँचपोखरी थाङपाल गाउँपालिका
+      </div>
+      <div class="gov-strip-right">
+        <span>📋 आधिकारिक प्रयोगकर्ता निर्देशिका (User Manual)</span> • 
+        <span>वि.सं. २०८३/०८४</span>
+      </div>
+    </div>
+
+    <!-- Header Hero Banner -->
     <div class="header-banner">
+      <div class="header-logos">
+        <img src="/panchpokhari-logo.png" alt="पाँचपोखरी थाङपाल गाउँपालिका लोगो" class="header-logo-img">
+        <img src="/emblem-of-nepal.png" alt="नेपाल सरकारको निशान छाप" class="header-logo-img">
+      </div>
       <div class="badge-top">
-        <span>🇳🇵</span> पाँचपोखरी थाङपाल गाउँपालिका — गाउँ कार्यपालिकाको कार्यालय
+        <span>🏛️</span> स्थानीय सरकार — गाउँ कार्यपालिकाको कार्यालय, सिन्धुपाल्चोक
       </div>
       <h1 class="header-title">अनलाइन दरखास्त फारम कसरी भर्ने ?</h1>
       <p class="header-subtitle">
-        कर्मचारी पदपूर्ति तथा सेवा करारका लागि खुला विज्ञापनहरूमा घरमै बसी मोबाइल वा कम्प्युटरबाट सजिलै दरखास्त दिने र नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) खातामा Fonepay QR मार्फत शुल्क भुक्तानी गरी आधिकारिक राजस्व रसिद र प्रवेशपत्र प्राप्त गर्ने सम्पूर्ण सचित्र मार्गदर्शन।
+        पाँचपोखरी थाङपाल गाउँपालिकाद्वारा प्रकाशित विभिन्न सेवा करार तथा कर्मचारी पदपूर्ति विज्ञापनहरूमा घरमै बसी मोबाइल वा कम्प्युटरबाट अनलाइन दरखास्त दिने, NIMB Fonepay QR वा बैंक भौचर मार्फत दस्तुर भुक्तानी गर्ने, आधिकारिक डिजिटल राजस्व रसिद (शीर्षक १४२२९) प्राप्त गर्ने र सम्पर्क QR सहितको आधिकारिक A4 प्रवेशपत्र प्रिन्ट गर्ने सम्पूर्ण सचित्र मार्गदर्शन।
       </p>
       <div class="header-actions">
         <a href="https://digitaltwin.smartptrm.com/recruitment" target="_blank" class="btn-portal">
@@ -340,137 +508,190 @@
 
     <!-- Process Flow Summary Bar -->
     <div class="flow-bar">
-      <div class="flow-step">
+      <a href="#step1" class="flow-step">
         <div class="flow-step-num">१</div>
         <div class="flow-step-text">विज्ञापन तथा पद छनोट</div>
-      </div>
-      <div class="flow-step">
+      </a>
+      <a href="#step2" class="flow-step">
         <div class="flow-step-num">२</div>
         <div class="flow-step-text">समावेशी समूह र दस्तुर</div>
-      </div>
-      <div class="flow-step">
+      </a>
+      <a href="#step3" class="flow-step">
         <div class="flow-step-num">३</div>
-        <div class="flow-step-text">व्यक्तिगत विवरण दर्ता</div>
-      </div>
-      <div class="flow-step">
+        <div class="flow-step-text">व्यक्तिगत विवरण प्रविष्टि</div>
+      </a>
+      <a href="#step4" class="flow-step">
         <div class="flow-step-num">४</div>
         <div class="flow-step-text">योग्यता र कागजात अपलोड</div>
-      </div>
-      <div class="flow-step">
+      </a>
+      <a href="#step5" class="flow-step">
         <div class="flow-step-num">५</div>
-        <div class="flow-step-text">NIMB Fonepay QR भुक्तानी</div>
-      </div>
-      <div class="flow-step">
+        <div class="flow-step-text">QR वा बैंक भौचर भुक्तानी</div>
+      </a>
+      <a href="#step6" class="flow-step">
         <div class="flow-step-num">६</div>
-        <div class="flow-step-text">आधिकारिक रसिद र प्रवेशपत्र</div>
-      </div>
+        <div class="flow-step-text">डिजिटल राजस्व रसिद</div>
+      </a>
+      <a href="#step7" class="flow-step">
+        <div class="flow-step-num">७</div>
+        <div class="flow-step-text">A4 प्रवेशपत्र र QR कोड</div>
+      </a>
     </div>
 
     <!-- STEP 1 -->
-    <div class="step-card">
+    <div class="step-card" id="step1">
       <div class="step-header">
         <div class="step-badge">१</div>
         <div class="step-title-wrap">
-          <h2>चरण १: खुला अनलाइन दरखास्त पोर्टलमा प्रवेश गर्नुहोस्</h2>
-          <p>पोर्टलको होमपेजमा गएर हाल खुला रहेका विज्ञापनहरू तथा पदहरूको विवरण हेर्नुहोस्।</p>
+          <h2>चरण १: अनलाइन दरखास्त पोर्टलमा प्रवेश गर्नुहोस् र विज्ञापन हेर्नुहोस्</h2>
+          <p>पोर्टलको होमपेजमा हाल खुला रहेका विज्ञापनहरू, पद विवरण, सेवा समूह, तह र अन्तिम म्याद हेर्नुहोस्।</p>
         </div>
       </div>
       <ul class="instructions-list">
-        <li>आफ्नो कम्प्युटर वा मोबाइल ब्राउजरमा <strong>https://digitaltwin.smartptrm.com/recruitment</strong> खोल्नुहोस्।</li>
-        <li>स्क्रिनको माथि रहेको <strong>"अनलाइन दरखास्त फारम (Apply Now)"</strong> बटनमा थिच्नुहोस् वा तल विज्ञापन सूचीमा आफू योग्य भएको पदको दायाँपट्टि रहेको <strong>"दरखास्त दिनुहोस्"</strong> मा क्लिक गर्नुहोस्।</li>
+        <li>आफ्नो मोबाइल वा कम्प्युटर ब्राउजरमा <strong>https://digitaltwin.smartptrm.com/recruitment</strong> खोल्नुहोस्।</li>
+        <li>स्क्रिनको माथिल्लो भागमा रहेको <strong>"अनलाइन दरखास्त फारम (Apply Now)"</strong> बटन थिच्नुहोस् वा तल विज्ञापन तालिकामा आफू योग्य भएको पदको दायाँपट्टि रहेको <strong>"दरखास्त दिनुहोस्"</strong> मा क्लिक गर्नुहोस्।</li>
+        <li>विज्ञापनमा तोकिएको न्यूनतम शैक्षिक योग्यता, दरखास्त दिने अन्तिम मिति र उमेरको हद राम्रोसँग रुजु गर्नुहोस्।</li>
       </ul>
       <div class="screenshot-box">
         <img src="/manual_screenshots/step1_portal_overview.png" alt="चरण १: पोर्टल होमपेज र विज्ञापन सूची">
-        <div class="screenshot-caption">चित्र १: सार्वजनिक अनलाइन दरखास्त पोर्टल तथा खुला विज्ञापन सूची</div>
+        <div class="screenshot-caption">चित्र १: सार्वजनिक अनलाइन दरखास्त पोर्टल तथा खुला विज्ञापनहरूको तालिका</div>
       </div>
     </div>
 
     <!-- STEP 2 -->
-    <div class="step-card">
+    <div class="step-card" id="step2">
       <div class="step-header">
         <div class="step-badge">२</div>
         <div class="step-title-wrap">
-          <h2>चरण २: विज्ञापन, पद र समावेशी समूह छनोट गर्नुहोस्</h2>
+          <h2>चरण २: विज्ञापन, पद र समावेशी समूह छनोट गर्नुहोस् (स्वतः दस्तुर गणना)</h2>
           <p>आवेदन दिन चाहेको पद र लागू हुने समावेशी समूह छनोट गरी लाग्ने दस्तुर यकिन गर्नुहोस्।</p>
         </div>
       </div>
       <ul class="instructions-list">
-        <li><strong>खुला विज्ञापन तथा पद:</strong> ड्रपडाउन सूचीबाट आफूले दरखास्त दिन चाहेको पद छनोट गर्नुहोस् (उदा: <em>नापी सर्वेक्षक / नापी अधिकृत</em>)।</li>
-        <li><strong>समावेशी समूह छनोट:</strong> यदि तपाईं महिला, आदिवासी जनजाति, मधेसी, दलित, अपाङ्ग वा पिछडिएको क्षेत्रबाट पनि प्रतिस्पर्धा गर्न चाहनुहुन्छ भने सो समूहको कार्डमा क्लिक गर्नुहोस्।</li>
-        <li><strong>स्वतः दस्तुर निर्धारण:</strong> तपाईंले जतिवटा समावेशी समूह थप्नुहुन्छ, प्रति थप समूह दस्तुर (रु. २००/-) स्वतः हिसाब भएर <strong>कुल निर्धारण भएको दरखास्त दस्तुर</strong> स्क्रिनमा प्रष्ट देखिनेछ।</li>
-        <li>विवरण ठीक भएपछि <strong>"अर्को चरण (व्यक्तिगत विवरण)"</strong> बटनमा क्लिक गर्नुहोस्।</li>
+        <li><strong>खुला विज्ञापन तथा पद छनोट:</strong> ड्रपडाउन सूचीबाट आफूले आवेदन गर्न चाहेको पद छनोट गर्नुहोस् (उदा: <em>नापी अधिकृत - अधिकृत छैटौं / नापी सर्वेक्षक / सब-इन्जिनियर</em>)।</li>
+        <li><strong>समावेशी समूह छनोट:</strong> यदि तपाईं खुला बाहेक महिला, आदिवासी जनजाति, मधेसी, दलित, अपाङ्ग वा पिछडिएको क्षेत्रबाट पनि प्रतिस्पर्धा गर्न चाहनुहुन्छ भने सो समूहको कार्डमा क्लिक गर्नुहोस्।</li>
+        <li><strong>स्वतः दस्तुर निर्धारण (Auto Calculation):</strong> तपाईंले जतिवटा समावेशी समूह थप्नुहुन्छ, प्रति थप समूह दस्तुर (रु. २००/-) स्वतः हिसाब भएर <strong>कुल निर्धारण भएको दरखास्त दस्तुर</strong> स्क्रिनमा प्रष्ट देखिनेछ।</li>
+        <li>विवरण ठीक भएपछि <strong>"अर्को चरण (व्यक्तिगत विवरण)"</strong> हरियो बटनमा क्लिक गर्नुहोस्।</li>
       </ul>
       <div class="screenshot-box">
         <img src="/manual_screenshots/step2_select_vacancy.png" alt="चरण २: पद तथा समावेशी समूह छनोट">
-        <div class="screenshot-caption">चित्र २: पद र समावेशी समूह छनोट तथा दस्तुरको स्वतः हिसाब</div>
+        <div class="screenshot-caption">चित्र २: पद र समावेशी समूह छनोट तथा दस्तुरको स्वतः हिसाब प्रणाली</div>
       </div>
     </div>
 
     <!-- STEP 3 -->
-    <div class="step-card">
+    <div class="step-card" id="step3">
       <div class="step-header">
         <div class="step-badge">३</div>
         <div class="step-title-wrap">
-          <h2>चरण ३: उम्मेदवारको व्यक्तिगत विवरण र सम्पर्क भर्नुहोस्</h2>
-          <p>नागरिकता प्रमाणपत्र अनुसार आफ्नो शुद्ध विवरण र सम्पर्कका लागि मोबाइल नम्बर दर्ता गर्नुहोस्।</p>
+          <h2>चरण ३: उम्मेदवारको व्यक्तिगत विवरण र सम्पर्क नम्बर भर्नुहोस्</h2>
+          <p>नागरिकता प्रमाणपत्र अनुसार आफ्नो शुद्ध विवरण र सम्पर्कका लागि मोबाइल नम्बर प्रविष्टि गर्नुहोस्।</p>
         </div>
       </div>
       <ul class="instructions-list">
-        <li><strong>उम्मेदवारको पूरा नाम (नेपालीमा):</strong> नेपाली युनिकोडमा आफ्नो नाम लेख्नुहोस् (उदा: <em>राम बहादुर श्रेष्ठ</em>)।</li>
-        <li><strong>Full Name in English:</strong> अंग्रेजी ठूलो अक्षर (BLOCK LETTERS) मा आफ्नो नाम लेख्नुहोस् (उदा: <em>RAM BAHADUR SHRESTHA</em>)।</li>
-        <li><strong>जन्ममिति (वि.सं.):</strong> नेपाली पात्रो क्यालेन्डरबाट आफ्नो जन्ममिति छनोट गर्नुहोस्।</li>
-        <li><strong>नागरिकता विवरण:</strong> आफ्नो नागरिकता नम्बर र जारी जिल्ला (उदा: <em>सिन्धुपाल्चोक</em>) शुद्धसँग भर्नुहोस्।</li>
-        <li><strong>सम्पर्क मोबाइल नम्बर:</strong> आफ्नो सक्रिय मोबाइल नम्बर अनिवार्य भर्नुहोस् (यसै नम्बरमा दरखास्त स्थिति र प्रवेशपत्रको SMS प्राप्त हुनेछ)।</li>
-        <li><strong>ठेगाना:</strong> आफ्नो स्थायी तथा हालको बसोबास ठेगाना भरेर <strong>"अर्को चरण (योग्यता र कागजात)"</strong> बटनमा क्लिक गर्नुहोस्।</li>
+        <li><strong>उम्मेदवारको पूरा नाम (नेपालीमा):</strong> नेपाली युनिकोडमा आफ्नो नाम लेख्नुहोस् (उदा: <em>नारायण क्षेत्री</em>)।</li>
+        <li><strong>Full Name in English:</strong> अंग्रेजी ठूलो अक्षर (BLOCK LETTERS) मा आफ्नो नाम लेख्नुहोस् (उदा: <em>NARAYAN CHHETRI</em>)।</li>
+        <li><strong>जन्ममिति (वि.सं.):</strong> नेपाली क्यालेन्डरबाट आफ्नो जन्ममिति छनोट गर्नुहोस्। उमेरको हद स्वतः जाँच हुनेछ।</li>
+        <li><strong>नागरिकता विवरण:</strong> नागरिकता प्रमाणपत्र नम्बर र जारी जिल्ला (उदा: <em>सिन्धुपाल्चोक</em>) शुद्धसँग भर्नुहोस्।</li>
+        <li><strong>सक्रिय मोबाइल नम्बर (अति महत्त्वपूर्ण):</strong> आफ्नो नियमित चल्ने मोबाइल नम्बर अनिवार्य भर्नुहोस्। यसै नम्बरमा दरखास्त स्थिति, स्वीकृत भएको जानकारी र प्रवेशपत्रको सूचना प्राप्त हुनेछ।</li>
+        <li><strong>स्थायी तथा हालको बसोबास ठेगाना:</strong> प्रदेश, जिल्ला, स्थानीय तह, वडा नम्बर र टोल प्रष्ट खुलाउनुहोस्।</li>
+        <li>विवरण भरिसकेपछि <strong>"अर्को चरण (योग्यता र कागजात)"</strong> मा क्लिक गर्नुहोस्।</li>
       </ul>
       <div class="screenshot-box">
         <img src="/manual_screenshots/step3_personal_details.png" alt="चरण ३: व्यक्तिगत विवरण फारम">
-        <div class="screenshot-caption">चित्र ३: व्यक्तिगत विवरण तथा मोबाइल नम्बर प्रविष्टि</div>
+        <div class="screenshot-caption">चित्र ३: व्यक्तिगत विवरण तथा सम्पर्क नम्बर प्रविष्टि फारम</div>
       </div>
     </div>
 
     <!-- STEP 4 -->
-    <div class="step-card">
+    <div class="step-card" id="step4">
       <div class="step-header">
         <div class="step-badge">४</div>
         <div class="step-title-wrap">
-          <h2>चरण ४: शैक्षिक योग्यता र आवश्यक कागजातहरू अपलोड गर्नुहोस्</h2>
-          <p>सम्बन्धित पदका लागि तोकिएको न्यूनतम शैक्षिक योग्यता भर्नुहोस् र कागजातहरू डिजिटल रूपमा संलग्न गर्नुहोस्।</p>
+          <h2>चरण ४: शैक्षिक योग्यता, काउन्सिल दर्ता र अनिवार्य कागजातहरू अपलोड गर्नुहोस्</h2>
+          <p>सम्बन्धित पदका लागि तोकिएको शैक्षिक विवरण भर्नुहोस् र कागजातहरू डिजिटल रूपमा संलग्न गर्नुहोस्।</p>
         </div>
       </div>
       <ul class="instructions-list">
-        <li><strong>शैक्षिक विवरण:</strong> न्यूनतम योग्यताको तह/उपाधि, बोर्ड/विश्वविद्यालय, उत्तीर्ण भएको साल (वि.सं.) र श्रेणी/GPA भर्नुहोस्।</li>
-        <li><strong>आवश्यक ४ वटा कागजातहरू अपलोड गर्नुहोस् (अधिकतम १५ MB प्रति फाइल - JPG वा PDF):</strong>
-          <ol style="margin-left: 1.5rem; margin-top: 0.35rem;">
-            <li><strong>पासपोर्ट साइजको फोटो:</strong> उम्मेदवारको हालसालै खिचिएको अनुहार प्रष्ट देखिने फोटो।</li>
-            <li><strong>उम्मेदवारको दस्तखत:</strong> सेतो कागजमा कालो/नीलो मसीले गरिएको शुद्ध हस्ताक्षर।</li>
-            <li><strong>नागरिकता प्रमाणपत्र:</strong> नागरिकताको अगाडि र पछाडिको प्रष्ट भाग।</li>
-            <li><strong>न्यूनतम शैक्षिक लब्धाङ्क:</strong> सम्बन्धित तहको Transcript वा चारित्रिक प्रमाणपत्र।</li>
-          </ol>
-        </li>
-        <li>अपलोड भएपछि फाइल संलग्न भएको हरियो चिन्ह (Checkmark) र "हेर्नुहोस्" बटन देखिनेछ।</li>
-        <li>तल रहेको <strong>सर्त तथा स्वघोषणा (मन्जुरी)</strong> को कोठामा ठीक (Check) लगाउनुहोस्।</li>
+        <li><strong>शैक्षिक योग्यता:</strong> न्यूनतम योग्यताको तह/उपाधि, बोर्ड वा विश्वविद्यालय, उत्तीर्ण साल (वि.सं.) र श्रेणी/GPA भर्नुहोस्।</li>
+        <li><strong>काउन्सिल दर्ता नम्बर (लागू भएमा):</strong> इन्जिनियरिङ, स्वास्थ्य सेवा वा अन्य प्राविधिक पदको हकमा सम्बन्धित व्यावसायिक परिषद दर्ता नम्बर (Council Registration No) अनिवार्य प्रविष्टि गर्नुहोस्।</li>
+      </ul>
+
+      <h4 style="font-weight: 800; color: var(--nepal-navy); margin: 0.85rem 0 0.4rem;">संलग्न गर्नुपर्ने आवश्यक कागजातहरूको विवरण (अधिकतम १५ MB प्रति फाइल - JPG, PNG वा PDF):</h4>
+      <table class="doc-specs-table">
+        <thead>
+          <tr>
+            <th style="width: 28%;">कागजातको नाम</th>
+            <th style="width: 42%;">आवश्यकता तथा विवरण</th>
+            <th style="width: 30%;">स्वीकार्य ढाँचा</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>१. पासपोर्ट साइजको फोटो</strong></td>
+            <td>उम्मेदवारको हालसालै खिचिएको दुवै कान र अनुहार प्रष्ट देखिने फोटो।</td>
+            <td>JPG वा PNG (प्रवेशपत्रमा आउने)</td>
+          </tr>
+          <tr>
+            <td><strong>२. उम्मेदवारको दस्तखत</strong></td>
+            <td>सेतो कागजमा कालो वा नीलो मसीले गरिएको हस्ताक्षर।</td>
+            <td>JPG वा PNG (प्रवेशपत्रमा आउने)</td>
+          </tr>
+          <tr>
+            <td><strong>३. नागरिकता प्रमाणपत्र</strong></td>
+            <td>नेपाली नागरिकताको अगाडि र पछाडिको प्रष्ट भाग।</td>
+            <td>JPG, PNG वा PDF</td>
+          </tr>
+          <tr>
+            <td><strong>४. शैक्षिक लब्धाङ्क/ट्रान्सक्रिप्ट</strong></td>
+            <td>तोकिएको न्यूनतम शैक्षिक योग्यताको लब्धाङ्क पत्र वा चारित्रिक प्रमाणपत्र।</td>
+            <td>JPG, PNG वा PDF</td>
+          </tr>
+          <tr>
+            <td><strong>५. काउन्सिल दर्ता प्रमाणपत्र</strong></td>
+            <td>इन्जिनियरिङ, स्वास्थ्य तथा सम्बन्धित प्राविधिक पदका लागि परिषद् दर्ता।</td>
+            <td>JPG, PNG वा PDF (प्राविधिक पद)</td>
+          </tr>
+          <tr>
+            <td><strong>६. कार्य अनुभव तथा तालिम</strong></td>
+            <td>विज्ञापनमा अनुभव अनिवार्य माग गरिएको भएमा सो सम्बन्धी प्रमाणपत्र।</td>
+            <td>JPG, PNG वा PDF (यदि माग भएमा)</td>
+          </tr>
+          <tr>
+            <td><strong>७. राजस्व भौचर प्रतिलिपि</strong></td>
+            <td>यदि बैंकमा भौतिक रूपमा रकम दाखिला गरिएको भएमा सो भौचरको प्रतिलिपि।</td>
+            <td>JPG, PNG वा PDF (भौचर विधिमा)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tip-box">
+        💡 <strong>कागजात जाँच:</strong> फाइल छनोट गरेपछि स्क्रिनमा फाइल संलग्न भएको हरियो टिक र नाम देखिनेछ। कागजात गलत परेमा पुनः अर्को फाइल छानेर परिवर्तन गर्न सकिन्छ।
+      </div>
+      <ul class="instructions-list">
+        <li>कागजात अपलोड गरिसकेपछि तल रहेको <strong>"सर्त तथा स्वघोषणा (मन्जुरी)"</strong> को कोठामा अनिवार्य ठीक (Check) लगाउनुहोस्।</li>
         <li><strong>"दरखास्त सुरक्षित गर्नुहोस् र भुक्तानीमा जानुहोस्"</strong> बटन थिच्नुहोस्।</li>
       </ul>
       <div class="screenshot-box">
         <img src="/manual_screenshots/step4_documents_upload.png" alt="चरण ४: कागजात अपलोड तथा स्वघोषणा">
-        <div class="screenshot-caption">चित्र ४: फोटो, दस्तखत, नागरिकता, शैक्षिक प्रमाणपत्र अपलोड र स्वघोषणा</div>
+        <div class="screenshot-caption">चित्र ४: फोटो, दस्तखत, नागरिकता, योग्यता, काउन्सिल र स्वघोषणा फारम</div>
       </div>
     </div>
 
     <!-- STEP 5 -->
-    <div class="step-card">
+    <div class="step-card" id="step5">
       <div class="step-header">
         <div class="step-badge">५</div>
         <div class="step-title-wrap">
-          <h2>चरण ५: Fonepay Dynamic QR बाट दस्तुर भुक्तानी गर्नुहोस्</h2>
-          <p>नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) को आधिकारिक राजस्व खातामा जुनसुकै मोबाइल बैंकिङबाट तत्काल भुक्तानी गर्नुहोस्।</p>
+          <h2>चरण ५: दरखास्त दस्तुर भुक्तानी गर्नुहोस् (२ वटा सरल विकल्पहरू)</h2>
+          <p>NIMB Fonepay Dynamic QR मार्फत तत्काल वा पालिकाको बैंक खातामा नगद दाखिला गरी भौचर अपलोड गर्नुहोस्।</p>
         </div>
       </div>
 
+      <!-- Bank Details Box -->
       <div class="bank-card">
-        <div style="font-weight: 800; color: #1e40af; font-size: 0.95rem; margin-bottom: 0.4rem;">
-          🏛️ पाँचपोखरी थाङपाल गाउँ कार्यपालिका — आधिकारिक बैंक खाता विवरण:
+        <div class="bank-card-title">
+          <span>🏛️</span> पाँचपोखरी थाङपाल गाउँ कार्यपालिका — आधिकारिक बैंक खाता विवरण:
         </div>
         <div class="bank-grid">
           <div>
@@ -478,86 +699,157 @@
             <div class="bank-item-val">नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB)</div>
           </div>
           <div>
-            <div class="bank-item-label">खाता नम्बर:</div>
+            <div class="bank-item-label">खाता नम्बर (Account No):</div>
             <div class="bank-item-val" style="font-family: monospace; letter-spacing: 0.5px;">18301400000109</div>
           </div>
           <div>
-            <div class="bank-item-label">खातावालाको नाम:</div>
-            <div class="bank-item-val" style="font-size: 0.85rem;">GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA</div>
+            <div class="bank-item-label">खातावालाको नाम (Account Name):</div>
+            <div class="bank-item-val" style="font-size: 0.88rem;">GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA</div>
+          </div>
+          <div>
+            <div class="bank-item-label">राजस्व शीर्षक:</div>
+            <div class="bank-item-val">१४२२९ (परीक्षा शुल्क)</div>
           </div>
         </div>
       </div>
 
+      <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--nepal-navy); margin-top: 1rem; margin-bottom: 0.4rem;">
+        विकल्प क: Fonepay Dynamic QR बाट तत्काल भुक्तानी (सिफारिस गरिएको):
+      </h3>
       <ul class="instructions-list">
-        <li>स्क्रिनमा तपाईंको आवेदनका लागि रकम (रु. १,०००/- वा १,२००/-) सहितको <strong>Fonepay Dynamic QR Code</strong> देखिनेछ।</li>
-        <li>आफ्नो मोबाइलमा रहेको जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart Plus, NIC Asia MoBank, Nabil Smart, आदि) वा <strong>eSewa / Khalti</strong> खोल्नुहोस्।</li>
-        <li>एपमा रहेको <strong>QR Scan</strong> बटन थिचेर कम्प्युटर/मोबाइलको यो QR कोड स्क्यान गर्नुहोस्।</li>
-        <li>एपमा रकम र पाँचपोखरी थाङपाल गाउँपालिकाको नाम रुजु गरी आफ्नो गोप्य पिन (PIN) हानेर भुक्तानी स्वीकृत गर्नुहोस्।</li>
-        <li>मोबाइलमा भुक्तानी सफल हुनासाथ स्क्रिनको हरियो बटन <strong>"मैले भुक्तानी सम्पन्न गरें (Verify & Confirm)"</strong> मा क्लिक गर्नुहोस्।</li>
+        <li>स्क्रिनमा तपाईंको आवेदनका लागि आवश्यक रकम (उदा: रु. ५००/-, १०००/- वा १२००/-) सहितको <strong>Fonepay Dynamic QR Code</strong> र १५ मिनेटको काउन्टडाउन देखिनेछ।</li>
+        <li>आफ्नो मोबाइलमा रहेको जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, NIC Asia, Nabil, Global IME आदि) वा <strong>eSewa / Khalti</strong> खोल्नुहोस्।</li>
+        <li>एपको <strong>QR Scan</strong> बटन थिचेर कम्प्युटर वा मोबाइल स्क्रिनको QR कोड स्क्यान गर्नुहोस्।</li>
+        <li>रकम र कार्यालयको नाम रुजु गरी आफ्नो गोप्य पिन (MPIN) हानेर भुक्तानी सम्पन्न गर्नुहोस्।</li>
+        <li>भुक्तानी पूरा हुनासाथ स्क्रिनको हरियो बटन <strong>"मैले भुक्तानी सम्पन्न गरें (Verify & Confirm)"</strong> मा क्लिक गर्नुहोस्।</li>
       </ul>
+
+      <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--nepal-navy); margin-top: 1.25rem; margin-bottom: 0.4rem;">
+        विकल्प ख: बैंक दाखिला गरी भौचर अपलोड (Physical Bank Voucher):
+      </h3>
+      <ul class="instructions-list">
+        <li>नजिकको नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) वा अन्य बैंकबाट माथि उल्लिखित खाता नं. <code>18301400000109</code> मा रकम जम्मा गर्नुहोस्।</li>
+        <li>बैंक भौचरमा उम्मेदवारको नाम र विज्ञापन नम्बर प्रष्ट लेख्न लगाउनुहोस्।</li>
+        <li>उक्त भौचरको स्पष्ट फोटो खिची दरखास्त फारमको <strong>"राजस्व भौचर प्रतिलिपि"</strong> खण्डमा अपलोड गरी भौचर नम्बर प्रविष्टि गर्नुहोस्।</li>
+      </ul>
+
       <div class="screenshot-box">
-        <img src="/manual_screenshots/step5_payment_qr.png" alt="चरण ५: NIMB खाता तथा Fonepay Dynamic QR भुक्तानी">
-        <div class="screenshot-caption">चित्र ५: NIMB राजस्व खाता, Fonepay Dynamic QR र १५ मिनेट काउन्टडाउन टाइमर</div>
-      </div>
-      <div class="tip-box">
-        💡 <strong>वैकल्पिक भुक्तानी:</strong> यदि QR स्क्यान गर्न समस्या भएमा माथि उल्लिखित NIMB खाता नं <code>18301400000109</code> मा सिधै Interbank Fund Transfer / ConnectIPS मार्फत रकम ट्रान्सफर गर्न पनि सकिन्छ।
+        <img src="/manual_screenshots/step5_payment_qr.png" alt="चरण ५: Fonepay QR तथा NIMB बैंक खाता भुक्तानी">
+        <div class="screenshot-caption">चित्र ५: NIMB आधिकारिक राजस्व खाता, Fonepay Dynamic QR र काउन्टडाउन स्क्रिन</div>
       </div>
     </div>
 
     <!-- STEP 6 -->
-    <div class="step-card">
+    <div class="step-card" id="step6">
       <div class="step-header">
         <div class="step-badge">६</div>
         <div class="step-title-wrap">
-          <h2>चरण ६: आधिकारिक राजस्व रसिद र दरखास्त पुष्टि प्राप्त गर्नुहोस्</h2>
-          <p>भुक्तानी सफल भएपछि प्रणालीले स्वतः स्थानीय सरकारको आधिकारिक राजस्व रसिद (शीर्षक १४२२९) जारी गर्दछ।</p>
+          <h2>चरण ६: आधिकारिक डिजिटल राजस्व रसिद (शीर्षक १४२२९) प्राप्त गर्नुहोस्</h2>
+          <p>भुक्तानी पुष्टि हुनासाथ प्रणालीले स्वतः स्थानीय सरकारको डिजिटल राजस्व रसिद जारी गर्दछ।</p>
         </div>
       </div>
       <ul class="instructions-list">
-        <li>भुक्तानी रुजु हुनासाथ तपाईंको दरखास्त <strong>"SUBMITTED & PAID (सफल)"</strong> स्थितिमा दर्ता हुन्छ।</li>
-        <li>स्क्रिनमा नेपाल सरकार तथा पाँचपोखरी थाङपाल गाउँपालिकाको आधिकारिक छाप र राजस्व शीर्षक <strong>१४२२९ (परीक्षा शुल्क)</strong> सहितको रसिद देखिनेछ।</li>
-        <li><strong>"रसिद प्रिन्ट / डाउनलोड गर्नुहोस्"</strong> बटनमा क्लिक गरी आफ्नो डिजिटल राजस्व रसिद सेभ वा प्रिन्ट गर्नुहोस्।</li>
-        <li>तपाईंको दरखास्त नम्बर (उदा: <code>APP-2081-XXXX</code>) सुरक्षित राख्नुहोस्।</li>
+        <li>भुक्तानी रुजु भएपछि तपाईंको दरखास्त <strong>"SUBMITTED & PAID (सफल दर्ता)"</strong> स्थितिमा दर्ता हुन्छ।</li>
+        <li>स्क्रिनमा नेपाल सरकार तथा गाउँ कार्यपालिकाको आधिकारिक छाप, राजस्व शीर्षक <strong>१४२२९ (परीक्षा शुल्क)</strong>, रसिद नम्बर र भुक्तानी रकम सहितको <strong>विद्युतीय राजस्व रसिद</strong> देखिनेछ।</li>
+        <li><strong>"रसिद प्रिन्ट / डाउनलोड गर्नुहोस्"</strong> बटनमा क्लिक गरी आफ्नो डिजिटल राजस्व रसिद PDF मा सेभ वा प्रिन्ट गर्नुहोस्।</li>
+        <li>तपाईंलाई प्राप्त भएको <strong>दरखास्त नम्बर (उदा: PTRM-2083-XXXX)</strong> भविष्यका लागि सुरक्षित राख्नुहोस्।</li>
       </ul>
       <div class="screenshot-box">
-        <img src="/manual_screenshots/step6_receipt_confirmation.png" alt="चरण ६: आधिकारिक सरकारी राजस्व रसिद">
-        <div class="screenshot-caption">चित्र ६: भुक्तानी सफल भएपछि जारी हुने आधिकारिक डिजिटल राजस्व रसिद (शीर्षक १४२२९)</div>
+        <img src="/manual_screenshots/step6_receipt_confirmation.png" alt="चरण ६: आधिकारिक डिजिटल राजस्व रसिद">
+        <div class="screenshot-caption">चित्र ६: भुक्तानी सफल भएपछि जारी हुने स्थानीय सरकारको आधिकारिक डिजिटल राजस्व रसिद (शीर्षक १४२२९)</div>
       </div>
     </div>
 
     <!-- STEP 7 -->
-    <div class="step-card">
+    <div class="step-card" id="step7">
       <div class="step-header">
         <div class="step-badge">७</div>
         <div class="step-title-wrap">
-          <h2>चरण ७: प्रवेशपत्र (Admit Card) तथा आवेदन स्थिति खोज्नुहोस्</h2>
-          <p>दरखास्त पेस गरिसकेपछि जुनसुकै बेला आफ्नो फारमको स्थिति हेर्न र प्रवेशपत्र प्रिन्ट गर्न सकिन्छ।</p>
+          <h2>चरण ७: दरखास्त स्थिति जाँच्नुहोस् र A4 साइजको आधिकारिक प्रवेशपत्र प्रिन्ट गर्नुहोस्</h2>
+          <p>छानबिन समितिले फारम रुजु गरी स्वीकृत गरेपछि सम्पर्क QR सहितको मानक A4 प्रवेशपत्र प्राप्त हुन्छ।</p>
         </div>
       </div>
       <ul class="instructions-list">
         <li>पोर्टलको <strong>"प्रवेशपत्र तथा आवेदन स्थिति खोज्नुहोस्"</strong> ट्याबमा जानुहोस्।</li>
-        <li>खोजी बक्समा आफ्नो <strong>दरखास्त नम्बर (APP-...)</strong>, <strong>नागरिकता नम्बर</strong> वा <strong>मोबाइल नम्बर</strong> टाइप गरी <strong>"खोज्नुहोस्"</strong> मा क्लिक गर्नुहोस्।</li>
-        <li>यदि कार्यालयबाट दरखास्त स्वीकृत भइसकेको छ भने तपाईंको रोल नम्बर र परीक्षा केन्द्रसहितको <strong>प्रवेशपत्र (Admit Card)</strong> स्क्रिनमा देखिनेछ, जसलाई परीक्षा दिन आउँदा अनिवार्य प्रिन्ट गरेर ल्याउनुपर्नेछ।</li>
-        <li>यदि कुनै कारणवश शुल्क भुक्तानी अधुरो रहेको थियो भने यहाँबाट <strong>"बाँकी शुल्क भुक्तानी गर्नुहोस्"</strong> थिची पुनः भुक्तानी गर्न सकिन्छ।</li>
+        <li>खोजी बक्समा आफ्नो <strong>दरखास्त नम्बर (PTRM-2083-XXXX)</strong>, <strong>नागरिकता नम्बर</strong> वा दर्ता गरिएको <strong>मोबाइल नम्बर</strong> टाइप गरी <strong>"खोज्नुहोस्"</strong> बटन थिच्नुहोस्।</li>
+        <li><strong>स्वीकृत (Approved) भएको अवस्थामा:</strong> स्क्रिनमा तपाईंको नाम, पद, रोल नम्बर, परीक्षा केन्द्र, परीक्षा मिति (नेपाली वि.सं. र English AD) सहितको <strong>प्रवेशपत्र (Admit Card)</strong> देखा पर्नेछ।</li>
+        <li><strong>"प्रवेशपत्र प्रिन्ट गर्नुहोस् (Print Admit Card)"</strong> बटन थिचेर <strong>A4 साइजको कागजमा</strong> रंगीन वा सफा प्रिन्ट गर्नुहोस्। परीक्षा दिन आउँदा यो प्रवेशपत्र र सक्कल नागरिकता अनिवार्य साथमा ल्याउनुपर्नेछ।</li>
+        <li><strong>प्रवेशपत्रको सम्पर्क QR कोड:</strong> प्रवेशपत्रको तल्लो भागमा पालिकाको आधिकारिक वेबसाइट, इमेल र फोन नम्बर समेटिएको गतिशील QR कोड राखिएको छ, जसलाई मोबाइल क्यामेराले स्क्यान गरी सिधै कार्यालयमा सम्पर्क गर्न सकिन्छ।</li>
       </ul>
       <div class="screenshot-box">
-        <img src="/manual_screenshots/step7_admit_card_search.png" alt="चरण ७: प्रवेशपत्र तथा आवेदन स्थिति खोजी">
-        <div class="screenshot-caption">चित्र ७: मोबाइल नम्बर वा दरखास्त नम्बरबाट स्थिति खोजी र प्रवेशपत्र प्राप्ति</div>
+        <img src="/manual_screenshots/step7_admit_card_a4.png" alt="चरण ७: A4 साइजको आधिकारिक प्रवेशपत्र र सम्पर्क QR">
+        <div class="screenshot-caption">चित्र ७: पूर्ण रूपमा प्रमाणीकृत A4 साइजको आधिकारिक प्रवेशपत्र (Admit Card) र गतिशील सम्पर्क QR कोड</div>
       </div>
     </div>
 
-    <!-- Help & Contacts -->
-    <div class="help-footer">
-      <h3>📞 प्राविधिक सहायता वा सोधपुछ</h3>
-      <p style="margin-bottom: 0.75rem;">
-        अनलाइन दरखास्त फारम भर्दा वा डिजिटल भुक्तानी गर्दा कुनै समस्या आइपरेमा पालिकाको प्रशासन तथा सूचना प्रविधि शाखामा सम्पर्क गर्न सक्नुहुनेछ:
-      </p>
-      <p>
-        📍 <strong>गाउँ कार्यपालिकाको कार्यालय:</strong> थाङपालधाप, पाँचपोखरी थाङपाल, सिन्धुपाल्चोक, बागमती प्रदेश<br>
-        📧 <strong>इमेल:</strong> ito.panchpokharithangpalmun@gmail.com | 🌐 <strong>वेबसाइट:</strong> <a href="https://digitaltwin.smartptrm.com" target="_blank">digitaltwin.smartptrm.com</a><br>
-        🏦 <strong>राजस्व बैंक खाता:</strong> नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) — <code>18301400000109</code>
-      </p>
+    <!-- ADMIN USER GUIDE SECTION -->
+    <div class="step-card" style="border-left: 6px solid #0f172a;">
+      <div class="step-header">
+        <div class="step-badge" style="background: #0f172a;">⚙️</div>
+        <div class="step-title-wrap">
+          <h2>प्रशासन तथा पदपूर्ति समिति निर्देशिका (Admin & Scrutiny Guide)</h2>
+          <p>कार्यालयका छानबिन अधिकृतले आवेदकका कागजातहरू रुजु गर्ने, एकल तथा एकमुष्ट ZIP डाउनलोड गर्ने कार्यविधि।</p>
+        </div>
+      </div>
+      <ul class="instructions-list">
+        <li><strong>छानबिन लगइन:</strong> अधिकृत प्रयोगकर्ताले आफ्नो आधिकारिक इमेल र पासवर्डबाट सिस्टममा लगइन गर्नुहोस्।</li>
+        <li><strong>कागजात रुजु तथा पूर्वावलोकन:</strong> प्राप्त आवेदनहरूमा "छानबिन (Verify)" वा "पूर्ण विवरण (Eye)" बटन थिच्दा आवेदकले अपलोड गरेका सबै कागजातहरू (फोटो, दस्तखत, नागरिकता, योग्यता, काउन्सिल, भौचर) प्रष्ट देखिन्छन्। "हेर्नुहोस्" थिचेर सोही स्क्रिनमा द्रुत पूर्वावलोकन (Preview Modal) गर्न सकिन्छ।</li>
+        <li><strong>एकल कागजात डाउनलोड:</strong> प्रत्येक कागजातको छेउमा रहेको <strong>"डाउनलोड"</strong> बटन थिच्दा फाइल आवेदकको नाम र दरखास्त नम्बर सहित (उदा: <code>PTRM-2083-0001_नागरिकता_नारायण_क्षेत्री.pdf</code>) सिधै डाउनलोड हुन्छ।</li>
+        <li><strong>सबै कागजात एकमुष्ट डाउनलोड (.ZIP Download All):</strong> माथि रहेको हरियो <strong>"सबै कागजात एकमुष्ट डाउनलोड (.ZIP)"</strong> बटनमा एकै क्लिक गर्दा उम्मेदवारका सम्पूर्ण कागजातहरू संकलित जिप फाइल बनेर कम्प्युटरमा सुरक्षित हुन्छ।</li>
+        <li><strong>स्वीकृति तथा प्रवेशपत्र रोल नं.:</strong> कागजात रितपूर्वक पाइएमा "स्वीकृत (Approved)" छनोट गरी प्रवेशपत्र रोल नम्बर र परीक्षा केन्द्र प्रविष्टि गरेर सुरक्षित गर्नुहोस्। यसो गर्नासाथ आवेदकको प्रवेशपत्र स्वतः तयार हुन्छ।</li>
+      </ul>
+      <div class="success-box">
+        ✅ <strong>अटोमेटिक चलानी नं. लिङ्क:</strong> दरखास्त स्वीकृत भई प्रवेशपत्र जारी हुनासाथ 'डिजिटल दर्ता तथा चलानी व्यवस्थापन प्रणाली' बाट स्वतः वास्तविक आउटवर्ड चलानी नम्बर दर्ता भई प्रवेशपत्रमा अंकित हुन्छ।
+      </div>
     </div>
+
+    <!-- FAQ SECTION -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge" style="background: var(--nepal-crimson);">❓</div>
+        <div class="step-title-wrap">
+          <h2>बारम्बार सोधिने प्रश्नहरू (Frequently Asked Questions - FAQ)</h2>
+          <p>अनलाइन दरखास्त प्रक्रियामा आवेदकहरूले सोध्ने मुख्य जिज्ञासा र समाधान।</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">१. Fonepay QR बाट भुक्तानी गर्दा खाताबाट पैसा काटियो तर स्क्रिनमा रसिद आएन भने के गर्ने?</div>
+        <div class="faq-a">चिन्ता लिनुपर्दैन। पोर्टलको "प्रवेशपत्र तथा आवेदन स्थिति खोज्नुहोस्" मा गएर आफ्नो मोबाइल नम्बर वा दरखास्त नम्बर टाइप गर्नुहोस् र "बाँकी भुक्तानी रुजु गर्नुहोस्" थिच्नुहोस्। यदि फेरि पनि समस्या भएमा भुक्तानीको Transaction Reference No सहित पालिकाको आइटी शाखा (9851109808) मा तुरुन्त सम्पर्क गर्नुहोस्।</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">२. मेरो दरखास्त बुझाउनासाथ प्रवेशपत्र तुरुन्तै आउँछ कि समय लाग्छ?</div>
+        <div class="faq-a">दरखास्त बुझाएर शुल्क भुक्तानी हुनासाथ तपाईंलाई डिजिटल राजस्व रसिद तुरुन्तै प्राप्त हुन्छ। तर प्रवेशपत्र (Admit Card) पदपूर्ति छानबिन समितिले तपाईंको शैक्षिक योग्यता र कागजातहरू रुजु गरी "स्वीकृत" गरेपछि मात्र जारी हुन्छ। स्वीकृति भएपछि अनलाइनबाट प्रिन्ट गर्न सकिन्छ।</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">३. के मैले एउटै फारमबाट खुला र महिला/जनजाति दुवैमा दरखास्त दिन मिल्छ?</div>
+        <div class="faq-a">मिल्छ। चरण २ मा पद छानेपछि तल समावेशी समूहहरूमा आफू योग्य भएको समूह (महिला, जनजाति, मधेसी आदि) छनोट गर्नुपर्छ। प्रति समूह रु. २००/- का दरले थप दस्तुर स्वतः गणना हुन्छ र एउटै प्रवेशपत्र तथा रोल नम्बरबाट सबै समूहमा प्रतिस्पर्धा गर्न पाइन्छ।</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">४. प्रवेशपत्र मोबाइलबाट देखाउँदा परीक्षा हलमा प्रवेश पाइन्छ कि कागजमै प्रिन्ट गर्नुपर्छ?</div>
+        <div class="faq-a">परीक्षाको नियम अनुसार प्रवेशपत्र अनिवार्य रूपमा <strong>A4 साइजको कागजमा प्रिन्ट</strong> गरेर ल्याउनुपर्छ र साथमा आफ्नो सक्कल नेपाली नागरिकता प्रमाणपत्र अनिवार्य साथमा हुनुपर्दछ। मोबाइल देखाएर परीक्षामा बस्न पाइने छैन।</div>
+      </div>
+    </div>
+
+    <!-- HELP & CONTACT FOOTER -->
+    <div class="help-footer">
+      <h3>📞 प्राविधिक सहायता तथा सोधपुछ (Technical Helpdesk)</h3>
+      <p>
+        अनलाइन दरखास्त भर्दा, कागजात अपलोड गर्दा वा डिजिटल भुक्तानीमा कुनै समस्या आएमा गाउँपालिकाको सूचना प्रविधि शाखामा सम्पर्क गर्नुहोस्:
+      </p>
+      <p style="margin-top: 0.5rem; font-weight: 700; color: #1e3a8a;">
+        📍 <strong>गाउँ कार्यपालिकाको कार्यालय:</strong> थाङपालधाप, पाँचपोखरी थाङपाल, सिन्धुपाल्चोक, बागमती प्रदेश, नेपाल<br>
+        📧 <strong>इमेल:</strong> <a href="mailto:ito.panchpokharithangpalmun@gmail.com" style="color: #1e3a8a; text-decoration: underline;">ito.panchpokharithangpalmun@gmail.com</a> | 🌐 <strong>पोर्टल:</strong> <a href="https://digitaltwin.smartptrm.com" target="_blank" style="color: #1e3a8a; text-decoration: underline;">digitaltwin.smartptrm.com</a><br>
+        📱 <strong>फोन / हटलाइन:</strong> ९८५११०९८०८ (कार्यालय समय: बिहान १०:०० देखि साँझ ५:०० बजेसम्म)
+      </p>
+      <div class="footer-slogan">
+        "शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन"
+      </div>
+    </div>
+
   </div>
 
 </body>
