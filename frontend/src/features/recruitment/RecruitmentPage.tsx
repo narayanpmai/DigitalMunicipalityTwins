@@ -818,6 +818,19 @@ const { data: vacancies = [], isLoading: isVacanciesLoading, refetch: refetchVac
   },
 });
 
+// Selected active vacancy for application form
+const selectedVacancy = useMemo(
+  () => vacancies.find(v => v.id === applyForm.vacancyId),
+  [vacancies, applyForm.vacancyId]
+);
+const isTeacherPost = useMemo(
+  () => Boolean(
+    (selectedVacancy?.level || '').includes('शिक्षक') ||
+    (applyForm.postTitle || '').includes('शिक्षक')
+  ),
+  [selectedVacancy, applyForm.postTitle]
+);
+
 // 3. Applications
 const { data: applications = [], isLoading: isAppsLoading, refetch: refetchApps } = useQuery<Application[]>({
   queryKey: ['recruitment-applications'],
@@ -887,7 +900,6 @@ const handleProceedToPayment = async () => {
     return;
   }
 
-  const isTeacherPost = (selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक');
   if (isTeacherPost && !applyForm.teachingLicenseDocUrl) {
     alert('शिक्षक पदको लागि अध्यापन अनुमति पत्र (Teaching License) अनिवार्य छ। कृपया अध्यापन अनुमति पत्रको प्रतिलिपि अपलोड गर्नुहोस्।');
     return;
@@ -2567,7 +2579,7 @@ return (
 
                 <div className="rec-field-group">
                   <label className="rec-label">
-                    अध्यापन अनुमति पत्र नं {(selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक') ? <span className="rec-req">*</span> : '(लागू भएमा)'}
+                    अध्यापन अनुमति पत्र नं {isTeacherPost ? <span className="rec-req">*</span> : '(लागू भएमा)'}
                   </label>
                   <input
                     type="text"
@@ -2740,7 +2752,7 @@ return (
                       </div>
                       <div className="rec-doc-info">
                         <h4 className="rec-doc-title">
-                          अध्यापन अनुमति पत्र {(selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक') ? <span className="rec-req">*</span> : <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>(शिक्षक पदको लागि)</span>}
+                          अध्यापन अनुमति पत्र {isTeacherPost ? <span className="rec-req">*</span> : <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>(शिक्षक पदको लागि)</span>}
                         </h4>
                         <p className="rec-doc-subtitle">शिक्षक सेवा आयोगबाट जारी अनुमति पत्र</p>
                       </div>

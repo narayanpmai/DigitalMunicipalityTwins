@@ -28,6 +28,7 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
   const [activeYear, setActiveYear] = useState<number>(2082);
   const [activeMonth, setActiveMonth] = useState<number>(4); // साउन
   const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [viewMode, setViewMode] = useState<'calendar' | 'yearList'>('calendar');
 
   // Initialize from initialBsDate or Today
   useEffect(() => {
@@ -40,7 +41,7 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
         const y = parseInt(parts[0], 10);
         const m = parseInt(parts[1], 10);
         const d = parseInt(parts[2], 10);
-        if (y >= 2075 && y <= 2090 && m >= 1 && m <= 12 && d >= 1 && d <= 32) {
+        if (y >= 2000 && y <= 2095 && m >= 1 && m <= 12 && d >= 1 && d <= 32) {
           setActiveYear(y);
           setActiveMonth(m);
           setSelectedDay(d);
@@ -77,7 +78,7 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
   const handlePrevMonth = () => {
     if (activeMonth === 1) {
       setActiveMonth(12);
-      setActiveYear((y) => Math.max(2075, y - 1));
+      setActiveYear((y) => Math.max(2000, y - 1));
     } else {
       setActiveMonth((m) => m - 1);
     }
@@ -86,7 +87,7 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
   const handleNextMonth = () => {
     if (activeMonth === 12) {
       setActiveMonth(1);
-      setActiveYear((y) => Math.min(2090, y + 1));
+      setActiveYear((y) => Math.min(2095, y + 1));
     } else {
       setActiveMonth((m) => m + 1);
     }
@@ -138,7 +139,10 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '400px',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: '#1e293b',
           color: '#ffffff',
           borderRadius: '16px',
@@ -148,6 +152,24 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
           animation: 'fadeIn 0.2s ease-out',
         }}
       >
+        <style>{`
+          .bs-cal-scrollbar::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+          }
+          .bs-cal-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+          }
+          .bs-cal-scrollbar::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 4px;
+          }
+          .bs-cal-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #0284c7;
+          }
+        `}</style>
+
         {/* Modal Header */}
         <div
           style={{
@@ -181,185 +203,289 @@ export const BsCalendarModal: React.FC<BsCalendarModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div style={{ padding: '1rem' }}>
-          {/* Year & Month Selection Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+        {/* Modal Body with Scrollbar */}
+        <div
+          className="bs-cal-scrollbar"
+          style={{
+            padding: '1rem',
+            overflowY: 'auto',
+            maxHeight: 'calc(92vh - 120px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#38bdf8 #0f172a',
+          }}
+        >
+          {/* View Mode Switcher: Calendar vs Scrollable Year Grid */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '0.85rem', background: '#0f172a', padding: '3px', borderRadius: '8px' }}>
             <button
               type="button"
-              onClick={handlePrevMonth}
-              title="अघिल्लो महिना"
+              onClick={() => setViewMode('calendar')}
               style={{
-                padding: '6px 8px',
-                borderRadius: '8px',
-                backgroundColor: '#0f172a',
-                border: '1px solid #475569',
-                color: '#ffffff',
+                flex: 1,
+                padding: '5px 8px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: 'none',
                 cursor: 'pointer',
+                background: viewMode === 'calendar' ? '#2563eb' : 'transparent',
+                color: viewMode === 'calendar' ? '#ffffff' : '#94a3b8',
+                transition: 'all 0.15s ease',
               }}
             >
-              <ChevronLeft size={16} />
+              पात्रो (दिन छनोट)
             </button>
-
-            <select
-              value={activeYear}
-              onChange={(e) => setActiveYear(parseInt(e.target.value, 10))}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                borderRadius: '8px',
-                backgroundColor: '#0f172a',
-                border: '1px solid #475569',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                outline: 'none',
-              }}
-            >
-              {Array.from({ length: 16 }, (_, i) => 2075 + i).map((yr) => (
-                <option key={yr} value={yr}>
-                  {toNepaliDigits(yr)} ({yr})
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={activeMonth}
-              onChange={(e) => setActiveMonth(parseInt(e.target.value, 10))}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                borderRadius: '8px',
-                backgroundColor: '#0f172a',
-                border: '1px solid #475569',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                outline: 'none',
-              }}
-            >
-              {BS_MONTH_NAMES.map((name, idx) => (
-                <option key={idx + 1} value={idx + 1}>
-                  {name}
-                </option>
-              ))}
-            </select>
-
             <button
               type="button"
-              onClick={handleNextMonth}
-              title="पछिल्लो महिना"
+              onClick={() => setViewMode('yearList')}
               style={{
-                padding: '6px 8px',
-                borderRadius: '8px',
-                backgroundColor: '#0f172a',
-                border: '1px solid #475569',
-                color: '#ffffff',
+                flex: 1,
+                padding: '5px 8px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                borderRadius: '6px',
+                border: 'none',
                 cursor: 'pointer',
+                background: viewMode === 'yearList' ? '#2563eb' : 'transparent',
+                color: viewMode === 'yearList' ? '#ffffff' : '#94a3b8',
+                transition: 'all 0.15s ease',
               }}
             >
-              <ChevronRight size={16} />
+              वर्ष स्क्रोल सूची ({toNepaliDigits(2000)}-{toNepaliDigits(2095)})
             </button>
           </div>
 
-          {/* Weekday Headers */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              textAlign: 'center',
-              fontWeight: 700,
-              fontSize: '0.75rem',
-              marginBottom: '6px',
-            }}
-          >
-            <div style={{ color: '#f87171', padding: '4px 0' }}>आइत</div>
-            <div style={{ color: '#94a3b8', padding: '4px 0' }}>सोम</div>
-            <div style={{ color: '#94a3b8', padding: '4px 0' }}>मङ्गल</div>
-            <div style={{ color: '#94a3b8', padding: '4px 0' }}>बुध</div>
-            <div style={{ color: '#94a3b8', padding: '4px 0' }}>बिही</div>
-            <div style={{ color: '#94a3b8', padding: '4px 0' }}>शुक्र</div>
-            <div style={{ color: '#f87171', padding: '4px 0' }}>शनि</div>
-          </div>
-
-          {/* Days Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              gap: '4px',
-              textAlign: 'center',
-            }}
-          >
-            {/* Leading empty cells */}
-            {Array.from({ length: startWeekday }).map((_, idx) => (
-              <div key={`empty-${idx}`} style={{ height: '36px' }} />
-            ))}
-
-            {/* Days */}
-            {Array.from({ length: totalDays }).map((_, idx) => {
-              const day = idx + 1;
-              const weekday = (startWeekday + day - 1) % 7;
-              const isSat = weekday === 6;
-              const isToday = activeYear === tY && activeMonth === tM && day === tD;
-              const isSelected = day === selectedDay;
-
-              return (
-                <div
-                  key={day}
-                  onClick={() => handleSelectDay(day)}
+          {viewMode === 'yearList' ? (
+            /* Scrollable Year List Panel */
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>साल छनोट गर्नुहोस् (Scrollable Years):</span>
+                <span style={{ fontSize: '0.76rem', color: '#38bdf8', fontWeight: 800 }}>हाल: {toNepaliDigits(activeYear)}</span>
+              </div>
+              <div
+                className="bs-cal-scrollbar"
+                style={{
+                  maxHeight: '260px',
+                  overflowY: 'scroll',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '6px',
+                  paddingRight: '6px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#38bdf8 #0f172a',
+                }}
+              >
+                {Array.from({ length: 96 }, (_, i) => 2000 + i).map((yr) => {
+                  const isSelYear = yr === activeYear;
+                  return (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => {
+                        setActiveYear(yr);
+                        setViewMode('calendar');
+                      }}
+                      style={{
+                        padding: '7px 4px',
+                        borderRadius: '6px',
+                        border: isSelYear ? '2px solid #38bdf8' : '1px solid #334155',
+                        backgroundColor: isSelYear ? '#2563eb' : '#0f172a',
+                        color: isSelYear ? '#ffffff' : '#e2e8f0',
+                        fontSize: '0.82rem',
+                        fontWeight: isSelYear ? 800 : 600,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'all 0.1s ease',
+                      }}
+                    >
+                      {toNepaliDigits(yr)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Year & Month Selection Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  title="अघिल्लो महिना"
                   style={{
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    padding: '6px 8px',
                     borderRadius: '8px',
-                    fontSize: '0.88rem',
-                    fontWeight: 600,
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #475569',
+                    color: '#ffffff',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    backgroundColor: isSelected
-                      ? '#2563eb'
-                      : isToday
-                      ? 'rgba(56, 189, 248, 0.2)'
-                      : 'rgba(255, 255, 255, 0.05)',
-                    color: isSelected
-                      ? '#ffffff'
-                      : isSat
-                      ? '#f87171'
-                      : isToday
-                      ? '#38bdf8'
-                      : '#f1f5f9',
-                    border: isSelected
-                      ? '1px solid #93c5fd'
-                      : isToday
-                      ? '1px solid #38bdf8'
-                      : '1px solid rgba(255, 255, 255, 0.08)',
-                    boxShadow: isSelected ? '0 0 10px rgba(37, 99, 235, 0.6)' : 'none',
                   }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = '#1d4ed8';
-                      e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.transform = 'scale(1.08)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = isToday
-                        ? 'rgba(56, 189, 248, 0.2)'
-                        : 'rgba(255, 255, 255, 0.05)';
-                      e.currentTarget.style.color = isSat ? '#f87171' : isToday ? '#38bdf8' : '#f1f5f9';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }
-                  }}
-                  title={`${toNepaliDigits(activeYear)} ${BS_MONTH_NAMES[activeMonth - 1]} ${toNepaliDigits(day)}`}
                 >
-                  {toNepaliDigits(day)}
-                </div>
-              );
-            })}
-          </div>
+                  <ChevronLeft size={16} />
+                </button>
+
+                <select
+                  value={activeYear}
+                  onChange={(e) => setActiveYear(parseInt(e.target.value, 10))}
+                  style={{
+                    flex: 1.1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #475569',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {Array.from({ length: 96 }, (_, i) => 2000 + i).map((yr) => (
+                    <option key={yr} value={yr}>
+                      {toNepaliDigits(yr)} ({yr})
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={activeMonth}
+                  onChange={(e) => setActiveMonth(parseInt(e.target.value, 10))}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #475569',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {BS_MONTH_NAMES.map((name, idx) => (
+                    <option key={idx + 1} value={idx + 1}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  title="पछिल्लो महिना"
+                  style={{
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #475569',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+
+              {/* Weekday Headers */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  marginBottom: '6px',
+                }}
+              >
+                <div style={{ color: '#f87171', padding: '4px 0' }}>आइत</div>
+                <div style={{ color: '#94a3b8', padding: '4px 0' }}>सोम</div>
+                <div style={{ color: '#94a3b8', padding: '4px 0' }}>मङ्गल</div>
+                <div style={{ color: '#94a3b8', padding: '4px 0' }}>बुध</div>
+                <div style={{ color: '#94a3b8', padding: '4px 0' }}>बिही</div>
+                <div style={{ color: '#94a3b8', padding: '4px 0' }}>शुक्र</div>
+                <div style={{ color: '#f87171', padding: '4px 0' }}>शनि</div>
+              </div>
+
+              {/* Days Grid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: '4px',
+                  textAlign: 'center',
+                }}
+              >
+                {/* Leading empty cells */}
+                {Array.from({ length: startWeekday }).map((_, idx) => (
+                  <div key={`empty-${idx}`} style={{ height: '36px' }} />
+                ))}
+
+                {/* Days */}
+                {Array.from({ length: totalDays }).map((_, idx) => {
+                  const day = idx + 1;
+                  const weekday = (startWeekday + day - 1) % 7;
+                  const isSat = weekday === 6;
+                  const isToday = activeYear === tY && activeMonth === tM && day === tD;
+                  const isSelected = day === selectedDay;
+
+                  return (
+                    <div
+                      key={day}
+                      onClick={() => handleSelectDay(day)}
+                      style={{
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '8px',
+                        fontSize: '0.88rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        backgroundColor: isSelected
+                          ? '#2563eb'
+                          : isToday
+                          ? 'rgba(56, 189, 248, 0.2)'
+                          : 'rgba(255, 255, 255, 0.05)',
+                        color: isSelected
+                          ? '#ffffff'
+                          : isSat
+                          ? '#f87171'
+                          : isToday
+                          ? '#38bdf8'
+                          : '#f1f5f9',
+                        border: isSelected
+                          ? '1px solid #93c5fd'
+                          : isToday
+                          ? '1px solid #38bdf8'
+                          : '1px solid rgba(255, 255, 255, 0.08)',
+                        boxShadow: isSelected ? '0 0 10px rgba(37, 99, 235, 0.6)' : 'none',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = '#1d4ed8';
+                          e.currentTarget.style.color = '#ffffff';
+                          e.currentTarget.style.transform = 'scale(1.08)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = isToday
+                            ? 'rgba(56, 189, 248, 0.2)'
+                            : 'rgba(255, 255, 255, 0.05)';
+                          e.currentTarget.style.color = isSat ? '#f87171' : isToday ? '#38bdf8' : '#f1f5f9';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }
+                      }}
+                      title={`${toNepaliDigits(activeYear)} ${BS_MONTH_NAMES[activeMonth - 1]} ${toNepaliDigits(day)}`}
+                    >
+                      {toNepaliDigits(day)}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {/* Selected Date Preview */}
           <div
