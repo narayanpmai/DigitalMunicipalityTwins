@@ -386,6 +386,16 @@ export const RecruitmentPage: React.FC = () => {
   const [selectedNoticeVacancy, setSelectedNoticeVacancy] = useState<any>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedAppointmentApp, setSelectedAppointmentApp] = useState<any>(null);
+  const [showAttendanceSheetModal, setShowAttendanceSheetModal] = useState(false);
+  const [selectedAttendanceVacancy, setSelectedAttendanceVacancy] = useState<any>(null);
+
+  // Candidate Document Resubmission Window State
+  const [resubmitDocType, setResubmitDocType] = useState('teaching_license');
+  const [resubmitFileUrl, setResubmitFileUrl] = useState('');
+  const [resubmitAuthInput, setResubmitAuthInput] = useState('');
+  const [resubmitCandidateRemarks, setResubmitCandidateRemarks] = useState('');
+  const [isResubmitting, setIsResubmitting] = useState(false);
+  const [resubmitSuccessMsg, setResubmitSuccessMsg] = useState('');
 
   // Document Preview & Admin Download State
   const [previewDoc, setPreviewDoc] = useState<{ url: string; label: string; isImg?: boolean } | null>(null);
@@ -1634,6 +1644,18 @@ return (
                         title="केन्द्रीकृत लेटरहेडमा आधिकारिक परीक्षा सूचना हेर्नुहोस् र प्रिन्ट गर्नुहोस्"
                       >
                         <FileText size={14} /> परीक्षा सूचना
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedAttendanceVacancy(vac);
+                          setShowAttendanceSheetModal(true);
+                        }}
+                        className="rec-btn rec-btn-outline"
+                        style={{ color: '#065f46', background: '#ecfdf5', borderColor: '#a7f3d0', fontSize: '0.78rem', padding: '0.4rem 0.75rem', fontWeight: 700 }}
+                        title="परीक्षा हल उम्मेदवार हाजिरी तथा रुजु फारम हेर्नुहोस् र प्रिन्ट गर्नुहोस्"
+                      >
+                        <Users size={14} /> हाजिरी फारम
                       </button>
 
                       {!isPublicView && (
@@ -3229,6 +3251,158 @@ return (
                       </div>
                     )}
 
+                    {/* Document Correction Window Banner if status is कागजात अपूरो */}
+                    {(admitCardResult.application.status || '').includes('कागजात अपूरो') && (
+                      <div style={{ background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1rem' }}>
+                          <div style={{ background: '#fef3c7', padding: '0.5rem', borderRadius: '8px', color: '#d97706' }}>
+                            <AlertTriangle size={26} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#92400e' }}>
+                              ⚠️ कागजात अपूरो / सच्याउन अनुरोध (Document Correction Required)
+                            </h4>
+                            <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#78350f', lineHeight: 1.6 }}>
+                              <strong>प्रशासकीय निर्देशन / कैफियत:</strong> {admitCardResult.application.rejectionReason || admitCardResult.application.rejection_reason || 'माग भए बमोजिमको कागजात स्पष्ट रूपमा पुनः अपलोड गर्नुहोस्।'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {resubmitSuccessMsg ? (
+                          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <CheckCircle size={18} /> {resubmitSuccessMsg}
+                          </div>
+                        ) : (
+                          <form
+                            onSubmit={async (e) => {
+                              e.preventDefault();
+                              if (!resubmitFileUrl) {
+                                alert('कृपया नयाँ कागजात फाइल छनोट गरी अपलोड गर्नुहोस्।');
+                                return;
+                              }
+                              if (!resubmitAuthInput) {
+                                alert('सुरक्षा प्रमाणीकरणको लागि दर्ता भएको फोन वा नागरिकता नम्बर प्रविष्ट गर्नुहोस्।');
+                                return;
+                              }
+                              setIsResubmitting(true);
+                              try {
+                                const appNo = admitCardResult.application.applicationNo || admitCardResult.application.application_no;
+                                const res: any = await api.post(`/recruitment/applications/${appNo}/resubmit-document`, {
+                                  phoneOrCitizenship: resubmitAuthInput,
+                                  docType: resubmitDocType,
+                                  newDocUrl: resubmitFileUrl,
+                                  candidateRemarks: resubmitCandidateRemarks
+                                });
+                                setResubmitSuccessMsg(res?.message || 'कागजात सफलतापूर्वक पेश भयो। प्रशासनबाट रुजु गरिनेछ।');
+                                handleSearchAdmitCard();
+                                refetchApps();
+                              } catch (err: any) {
+                                alert(err?.response?.data?.detail || 'कागजात पुनः पेश गर्दा त्रुटि भयो। कृपया विवरण जाँच गर्नुहोस्।');
+                              } finally {
+                                setIsResubmitting(false);
+                              }
+                            }}
+                            style={{ background: '#ffffff', border: '1px solid #fde68a', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+                          >
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                              <div className="rec-field-group">
+                                <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                  सच्याउनुपर्ने कागजात छनोट <span className="rec-req">*</span>
+                                </label>
+                                <select
+                                  value={resubmitDocType}
+                                  onChange={(e) => setResubmitDocType(e.target.value)}
+                                  className="rec-input-control"
+                                  style={{ padding: '0.45rem', fontSize: '0.82rem' }}
+                                >
+                                  <option value="teaching_license">अध्यापन अनुमति पत्र (Teaching License)</option>
+                                  <option value="application_letter">निवेदन (Application Letter)</option>
+                                  <option value="qualification">शैक्षिक योग्यता प्रमाणपत्र (Academic Certificate)</option>
+                                  <option value="citizenship_front">नागरिकता प्रमाणपत्र अगाडि (Citizenship Front)</option>
+                                  <option value="citizenship_back">नागरिकता प्रमाणपत्र पछाडि (Citizenship Back)</option>
+                                  <option value="voucher">राजस्व भौचर (Bank / Payment Voucher)</option>
+                                  <option value="photo">पासपोर्ट साइजको फोटो (Photo)</option>
+                                </select>
+                              </div>
+
+                              <div className="rec-field-group">
+                                <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                  सुरक्षा प्रमाणीकरण (फोन वा नागरिकता नं.) <span className="rec-req">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="फारममा भरेको मोबाइल वा नागरिकता नं."
+                                  value={resubmitAuthInput}
+                                  onChange={(e) => setResubmitAuthInput(e.target.value)}
+                                  className="rec-input-control"
+                                  style={{ padding: '0.45rem', fontSize: '0.82rem' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="rec-field-group">
+                              <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                नयाँ सच्याइएको कागजात फाइल अपलोड <span className="rec-req">*</span> (JPG/PNG/PDF)
+                              </label>
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <input
+                                  type="file"
+                                  accept=".pdf,.jpg,.jpeg,.png"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    try {
+                                      const res: any = await api.post('/recruitment/upload-document', formData, {
+                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                      });
+                                      setResubmitFileUrl(res.data?.url || res.url);
+                                      alert('फाइल सफलतापूर्वक अपलोड भयो!');
+                                    } catch {
+                                      alert('फाइल अपलोड गर्न सकिएन।');
+                                    }
+                                  }}
+                                  style={{ fontSize: '0.82rem' }}
+                                />
+                                {resubmitFileUrl && (
+                                  <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 700 }}>
+                                    ✓ फाइल तयार छ
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="rec-field-group">
+                              <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                उम्मेदवारको संक्षिप्त व्यहोरा / टिप्पणी (वैकल्पिक)
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="उदा: माग भए बमोजिम अध्यापन अनुमति पत्रको स्पष्ट स्क्यान प्रति संलग्न गरेको छु।"
+                                value={resubmitCandidateRemarks}
+                                onChange={(e) => setResubmitCandidateRemarks(e.target.value)}
+                                className="rec-input-control"
+                                style={{ padding: '0.45rem', fontSize: '0.82rem' }}
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.25rem' }}>
+                              <button
+                                type="submit"
+                                disabled={isResubmitting || !resubmitFileUrl}
+                                className="rec-btn rec-btn-primary"
+                                style={{ background: '#d97706', fontSize: '0.84rem', padding: '0.5rem 1.25rem', fontWeight: 700 }}
+                              >
+                                {isResubmitting ? 'पेश गरिँदैछ...' : 'सच्याइएको कागजात पेश गर्नुहोस् (Submit)'}
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    )}
+
                     {/* Status Header */}
                     <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -3808,9 +3982,24 @@ return (
                           <input
                             type="text"
                             required
-                            placeholder="उदा: सव-इन्जिनियर / रोजगार सहायक"
+                            placeholder="उदा: सव-इन्जिनियर / रोजगार सहायक / शिक्षक"
                             value={vacancyForm.title}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, title: e.target.value })}
+                            onChange={(e) => {
+                              const tVal = e.target.value;
+                              let newLevel = vacancyForm.level;
+                              let newService = vacancyForm.serviceGroup;
+                              if (tVal.includes('शिक्षक आ.वि.') || tVal.includes('प्राथमिक') || tVal.includes('प्रावि')) {
+                                newLevel = 'शिक्षक आ.वि. (१-५)';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              } else if (tVal.includes('शिक्षक निमावी') || tVal.includes('निमावि')) {
+                                newLevel = 'शिक्षक निमावी (६-८)';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              } else if (tVal.includes('शिक्षक मावी') || tVal.includes('मावि')) {
+                                newLevel = 'शिक्षक मावी';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              }
+                              setVacancyForm({ ...vacancyForm, title: tVal, level: newLevel, serviceGroup: newService });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
@@ -3825,25 +4014,34 @@ return (
                             onChange={(e) => {
                               const val = e.target.value;
                               const isTeacher = val.includes('शिक्षक');
+                              const teacherDocs = 
+`क) हस्तलिखित वा टाइप गरिएको निवेदन
+ख) शैक्षिक योग्यताका प्रमाणपत्रहरूको प्रमाणित प्रतिलिपि
+ग) सम्बन्धित तहको अध्यापन अनुमति पत्रको प्रमाणित प्रतिलिपि
+घ) नेपाली नागरिकताको प्रमाणपत्रको प्रमाणित प्रतिलिपि`;
                               setVacancyForm({
                                 ...vacancyForm,
                                 level: val,
-                                serviceGroup: isTeacher && (!vacancyForm.serviceGroup || vacancyForm.serviceGroup === 'प्रशासन / प्राविधिक') ? 'नेपाल शिक्षा सेवा / शिक्षक' : vacancyForm.serviceGroup
+                                serviceGroup: isTeacher && (!vacancyForm.serviceGroup || vacancyForm.serviceGroup === 'प्रशासन / प्राविधिक') ? 'नेपाल शिक्षा सेवा / शिक्षक' : vacancyForm.serviceGroup,
+                                minQualification: isTeacher && !vacancyForm.minQualification ? teacherDocs : vacancyForm.minQualification
                               });
                             }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
-                            <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
-                            <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
-                            <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
-                            <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
-                            <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
-                            <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
-                            {/* शिक्षक सेवाका तहहरू */}
-                            <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५)</option>
-                            <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८)</option>
-                            <option value="शिक्षक मावी">शिक्षक मावी</option>
+                            <optgroup label="📋 निजामती तथा प्राविधिक सेवा (Civil & Technical)">
+                              <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
+                              <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
+                              <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
+                              <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
+                              <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
+                              <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
+                            </optgroup>
+                            <optgroup label="🎓 शिक्षक सेवा (Teacher Service)">
+                              <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५) — आधारभूत तह (कक्षा १-५)</option>
+                              <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८) — आधारभूत तह (कक्षा ६-८)</option>
+                              <option value="शिक्षक मावी">शिक्षक मावी — माध्यमिक तह (कक्षा ९-१२)</option>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
@@ -3857,7 +4055,14 @@ return (
                           <input
                             type="text"
                             value={vacancyForm.serviceGroup}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, serviceGroup: e.target.value })}
+                            onChange={(e) => {
+                              const sVal = e.target.value;
+                              let newLevel = vacancyForm.level;
+                              if (sVal.includes('शिक्षक आ.वि.') || sVal.includes('प्राथमिक')) newLevel = 'शिक्षक आ.वि. (१-५)';
+                              else if (sVal.includes('शिक्षक निमावी') || sVal.includes('निमावि')) newLevel = 'शिक्षक निमावी (६-८)';
+                              else if (sVal.includes('शिक्षक मावी') || sVal.includes('मावि')) newLevel = 'शिक्षक मावी';
+                              setVacancyForm({ ...vacancyForm, serviceGroup: sVal, level: newLevel });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
@@ -4181,7 +4386,22 @@ return (
                             type="text"
                             required
                             value={editVacancyForm.title}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, title: e.target.value })}
+                            onChange={(e) => {
+                              const tVal = e.target.value;
+                              let newLevel = editVacancyForm.level;
+                              let newService = editVacancyForm.serviceGroup;
+                              if (tVal.includes('शिक्षक आ.वि.') || tVal.includes('प्राथमिक') || tVal.includes('प्रावि')) {
+                                newLevel = 'शिक्षक आ.वि. (१-५)';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              } else if (tVal.includes('शिक्षक निमावी') || tVal.includes('निमावि')) {
+                                newLevel = 'शिक्षक निमावी (६-८)';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              } else if (tVal.includes('शिक्षक मावी') || tVal.includes('मावि')) {
+                                newLevel = 'शिक्षक मावी';
+                                if (!newService || newService === 'प्रशासन / प्राविधिक') newService = 'नेपाल शिक्षा सेवा / शिक्षक';
+                              }
+                              setEditVacancyForm({ ...editVacancyForm, title: tVal, level: newLevel, serviceGroup: newService });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
@@ -4205,16 +4425,19 @@ return (
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
-                            <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
-                            <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
-                            <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
-                            <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
-                            <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
-                            <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
-                            {/* शिक्षक सेवाका तहहरू */}
-                            <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५)</option>
-                            <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८)</option>
-                            <option value="शिक्षक मावी">शिक्षक मावी</option>
+                            <optgroup label="📋 निजामती तथा प्राविधिक सेवा (Civil & Technical)">
+                              <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
+                              <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
+                              <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
+                              <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
+                              <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
+                              <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
+                            </optgroup>
+                            <optgroup label="🎓 शिक्षक सेवा (Teacher Service)">
+                              <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५) — आधारभूत तह (कक्षा १-५)</option>
+                              <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८) — आधारभूत तह (कक्षा ६-८)</option>
+                              <option value="शिक्षक मावी">शिक्षक मावी — माध्यमिक तह (कक्षा ९-१२)</option>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
@@ -4228,7 +4451,14 @@ return (
                           <input
                             type="text"
                             value={editVacancyForm.serviceGroup}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, serviceGroup: e.target.value })}
+                            onChange={(e) => {
+                              const sVal = e.target.value;
+                              let newLevel = editVacancyForm.level;
+                              if (sVal.includes('शिक्षक आ.वि.') || sVal.includes('प्राथमिक')) newLevel = 'शिक्षक आ.वि. (१-५)';
+                              else if (sVal.includes('शिक्षक निमावी') || sVal.includes('निमावि')) newLevel = 'शिक्षक निमावी (६-८)';
+                              else if (sVal.includes('शिक्षक मावी') || sVal.includes('मावि')) newLevel = 'शिक्षक मावी';
+                              setEditVacancyForm({ ...editVacancyForm, serviceGroup: sVal, level: newLevel });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
@@ -4599,10 +4829,33 @@ return (
                           style={{ fontWeight: 700 }}
                         >
                           <option value="स्वीकृत (Approved)">स्वीकृत (Approved) — प्रवेशपत्र जारी गर्ने</option>
+                          <option value="कागजात अपूरो (Action Required)">कागजात अपूरो (Action Required) — सच्याउन / पुनः अपलोड अनुरोध</option>
                           <option value="अस्वीकृत (Rejected)">अस्वीकृत (Rejected) — मापदण्ड नपुगेको</option>
                           <option value="विचाराधीन (Pending)">विचाराधीन (Pending) — थप छानबिन</option>
                         </select>
                       </div>
+
+                      {verifyForm.status.includes('कागजात अपूरो') && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid #fde68a', background: '#fffbeb', padding: '0.75rem', borderRadius: '8px' }}>
+                          <div className="rec-field-group">
+                            <label className="rec-label" style={{ color: '#92400e', fontWeight: 800 }}>
+                              ⚠️ सच्याउनुपर्ने व्यहोरा / प्रशासकीय निर्देशन (Correction Instructions):
+                            </label>
+                            <textarea
+                              rows={3}
+                              required
+                              placeholder="उदा: अध्यापन अनुमति पत्र अस्पष्ट भएकाले स्पष्ट स्क्यान कपी पुनः अपलोड गर्नुहोला वा नागरिकताको पछाडिको भाग अस्पष्ट छ।"
+                              value={verifyForm.rejectionReason}
+                              onChange={(e) => setVerifyForm({ ...verifyForm, rejectionReason: e.target.value })}
+                              className="rec-input-control"
+                              style={{ borderColor: '#f59e0b', background: '#ffffff', fontSize: '0.84rem' }}
+                            />
+                            <div style={{ fontSize: '0.72rem', color: '#b45309', marginTop: '0.25rem' }}>
+                              * यो निर्देशन उम्मेदवारले आफ्नो प्रवेशपत्र/स्थिति ट्र्याकिङ पोर्टलमा हेरी सोही कागजात मात्र सुरक्षित रूपमा पुनः अपलोड गर्न सक्नेछन्।
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {verifyForm.status.includes('स्वीकृत') && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid #e2e8f0' }}>
@@ -5637,6 +5890,170 @@ return (
                   </div>
                 </CentralDocumentSheet>
               )}
+            </CentralPrintPreviewModal>
+
+            {/* ─── MODAL 5: EXAM ATTENDANCE & VERIFICATION SHEET PREVIEW ─── */}
+            <CentralPrintPreviewModal
+              isOpen={showAttendanceSheetModal}
+              onClose={() => setShowAttendanceSheetModal(false)}
+              title="परीक्षा हल उम्मेदवार हाजिरी तथा रुजु फारम (Exam Hall Attendance Sheet) - A4"
+              targetElementId="printable-attendance-sheet"
+            >
+              {selectedAttendanceVacancy && (() => {
+                const vacApps = applications.filter(a =>
+                  (a.vacancyId === selectedAttendanceVacancy.id ||
+                   a.vacancy_id === selectedAttendanceVacancy.id ||
+                   a.vacancyNo === (selectedAttendanceVacancy.vacancyNo || selectedAttendanceVacancy.vacancy_no) ||
+                   a.vacancy_no === (selectedAttendanceVacancy.vacancyNo || selectedAttendanceVacancy.vacancy_no)) &&
+                  (a.status?.includes('स्वीकृत') || a.status?.includes('Approved') || a.status?.includes('विचाराधीन'))
+                );
+
+                return (
+                  <CentralDocumentSheet
+                    id="printable-attendance-sheet"
+                    palikaName={dynamicPalikaName}
+                    palikaNameEn={dynamicPalikaNameEn}
+                    localGovType="स्थानीय सरकार"
+                    officeTitle={dynamicOfficeTitle}
+                    location={dynamicAddress}
+                    provinceCountry={dynamicProvinceCountry}
+                    establishedYear="२०७३"
+                    activeFiscalYear="२०८३/०८४"
+                    patraSankhya="२०८३/०८४"
+                    chalaniNo={selectedAttendanceVacancy.vacancyNo || selectedAttendanceVacancy.vacancy_no || '०४/२०८३/०८४'}
+                    branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                    documentTitle="परीक्षा हल उम्मेदवार हाजिरी तथा रुजु फारम (Attendance & Verification Sheet)"
+                    slogan={dynamicSlogan}
+                    website={dynamicWebsite}
+                    email={dynamicEmail}
+                    phone={dynamicPhone}
+                    logoUrl={dynamicPalikaLogo}
+                    emblemUrl={dynamicEmblemUrl}
+                    dateBs="२०८३/०८/०५"
+                    dateAd="2026-11-20"
+                    showWatermark={true}
+                    showFooter={true}
+                  >
+                    <div style={{ padding: '0.75rem 0.25rem' }}>
+                      {/* Vacancy Info Box */}
+                      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0.75rem', fontSize: '0.8rem', border: '1px solid #94a3b8' }}>
+                        <tbody>
+                          <tr style={{ background: '#f8fafc' }}>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', width: '15%', fontWeight: 700 }}>विज्ञापन नं.:</td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', width: '35%', fontWeight: 800, color: '#0369a1' }}>
+                              {selectedAttendanceVacancy.vacancyNo || selectedAttendanceVacancy.vacancy_no}
+                            </td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', width: '15%', fontWeight: 700 }}>पद, तह र सेवा:</td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', width: '35%', fontWeight: 800 }}>
+                              {selectedAttendanceVacancy.title} | {selectedAttendanceVacancy.level} | {selectedAttendanceVacancy.serviceGroup}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', fontWeight: 700 }}>परीक्षा मिति र समय:</td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', fontWeight: 800, color: '#dc2626' }}>
+                              {selectedAttendanceVacancy.examDateBs || selectedAttendanceVacancy.exam_date_bs || 'तोकिएको सूचना बमोजिम'}
+                            </td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', fontWeight: 700 }}>परीक्षा केन्द्र:</td>
+                            <td style={{ padding: '5px 8px', border: '1px solid #cbd5e1', fontWeight: 700 }}>
+                              {selectedAttendanceVacancy.examCenter || 'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      {/* Candidates Attendance Table */}
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', border: '1px solid #334155' }}>
+                        <thead>
+                          <tr style={{ background: '#e2e8f0', color: '#0f172a', textAlign: 'center', fontWeight: 800 }}>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 3px', width: '30px' }}>क्र.सं.</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '90px' }}>रोल नं. / दरखास्त नं.</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 6px', textAlign: 'left' }}>उम्मेदवारको नाम र ठेगाना</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '80px' }}>नागरिकता / फोन</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '50px' }}>तस्बिर</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '95px' }}>उम्मेदवारको दस्तखत</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '70px' }}>उत्तरपुस्तिका नं.</th>
+                            <th style={{ border: '1px solid #64748b', padding: '5px 4px', width: '75px' }}>निरीक्षक दस्तखत</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {vacApps.length === 0 ? (
+                            <tr>
+                              <td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: '#64748b', border: '1px solid #cbd5e1' }}>
+                                यस विज्ञापनमा स्वीकृत उम्मेदवारहरू उपलब्ध छैनन्।
+                              </td>
+                            </tr>
+                          ) : (
+                            vacApps.map((cand, idx) => (
+                              <tr key={cand.id || idx} style={{ borderBottom: '1px solid #cbd5e1', height: '54px' }}>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 700 }}>{idx + 1}</td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontFamily: 'monospace' }}>
+                                  <div style={{ fontWeight: 800, color: '#1e3a8a' }}>{cand.admitCardRollNo || cand.admit_card_roll_no || 'रजिष्टर्ड'}</div>
+                                  <div style={{ fontSize: '0.66rem', color: '#64748b' }}>{cand.applicationNo || cand.application_no}</div>
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', padding: '4px 6px' }}>
+                                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{cand.fullNameNp || cand.full_name_np}</div>
+                                  <div style={{ fontSize: '0.7rem', color: '#475569' }}>{cand.fullNameEn || cand.full_name_en}</div>
+                                  <div style={{ fontSize: '0.66rem', color: '#64748b' }}>वडा नं. {cand.wardNo || cand.ward_no || '६'}, सिन्धुपाल्चोक</div>
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontSize: '0.7rem' }}>
+                                  <div style={{ fontWeight: 600 }}>{cand.citizenshipNo || cand.citizenship_no}</div>
+                                  <div style={{ color: '#0284c7', fontSize: '0.68rem' }}>{cand.phone}</div>
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', padding: '2px' }}>
+                                  {cand.photoDocUrl || cand.photo_doc_url ? (
+                                    <img
+                                      src={cand.photoDocUrl || cand.photo_doc_url}
+                                      alt="Photo"
+                                      style={{ width: '38px', height: '46px', objectFit: 'cover', borderRadius: '3px', margin: '0 auto', display: 'block' }}
+                                    />
+                                  ) : (
+                                    <div style={{ width: '36px', height: '44px', border: '1px dashed #94a3b8', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.58rem', color: '#94a3b8' }}>
+                                      फोटो
+                                    </div>
+                                  )}
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', verticalAlign: 'bottom', paddingBottom: '4px' }}>
+                                  <div style={{ borderBottom: '1px dotted #94a3b8', margin: '0 4px', height: '32px' }}></div>
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                  <div style={{ borderBottom: '1px dotted #94a3b8', margin: '0 4px', height: '22px' }}></div>
+                                </td>
+                                <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', verticalAlign: 'bottom', paddingBottom: '4px' }}>
+                                  <div style={{ borderBottom: '1px dotted #94a3b8', margin: '0 4px', height: '22px' }}></div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+
+                      {/* Selection Committee / Invigilator Sign-off Blocks */}
+                      <div style={{ marginTop: '2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', textAlign: 'center', paddingTop: '1.25rem', borderTop: '1px solid #cbd5e1' }}>
+                        <div>
+                          <div style={{ borderBottom: '1px dashed #64748b', height: '36px', marginBottom: '4px' }}></div>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, display: 'block' }}>सहायक केन्द्राध्यक्ष / निरीक्षक</span>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>परीक्षा हल</span>
+                        </div>
+                        <div>
+                          <div style={{ borderBottom: '1px dashed #64748b', height: '36px', marginBottom: '4px' }}></div>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, display: 'block' }}>केन्द्राध्यक्ष (दस्तखत/छाप)</span>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>परीक्षा केन्द्र</span>
+                        </div>
+                        <div>
+                          <div style={{ borderBottom: '1px dashed #64748b', height: '36px', marginBottom: '4px' }}></div>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, display: 'block' }}>सदस्य-सचिव</span>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>पदपूर्ति उपसमिति</span>
+                        </div>
+                        <div>
+                          <div style={{ borderBottom: '1px dashed #64748b', height: '36px', marginBottom: '4px' }}></div>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, display: 'block' }}>संयोजक / अध्यक्ष</span>
+                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>पदपूर्ति तथा छनोट समिति</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CentralDocumentSheet>
+                );
+              })()}
             </CentralPrintPreviewModal>
 
             {/* ─── MODAL: DOCUMENT PREVIEW MODAL ─── */}

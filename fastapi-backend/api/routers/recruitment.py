@@ -36,6 +36,7 @@ from schemas.recruitment import (
     JobApplicationCreate,
     JobApplicationUpdate,
     ApplicationVerificationUpdate,
+    CandidateDocumentResubmitRequest,
     PaymentInitiateRequest,
     PaymentInitiateResponse,
     PaymentVerifyRequest,
@@ -1585,6 +1586,94 @@ def verify_job_application(
     )
 
     return app
+
+
+@router.post("/applications/{application_id}/resubmit-document")
+def resubmit_candidate_document(
+    application_id: str,
+    payload: CandidateDocumentResubmitRequest,
+    request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    """
+    उम्मेदवारद्वारा अपूरो कागजात मात्र सुरक्षित रूपमा पुनः अपलोड गर्ने सुविधा (Correction Window).
+    व्यक्तिगत विवरण, पद र आवेदन शुल्क अपरिवर्तनीय रहन्छ।
+    """
+    cond = [JobApplication.application_no == application_id]
+    if is_valid_uuid(application_id) or len(application_id) > 10:
+        cond.append(JobApplication.id == application_id)
+
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
+
+    # सुरक्षा प्रमाणीकरण (Security Verification): दर्ता भएको फोन वा नागरिकता मिलेको हुनुपर्छ
+    auth_input = (payload.phone_or_citizenship or '').strip()
+    cand_phone = (app.phone or '').strip()
+    cand_cit = (app.citizenship_no or '').strip()
+    if auth_input != cand_phone and auth_input != cand_cit:
+        raise HTTPException(
+            status_code=403, 
+            detail="सुरक्षा प्रमाणीकरण असफल: दरखास्तमा दर्ता भएको फोन वा नागरिकता नम्बर प्रविष्ट गर्नुहोस्।"
+        )
+
+    # सम्बन्धित कागजात अद्यावधिक गर्ने
+    dt = payload.doc_type
+    doc_label = dt
+    if dt in ('teaching_license', 'teaching_license_doc_url'):
+        app.teaching_license_doc_url = payload.new_doc_url
+        doc_label = "अध्यापन अनुमति पत्र"
+    elif dt in ('application_letter', 'application_letter_doc_url'):
+        app.application_letter_doc_url = payload.new_doc_url
+        doc_label = "निवेदन"
+    elif dt in ('qualification', 'qualification_doc_url'):
+        app.qualification_doc_url = payload.new_doc_url
+        doc_label = "शैक्षिक योग्यता"
+    elif dt in ('citizenship_front', 'citizenship_doc_url'):
+        app.citizenship_doc_url = payload.new_doc_url
+        doc_label = "नागरिकता (अगाडि)"
+    elif dt in ('citizenship_back', 'citizenship_back_doc_url'):
+        app.citizenship_back_doc_url = payload.new_doc_url
+        doc_label = "नागरिकता (पछाडि)"
+    elif dt in ('voucher', 'payment_voucher_url'):
+        app.payment_voucher_url = payload.new_doc_url
+        doc_label = "राजस्व भौचर"
+    elif dt in ('photo', 'photo_doc_url'):
+        app.photo_doc_url = payload.new_doc_url
+        doc_label = "पासपोर्ट फोटो"
+    else:
+        # Default fallback
+        app.qualification_doc_url = payload.new_doc_url
+        doc_label = dt
+
+    # अवस्था स्वतः पुनः पेश (Resubmitted / Pending Review) मा परिवर्तन
+    app.status = "पुनः पेश (Resubmitted / Pending Review)"
+    prev_notes = app.rejection_reason or ""
+    correction_note = f"[उम्मेदवारद्वारा {doc_label} पुनः पेश गरिएको: {payload.candidate_remarks or 'सच्याइएको कागजात संलग्न'}]"
+    app.rejection_reason = f"{prev_notes}\n{correction_note}".strip()
+
+    db.commit()
+    db.refresh(app)
+
+    record_audit(
+        db=db,
+        entity_type="APPLICATION",
+        entity_id=app.application_no,
+        action="DOC_RESUBMITTED",
+        performed_by=f"CANDIDATE:{app.application_no}",
+        details=f"Document re-uploaded: {doc_label}. Status set to Resubmitted.",
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app.tenant_id
+    )
+
+    return {
+        "success": True,
+        "message": f"{doc_label} सफलतापूर्वक पुनः पेश भयो। प्रशासनबाट रुजु गरिनेछ।",
+        "applicationNo": app.application_no,
+        "status": app.status,
+        "updatedDocUrl": payload.new_doc_url
+    }
 
 
 @router.put("/applications/{application_id}", response_model=JobApplicationSchema)

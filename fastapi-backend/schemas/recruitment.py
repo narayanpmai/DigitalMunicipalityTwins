@@ -162,6 +162,16 @@ class ApplicationVerificationUpdate(BaseModel):
         populate_by_name = True
 
 
+class CandidateDocumentResubmitRequest(BaseModel):
+    phone_or_citizenship: str = Field(..., alias="phoneOrCitizenship")
+    doc_type: str = Field(..., alias="docType") # 'teaching_license' | 'application_letter' | 'qualification' | 'citizenship_front' | 'citizenship_back' | 'voucher' | 'photo'
+    new_doc_url: str = Field(..., alias="newDocUrl")
+    candidate_remarks: Optional[str] = Field(None, alias="candidateRemarks")
+
+    class Config:
+        populate_by_name = True
+
+
 class VacancyAnnouncementUpdate(BaseModel):
     vacancy_no: Optional[str] = Field(None, alias="vacancyNo")
     title: Optional[str] = None
