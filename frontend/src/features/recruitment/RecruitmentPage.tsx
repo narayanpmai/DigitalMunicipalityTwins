@@ -3660,14 +3660,22 @@ return (
                           <div className="rec-admit-signatures" style={{ marginTop: '0.75rem', padding: '0 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                             {/* Candidate Signature */}
                             <div style={{ textAlign: 'center', minWidth: '160px' }}>
-                              <div style={{ height: '36px' }}></div>
+                              <div style={{ height: '42px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '2px' }}>
+                                {admitCardResult.application.signatureUrl || admitCardResult.application.signature_url ? (
+                                  <img
+                                    src={admitCardResult.application.signatureUrl || admitCardResult.application.signature_url}
+                                    alt="उम्मेदवारको हस्ताक्षर"
+                                    style={{ maxHeight: '40px', maxWidth: '145px', objectFit: 'contain' }}
+                                  />
+                                ) : null}
+                              </div>
                               <div className="rec-sig-line" style={{ width: '160px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
                               <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a' }}>उम्मेदवारको हस्ताक्षर</span>
                             </div>
 
                             {/* Committee / CAO Signature & Stamp Area */}
                             <div style={{ textAlign: 'center', minWidth: '220px' }}>
-                              <div style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <span style={{ fontSize: '0.66rem', color: '#94a3b8', fontStyle: 'italic' }}>[ हस्ताक्षर तथा कार्यालयको छाप ]</span>
                               </div>
                               <div className="rec-sig-line" style={{ width: '220px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
@@ -5631,14 +5639,22 @@ return (
                     <div className="rec-admit-signatures" style={{ marginTop: '0.75rem', padding: '0 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       {/* Candidate Signature */}
                       <div style={{ textAlign: 'center', minWidth: '160px' }}>
-                        <div style={{ height: '36px' }}></div>
+                        <div style={{ height: '42px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '2px' }}>
+                          {admitCardResult.application.signatureUrl || admitCardResult.application.signature_url ? (
+                            <img
+                              src={admitCardResult.application.signatureUrl || admitCardResult.application.signature_url}
+                              alt="उम्मेदवारको हस्ताक्षर"
+                              style={{ maxHeight: '40px', maxWidth: '145px', objectFit: 'contain' }}
+                            />
+                          ) : null}
+                        </div>
                         <div className="rec-sig-line" style={{ width: '160px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
                         <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f172a' }}>उम्मेदवारको हस्ताक्षर</span>
                       </div>
 
                       {/* Committee / CAO Signature & Stamp Area */}
                       <div style={{ textAlign: 'center', minWidth: '220px' }}>
-                        <div style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <span style={{ fontSize: '0.66rem', color: '#94a3b8', fontStyle: 'italic' }}>[ हस्ताक्षर तथा कार्यालयको छाप ]</span>
                         </div>
                         <div className="rec-sig-line" style={{ width: '220px', borderTop: 'none', borderBottom: '1.5px solid #1e293b', margin: '0 auto 0.35rem auto' }}></div>
