@@ -758,6 +758,7 @@ def submit_or_draft_application(
         passed_year_bs=data.passed_year_bs,
         division_gpa=data.division_gpa,
         council_reg_no=data.council_reg_no,
+        teaching_license_no=data.teaching_license_no,
         experience_years=data.experience_years or 0,
         inclusive_categories=data.inclusive_categories,
         payment_method=data.payment_method or "Fonepay QR / ConnectIPS / eSewa",
@@ -769,6 +770,8 @@ def submit_or_draft_application(
         signature_url=data.signature_url,
         citizenship_doc_url=data.citizenship_doc_url,
         qualification_doc_url=data.qualification_doc_url,
+        application_letter_doc_url=data.application_letter_doc_url,
+        teaching_license_doc_url=data.teaching_license_doc_url,
         council_doc_url=data.council_doc_url,
         experience_doc_url=data.experience_doc_url,
         payment_voucher_doc_url=data.payment_voucher_doc_url,
@@ -1718,6 +1721,26 @@ def onboard_candidate_to_hrms(
             "fileUrl": app.qualification_doc_url,
             "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
             "remarks": f"बोर्ड/विश्वविद्यालय: {app.board_university or '-'}, श्रेणी: {app.division_gpa or '-'}"
+        })
+    if app.application_letter_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": "निवेदन (Application Letter)",
+            "type": "other",
+            "fileName": os.path.basename(app.application_letter_doc_url) if "/" in app.application_letter_doc_url else "nivedan.pdf",
+            "fileUrl": app.application_letter_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": "हस्तलिखित/टाइप निवेदन"
+        })
+    if app.teaching_license_doc_url:
+        docs_list.append({
+            "id": str(uuid.uuid4()),
+            "title": "अध्यापन अनुमति पत्र (Teaching License)",
+            "type": "tor",
+            "fileName": os.path.basename(app.teaching_license_doc_url) if "/" in app.teaching_license_doc_url else "teaching_license.pdf",
+            "fileUrl": app.teaching_license_doc_url,
+            "uploadedAtBs": data.appointment_date_bs or "२०८१-०८-०१",
+            "remarks": f"अध्यापन अनुमति पत्र नं: {app.teaching_license_no or '-'}"
         })
     if app.council_doc_url:
         docs_list.append({

@@ -50,6 +50,7 @@ class JobApplication(Base):
     passed_year_bs = Column(String, nullable=True)
     division_gpa = Column(String, nullable=True)
     council_reg_no = Column(String, nullable=True)
+    teaching_license_no = Column(String, nullable=True)
     experience_years = Column(Integer, default=0)
     inclusive_categories = Column(String, nullable=True) # e.g. "महिला, आदिवासी/जनजाति"
     
@@ -75,6 +76,8 @@ class JobApplication(Base):
     signature_url = Column(String, nullable=True)
     citizenship_doc_url = Column(String, nullable=True)
     qualification_doc_url = Column(String, nullable=True)
+    application_letter_doc_url = Column(String, nullable=True)
+    teaching_license_doc_url = Column(String, nullable=True)
     council_doc_url = Column(String, nullable=True)
     experience_doc_url = Column(String, nullable=True)
     payment_voucher_doc_url = Column(String, nullable=True)

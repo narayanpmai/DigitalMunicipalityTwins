@@ -140,6 +140,8 @@ interface Application {
   division_gpa?: string;
   councilRegNo?: string;
   council_reg_no?: string;
+  teachingLicenseNo?: string;
+  teaching_license_no?: string;
   experienceYears?: number;
   experience_years?: number;
   inclusiveCategories?: string;
@@ -173,6 +175,10 @@ interface Application {
   citizenship_doc_url?: string;
   qualificationDocUrl?: string;
   qualification_doc_url?: string;
+  applicationLetterDocUrl?: string;
+  application_letter_doc_url?: string;
+  teachingLicenseDocUrl?: string;
+  teaching_license_doc_url?: string;
   councilDocUrl?: string;
   council_doc_url?: string;
   experienceDocUrl?: string;
@@ -391,8 +397,10 @@ export const RecruitmentPage: React.FC = () => {
     return [
       { key: 'photo', label: 'पासपोर्ट साइजको फोटो', fileTag: 'फोटो_Photo', url: app.photoUrl || app.photo_url, isImg: true },
       { key: 'signature', label: 'उम्मेदवारको दस्तखत', fileTag: 'दस्तखत_Signature', url: app.signatureUrl || app.signature_url, isImg: true },
+      { key: 'applicationLetter', label: 'निवेदन (Application Letter)', fileTag: 'निवेदन_Nivedan', url: app.applicationLetterDocUrl || app.application_letter_doc_url },
       { key: 'citizenship', label: 'नेपाली नागरिकता प्रमाणपत्र', fileTag: 'नागरिकता_Citizenship', url: app.citizenshipDocUrl || app.citizenship_doc_url },
       { key: 'qualification', label: 'शैक्षिक प्रमाणपत्र / लब्धाङ्क', fileTag: 'शैक्षिक_योग्यता_Qualification', url: app.qualificationDocUrl || app.qualification_doc_url },
+      { key: 'teachingLicense', label: 'अध्यापन अनुमति पत्र', fileTag: 'अध्यापन_अनुमति_पत्र_TeachingLicense', url: app.teachingLicenseDocUrl || app.teaching_license_doc_url },
       { key: 'council', label: 'काउन्सिल दर्ता प्रमाणपत्र', fileTag: 'काउन्सिल_दर्ता_Council', url: app.councilDocUrl || app.council_doc_url },
       { key: 'experience', label: 'कार्य अनुभव तथा तालिम', fileTag: 'कार्य_अनुभव_Experience', url: app.experienceDocUrl || app.experience_doc_url },
       { key: 'voucher', label: 'राजस्व भौचर / बैंक रसिद', fileTag: 'राजस्व_भौचर_Voucher', url: app.paymentVoucherDocUrl || app.payment_voucher_doc_url },
@@ -541,11 +549,14 @@ export const RecruitmentPage: React.FC = () => {
     passedYearBs: '२०७८',
     divisionGpa: 'प्रथम (First)',
     councilRegNo: '',
+    teachingLicenseNo: '',
     experienceYears: 1,
     photoUrl: '',
     signatureUrl: '',
     citizenshipDocUrl: '',
     qualificationDocUrl: '',
+    applicationLetterDocUrl: '',
+    teachingLicenseDocUrl: '',
     councilDocUrl: '',
     experienceDocUrl: '',
     paymentVoucherDocUrl: '',
@@ -876,6 +887,12 @@ const handleProceedToPayment = async () => {
     return;
   }
 
+  const isTeacherPost = (selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक');
+  if (isTeacherPost && !applyForm.teachingLicenseDocUrl) {
+    alert('शिक्षक पदको लागि अध्यापन अनुमति पत्र (Teaching License) अनिवार्य छ। कृपया अध्यापन अनुमति पत्रको प्रतिलिपि अपलोड गर्नुहोस्।');
+    return;
+  }
+
   try {
     const payload = {
       vacancyId: applyForm.vacancyId,
@@ -896,6 +913,7 @@ const handleProceedToPayment = async () => {
       passedYearBs: applyForm.passedYearBs,
       divisionGpa: applyForm.divisionGpa,
       councilRegNo: applyForm.councilRegNo,
+      teachingLicenseNo: applyForm.teachingLicenseNo,
       experienceYears: applyForm.experienceYears,
       inclusiveCategories: applyForm.selectedInclusive.join(', '),
       paymentMethod: selectedGateway,
@@ -903,6 +921,8 @@ const handleProceedToPayment = async () => {
       signatureUrl: applyForm.signatureUrl,
       citizenshipDocUrl: applyForm.citizenshipDocUrl,
       qualificationDocUrl: applyForm.qualificationDocUrl,
+      applicationLetterDocUrl: applyForm.applicationLetterDocUrl,
+      teachingLicenseDocUrl: applyForm.teachingLicenseDocUrl,
       councilDocUrl: applyForm.councilDocUrl,
       experienceDocUrl: applyForm.experienceDocUrl,
       paymentVoucherDocUrl: applyForm.paymentVoucherDocUrl,
@@ -2546,6 +2566,19 @@ return (
                 </div>
 
                 <div className="rec-field-group">
+                  <label className="rec-label">
+                    अध्यापन अनुमति पत्र नं {(selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक') ? <span className="rec-req">*</span> : '(लागू भएमा)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="शिक्षक सेवा आयोग अनुमति पत्र नं"
+                    value={applyForm.teachingLicenseNo}
+                    onChange={(e) => setApplyForm({ ...applyForm, teachingLicenseNo: e.target.value })}
+                    className="rec-input-control"
+                  />
+                </div>
+
+                <div className="rec-field-group">
                   <label className="rec-label">सम्बन्धित अनुभव (वर्ष)</label>
                   <input
                     type="number"
@@ -2668,6 +2701,116 @@ return (
                       <label className="rec-doc-upload-trigger">
                         <UploadCloud size={16} /> <span>शैक्षिक लब्धाङ्क छनोट</span>
                         <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('qualificationDocUrl', e)} style={{ display: 'none' }} />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* 5. Application Letter / Nivedan */}
+                  <div className={`rec-doc-box ${applyForm.applicationLetterDocUrl ? 'has-file' : ''}`}>
+                    <div className="rec-doc-header">
+                      <div className="rec-doc-icon-badge">
+                        {applyForm.applicationLetterDocUrl ? <CheckCircle2 size={20} color="#059669" /> : <FileText size={18} />}
+                      </div>
+                      <div className="rec-doc-info">
+                        <h4 className="rec-doc-title">निवेदन (Application Letter) <span className="rec-req">*</span></h4>
+                        <p className="rec-doc-subtitle">हस्तलिखित वा टाइप निवेदन (PDF/JPG)</p>
+                      </div>
+                    </div>
+                    {applyForm.applicationLetterDocUrl ? (
+                      <div className="rec-doc-preview-area">
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1' }}>निवेदन संलग्न छ</span>
+                        <div className="rec-doc-actions">
+                          <a href={applyForm.applicationLetterDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn">हेर्नुहोस्</a>
+                          <button type="button" onClick={() => handleRemoveFile('applicationLetterDocUrl')} className="rec-doc-remove-btn">हटाउनुहोस्</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="rec-doc-upload-trigger">
+                        <UploadCloud size={16} /> <span>निवेदन छनोट गर्नुहोस्</span>
+                        <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('applicationLetterDocUrl', e)} style={{ display: 'none' }} />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* 6. Teaching License */}
+                  <div className={`rec-doc-box ${applyForm.teachingLicenseDocUrl ? 'has-file' : ''}`}>
+                    <div className="rec-doc-header">
+                      <div className="rec-doc-icon-badge">
+                        {applyForm.teachingLicenseDocUrl ? <CheckCircle2 size={20} color="#059669" /> : <Award size={18} />}
+                      </div>
+                      <div className="rec-doc-info">
+                        <h4 className="rec-doc-title">
+                          अध्यापन अनुमति पत्र {(selectedVacancy?.level || '').includes('शिक्षक') || (applyForm.postTitle || '').includes('शिक्षक') ? <span className="rec-req">*</span> : <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>(शिक्षक पदको लागि)</span>}
+                        </h4>
+                        <p className="rec-doc-subtitle">शिक्षक सेवा आयोगबाट जारी अनुमति पत्र</p>
+                      </div>
+                    </div>
+                    {applyForm.teachingLicenseDocUrl ? (
+                      <div className="rec-doc-preview-area">
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1' }}>अनुमति पत्र संलग्न छ</span>
+                        <div className="rec-doc-actions">
+                          <a href={applyForm.teachingLicenseDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn">हेर्नुहोस्</a>
+                          <button type="button" onClick={() => handleRemoveFile('teachingLicenseDocUrl')} className="rec-doc-remove-btn">हटाउनुहोस्</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="rec-doc-upload-trigger">
+                        <UploadCloud size={16} /> <span>अनुमति पत्र छनोट</span>
+                        <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('teachingLicenseDocUrl', e)} style={{ display: 'none' }} />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* 7. Council Certificate (Optional / Technical) */}
+                  <div className={`rec-doc-box ${applyForm.councilDocUrl ? 'has-file' : ''}`}>
+                    <div className="rec-doc-header">
+                      <div className="rec-doc-icon-badge">
+                        {applyForm.councilDocUrl ? <CheckCircle2 size={20} color="#059669" /> : <ShieldCheck size={18} />}
+                      </div>
+                      <div className="rec-doc-info">
+                        <h4 className="rec-doc-title">काउन्सिल दर्ता प्रमाणपत्र <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>(लागू हुने पदमा)</span></h4>
+                        <p className="rec-doc-subtitle">NEC / NNC / स्वास्थ्य काउन्सिल (PDF/JPG)</p>
+                      </div>
+                    </div>
+                    {applyForm.councilDocUrl ? (
+                      <div className="rec-doc-preview-area">
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1' }}>काउन्सिल प्रमाणपत्र संलग्न</span>
+                        <div className="rec-doc-actions">
+                          <a href={applyForm.councilDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn">हेर्नुहोस्</a>
+                          <button type="button" onClick={() => handleRemoveFile('councilDocUrl')} className="rec-doc-remove-btn">हटाउनुहोस्</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="rec-doc-upload-trigger">
+                        <UploadCloud size={16} /> <span>काउन्सिल प्रमाणपत्र छनोट</span>
+                        <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('councilDocUrl', e)} style={{ display: 'none' }} />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* 8. Experience / Training */}
+                  <div className={`rec-doc-box ${applyForm.experienceDocUrl ? 'has-file' : ''}`}>
+                    <div className="rec-doc-header">
+                      <div className="rec-doc-icon-badge">
+                        {applyForm.experienceDocUrl ? <CheckCircle2 size={20} color="#059669" /> : <FileText size={18} />}
+                      </div>
+                      <div className="rec-doc-info">
+                        <h4 className="rec-doc-title">कार्य अनुभव तथा तालिम <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>(ऐच्छिक)</span></h4>
+                        <p className="rec-doc-subtitle">अनुभव वा तालिमका प्रमाणपत्रहरू</p>
+                      </div>
+                    </div>
+                    {applyForm.experienceDocUrl ? (
+                      <div className="rec-doc-preview-area">
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1' }}>अनुभव प्रमाणपत्र संलग्न</span>
+                        <div className="rec-doc-actions">
+                          <a href={applyForm.experienceDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn">हेर्नुहोस्</a>
+                          <button type="button" onClick={() => handleRemoveFile('experienceDocUrl')} className="rec-doc-remove-btn">हटाउनुहोस्</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="rec-doc-upload-trigger">
+                        <UploadCloud size={16} /> <span>अनुभव/तालिम छनोट</span>
+                        <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('experienceDocUrl', e)} style={{ display: 'none' }} />
                       </label>
                     )}
                   </div>
@@ -2810,22 +2953,25 @@ return (
                 </div>
               </div>
 
-              {/* Gateway Active Screen */}
+              {/* Gateway Active Screen: Official NIMB Revenue Transfer */}
               {selectedGateway === 'FONEPAY' && (
-                <div className="rec-qr-display-card">
+                <div className="rec-qr-display-card" style={{ maxWidth: '540px', margin: '0 auto', textAlign: 'left' }}>
                   {/* Bank & Account Official Banner */}
-                  <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '0.75rem', textAlign: 'left' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e40af', fontWeight: 800, fontSize: '0.82rem' }}>
-                      <Landmark size={15} />
-                      <span>नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) — राजस्व खाता</span>
+                  <div style={{ background: '#eff6ff', border: '2px solid #93c5fd', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e40af', fontWeight: 800, fontSize: '0.92rem' }}>
+                      <Landmark size={20} />
+                      <span>नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) — गाउँपालिका आन्तरिक राजस्व खाता</span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#334155', marginTop: '0.25rem' }}>
-                      खातावाला: <strong>GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA</strong>
+                    <div style={{ fontSize: '0.8rem', color: '#1e293b', marginTop: '0.4rem', lineHeight: 1.5 }}>
+                      खातावालाको नाम: <strong>GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA</strong>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.35rem', paddingTop: '0.35rem', borderTop: '1px dashed #cbd5e1' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>खाता नम्बर:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 900, color: '#0f172a', fontSize: '0.95rem', letterSpacing: '0.5px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#334155', marginTop: '0.2rem' }}>
+                      शाखा: <strong>पाँचपोखरी थाङपाल शाखा, सिन्धुपाल्चोक</strong>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #93c5fd' }}>
+                      <span style={{ fontSize: '0.82rem', color: '#1e40af', fontWeight: 700 }}>आधिकारिक खाता नम्बर:</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 900, color: '#0f172a', fontSize: '1.15rem', letterSpacing: '1px' }}>
                           18301400000109
                         </span>
                         <button
@@ -2834,58 +2980,88 @@ return (
                             navigator.clipboard.writeText('18301400000109');
                             alert('NIMB खाता नं 18301400000109 कपी भयो!');
                           }}
-                          style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '0.15rem 0.4rem', fontSize: '0.68rem', cursor: 'pointer', color: '#0284c7', fontWeight: 700 }}
+                          style={{ background: '#1d4ed8', border: 'none', borderRadius: '6px', padding: '0.25rem 0.65rem', fontSize: '0.74rem', cursor: 'pointer', color: '#ffffff', fontWeight: 700 }}
                         >
-                          कपी
+                          कपी गर्नुहोस्
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: '#0284c7', fontWeight: 800, fontSize: '0.88rem' }}>
-                    <QrCode size={18} />
-                    <span>NIMB / Fonepay Dynamic QR स्क्यान गरी भुक्तानी गर्नुहोस्</span>
-                  </div>
-
-                  {dynamicQrUrl ? (
-                    <img src={dynamicQrUrl} alt="Fonepay Dynamic QR" className="rec-qr-code-img" />
-                  ) : (
-                    <div style={{ height: '210px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Loader2 size={32} className="animate-spin" color="#0284c7" />
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.82rem', color: '#64748b' }}>दाखिला गर्नुपर्ने दस्तुर रकम:</span>
+                      <strong style={{ fontSize: '1.25rem', color: '#15803d' }}>
+                        रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-
+                      </strong>
                     </div>
-                  )}
-
-                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#15803d' }}>
-                    रकम: रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    कारोबार संकेत: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{activePaymentTxn?.transaction_uuid || activePaymentTxn?.transactionUuid}</span>
+                    <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                      कारोबार संकेत: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{activePaymentTxn?.transaction_uuid || activePaymentTxn?.transactionUuid}</span>
+                    </div>
                   </div>
 
-                  <div className="rec-qr-timer-pill">
-                    <Clock size={13} />
-                    <span>समय बाँकी: {Math.floor(paymentTimerSeconds / 60)}:{String(paymentTimerSeconds % 60).padStart(2, '0')} मिनेट</span>
+                  {/* Payment Instructions */}
+                  <div style={{ background: '#fefce8', border: '1px solid #fef08a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.78rem', color: '#713f12' }}>
+                    <strong style={{ display: 'block', marginBottom: '0.35rem', color: '#854d0e', fontSize: '0.82rem' }}>
+                      📌 रकम दाखिला गर्ने तरिका (Payment Instructions):
+                    </strong>
+                    <ol style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.6 }}>
+                      <li>आफ्नो जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart, NIC Asia MoBank, Nabil Smart, आदि) वा <strong>ConnectIPS / eSewa</strong> खोल्नुहोस्।</li>
+                      <li><strong>'Fund Transfer'</strong> वा <strong>'Send Money'</strong> मा गई माथिको खाता नम्बर (<strong>18301400000109</strong>) मा रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} ट्रान्सफर गर्नुहोस् (वा बैंक काउन्टरमा भौचर दाखिला गर्नुहोस्)।</li>
+                      <li><strong>Remarks</strong> मा आफ्नो नाम र दरखास्त नम्बर (<strong>{savedDraftApp?.applicationNo || savedDraftApp?.application_no}</strong>) उल्लेख गर्नुहोस्।</li>
+                      <li>भुक्तानी सम्पन्न भएपछि प्राप्त <strong>कारोबार संकेत (Transaction ID / भौचर नं.)</strong> तल राखी भौचर/स्क्रिनसट अपलोड गर्नुहोस्।</li>
+                    </ol>
                   </div>
 
-                  <p style={{ fontSize: '0.78rem', color: '#475569', marginTop: '0.75rem', lineHeight: 1.4 }}>
-                    नेपालका सम्पूर्ण वाणिज्य तथा विकास बैंकहरूको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart Plus, NIC Asia MoBank, Nabil Smart, आदि) वा <strong>eSewa/Khalti</strong> बाट यो QR स्क्यान गरी पिन हानेर भुक्तानी स्वीकृत गर्नुहोस्।
-                  </p>
+                  {/* Voucher Upload & Input */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <div>
+                      <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                        कारोबार / भौचर नम्बर (Txn / Voucher ID)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="उदा: TXN-12345 वा भौचर नं"
+                        value={applyForm.paymentVoucherNo || ''}
+                        onChange={(e) => setApplyForm({ ...applyForm, paymentVoucherNo: e.target.value })}
+                        className="rec-input-control"
+                        style={{ padding: '0.45rem 0.65rem', fontSize: '0.82rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                        भौचर / स्क्रिनसट (Payment Receipt)
+                      </label>
+                      {applyForm.paymentVoucherDocUrl ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '36px' }}>
+                          <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>संलग्न छ</span>
+                          <a href={applyForm.paymentVoucherDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हेर्नुहोस्</a>
+                          <button type="button" onClick={() => handleRemoveFile('paymentVoucherDocUrl')} className="rec-doc-remove-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हटाउनुहोस्</button>
+                        </div>
+                      ) : (
+                        <label className="rec-doc-upload-trigger" style={{ padding: '0.35rem 0.65rem', minHeight: '36px', height: '36px', fontSize: '0.76rem' }}>
+                          <UploadCloud size={14} /> <span>भौचर अपलोड</span>
+                          <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('paymentVoucherDocUrl', e)} style={{ display: 'none' }} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
 
                   <button
                     onClick={handleVerifyPayment}
                     disabled={isVerifyingPayment}
                     className="rec-btn rec-btn-success"
-                    style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem', justifyContent: 'center', marginTop: '1rem' }}
+                    style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem', justifyContent: 'center' }}
                   >
                     {isVerifyingPayment ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        भुक्तानी रुजु गरिँदैछ...
+                        दरखास्त रुजुका लागि दर्ता गरिँदैछ...
                       </>
                     ) : (
                       <>
                         <CheckCircle size={18} />
-                        मैले भुक्तानी सम्पन्न गरें (Verify & Confirm)
+                        मैले रकम दाखिला गरें — दरखास्त सुरक्षित गर्नुहोस् (Confirm & Submit)
                       </>
                     )}
                   </button>
@@ -3634,14 +3810,28 @@ return (
                           </label>
                           <select
                             value={vacancyForm.level}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, level: e.target.value })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const isTeacher = val.includes('शिक्षक');
+                              setVacancyForm({
+                                ...vacancyForm,
+                                level: val,
+                                serviceGroup: isTeacher && (!vacancyForm.serviceGroup || vacancyForm.serviceGroup === 'प्रशासन / प्राविधिक') ? 'नेपाल शिक्षा सेवा / शिक्षक' : vacancyForm.serviceGroup
+                              });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
                             <option value="सहायक चौथो (4th Level)">सहायक चौथो (4th Level)</option>
                             <option value="सहायक पाँचौं (5th Level)">सहायक पाँचौं (5th Level)</option>
                             <option value="अधिकृत छैटौं (6th Level)">अधिकृत छैटौं (6th Level)</option>
+                            <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
+                            <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
                             <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
+                            {/* शिक्षक सेवाका तहहरू */}
+                            <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५)</option>
+                            <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८)</option>
+                            <option value="शिक्षक मावी">शिक्षक मावी</option>
                           </select>
                         </div>
                       </div>
@@ -3991,7 +4181,15 @@ return (
                           </label>
                           <select
                             value={editVacancyForm.level}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, level: e.target.value })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const isTeacher = val.includes('शिक्षक');
+                              setEditVacancyForm({
+                                ...editVacancyForm,
+                                level: val,
+                                serviceGroup: isTeacher && (!editVacancyForm.serviceGroup || editVacancyForm.serviceGroup === 'प्रशासन / प्राविधिक') ? 'नेपाल शिक्षा सेवा / शिक्षक' : editVacancyForm.serviceGroup
+                              });
+                            }}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           >
@@ -4001,6 +4199,10 @@ return (
                             <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>
                             <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
                             <option value="श्रेणीविहीन (Unranked)">श्रेणीविहीन (Unranked)</option>
+                            {/* शिक्षक सेवाका तहहरू */}
+                            <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५)</option>
+                            <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८)</option>
+                            <option value="शिक्षक मावी">शिक्षक मावी</option>
                           </select>
                         </div>
                       </div>
@@ -4826,6 +5028,9 @@ return (
                                 <option value="अधिकृत सातौं (Officer 7th)">अधिकृत सातौं (Officer 7th)</option>
                                 <option value="अधिकृत आठौं (Officer 8th)">अधिकृत आठौं (Officer 8th)</option>
                                 <option value="श्रेणीविहीन (Non-Classified)">श्रेणीविहीन (Non-Classified)</option>
+                                <option value="शिक्षक आ.वि. (१-५)">शिक्षक आ.वि. (१-५)</option>
+                                <option value="शिक्षक निमावी (६-८)">शिक्षक निमावी (६-८)</option>
+                                <option value="शिक्षक मावी">शिक्षक मावी</option>
                               </select>
                             </div>
 
