@@ -1268,65 +1268,67 @@ return (
         )}
       </div>
 
-      {/* Real-time Summary KPI Cards */}
-      <div className="rec-stats-grid">
-        <div className="rec-stat-card">
-          <div className="rec-stat-label">
-            <span>कुल विज्ञापनहरू</span>
-            <Briefcase size={16} color="#7dd3fc" />
+      {/* Real-time Summary KPI Cards - Visible only in Administrative View */}
+      {!isPublicView && (
+        <div className="rec-stats-grid">
+          <div className="rec-stat-card">
+            <div className="rec-stat-label">
+              <span>कुल विज्ञापनहरू</span>
+              <Briefcase size={16} color="#7dd3fc" />
+            </div>
+            <div className="rec-stat-value">
+              {summary?.total_vacancies ?? vacancies.length}
+            </div>
+            <div className="rec-stat-sub rec-stat-emerald">
+              खुला: {summary?.active_vacancies ?? vacancies.filter(v => v.status.includes('खुला')).length} पद
+            </div>
           </div>
-          <div className="rec-stat-value">
-            {summary?.total_vacancies ?? vacancies.length}
-          </div>
-          <div className="rec-stat-sub rec-stat-emerald">
-            खुला: {summary?.active_vacancies ?? vacancies.filter(v => v.status.includes('खुला')).length} पद
-          </div>
-        </div>
 
-        <div className="rec-stat-card">
-          <div className="rec-stat-label">
-            <span>कुल दरखास्त परेको</span>
-            <FileText size={16} color="#fde68a" />
+          <div className="rec-stat-card">
+            <div className="rec-stat-label">
+              <span>कुल दरखास्त परेको</span>
+              <FileText size={16} color="#fde68a" />
+            </div>
+            <div className="rec-stat-value rec-stat-amber">
+              {summary?.total_applications ?? applications.length}
+            </div>
+            <div className="rec-stat-sub rec-stat-amber">उम्मेदवारहरू दर्ता</div>
           </div>
-          <div className="rec-stat-value rec-stat-amber">
-            {summary?.total_applications ?? applications.length}
-          </div>
-          <div className="rec-stat-sub rec-stat-amber">उम्मेदवारहरू दर्ता</div>
-        </div>
 
-        <div className="rec-stat-card">
-          <div className="rec-stat-label">
-            <span>शुल्क भुक्तानी सम्पन्न</span>
-            <Receipt size={16} color="#34d399" />
+          <div className="rec-stat-card">
+            <div className="rec-stat-label">
+              <span>शुल्क भुक्तानी सम्पन्न</span>
+              <Receipt size={16} color="#34d399" />
+            </div>
+            <div className="rec-stat-value rec-stat-emerald">
+              {summary?.paid_applications ?? 0}
+            </div>
+            <div className="rec-stat-sub rec-stat-emerald">रसिद जारी भएको</div>
           </div>
-          <div className="rec-stat-value rec-stat-emerald">
-            {summary?.paid_applications ?? 0}
-          </div>
-          <div className="rec-stat-sub rec-stat-emerald">रसिद जारी भएको</div>
-        </div>
 
-        <div className="rec-stat-card">
-          <div className="rec-stat-label">
-            <span>संकलित दस्तुर राजस्व</span>
-            <DollarSign size={16} color="#a7f3d0" />
+          <div className="rec-stat-card">
+            <div className="rec-stat-label">
+              <span>संकलित दस्तुर राजस्व</span>
+              <DollarSign size={16} color="#a7f3d0" />
+            </div>
+            <div className="rec-stat-value rec-stat-sky">
+              रु. {Number(summary?.total_revenue || 0).toLocaleString('ne-NP')}
+            </div>
+            <div className="rec-stat-sub" style={{ color: '#93c5fd' }}>राजस्व शीर्षक १४२२९</div>
           </div>
-          <div className="rec-stat-value rec-stat-sky">
-            रु. {Number(summary?.total_revenue || 0).toLocaleString('ne-NP')}
-          </div>
-          <div className="rec-stat-sub" style={{ color: '#93c5fd' }}>राजस्व शीर्षक १४२२९</div>
-        </div>
 
-        <div className="rec-stat-card">
-          <div className="rec-stat-label">
-            <span>प्रवेशपत्र जारी (स्वीकृत)</span>
-            <CheckCircle size={16} color="#6ee7b7" />
+          <div className="rec-stat-card">
+            <div className="rec-stat-label">
+              <span>प्रवेशपत्र जारी (स्वीकृत)</span>
+              <CheckCircle size={16} color="#6ee7b7" />
+            </div>
+            <div className="rec-stat-value rec-stat-emerald">
+              {summary?.approved_applications ?? applications.filter(a => a.status.includes('स्वीकृत')).length}
+            </div>
+            <div className="rec-stat-sub rec-stat-emerald">परीक्षा योग्य उम्मेदवार</div>
           </div>
-          <div className="rec-stat-value rec-stat-emerald">
-            {summary?.approved_applications ?? applications.filter(a => a.status.includes('स्वीकृत')).length}
-          </div>
-          <div className="rec-stat-sub rec-stat-emerald">परीक्षा योग्य उम्मेदवार</div>
         </div>
-      </div>
+      )}
     </div>
 
     {/* 2. NAVIGATION TABS */}
