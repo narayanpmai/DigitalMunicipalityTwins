@@ -619,6 +619,27 @@ def update_vacancy(
             )
         ).update(app_sync, synchronize_session=False)
 
+    # Sync fee updates to all unpaid applications linked to this vacancy
+    if "application_fee" in update_dict or "inclusive_group_fee" in update_dict:
+        new_base = float(vac.application_fee if vac.application_fee is not None else 500.0)
+        new_inc = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        unpaid_apps = db.query(JobApplication).filter(
+            or_(
+                JobApplication.vacancy_id == vac.id,
+                JobApplication.vacancy_no == vac.vacancy_no
+            ),
+            JobApplication.payment_status != "PAID"
+        ).all()
+        for u_app in unpaid_apps:
+            cats = [c.strip() for c in (u_app.inclusive_categories or "").split(",") if c.strip()]
+            inclusive_count = max(0, len(cats) - 1) if "खुला" in cats else len(cats)
+            new_total = new_base + (inclusive_count * new_inc)
+            u_app.paid_amount = new_total
+            db.query(RecruitmentPayment).filter(
+                RecruitmentPayment.application_no == u_app.application_no,
+                RecruitmentPayment.status.in_(["INITIATED", "PENDING_VERIFICATION"])
+            ).update({"amount": new_total}, synchronize_session=False)
+
     db.commit()
     db.refresh(vac)
 
@@ -831,14 +852,23 @@ def initiate_payment(
             detail=f"यो दरखास्तको शुल्क पहिले नै भुक्तानी भइसकेको छ (रसिद नं: {app.receipt_no})।"
         )
 
-    # Determine amount
+    # Determine amount: Always dynamically compute from active vacancy rates for unpaid applications
     vac = db.query(VacancyAnnouncement).filter(
         or_(
             VacancyAnnouncement.id == app.vacancy_id,
             VacancyAnnouncement.vacancy_no == app.vacancy_no
         )
     ).first()
-    amount = float(app.paid_amount or (vac.application_fee if vac else 500.0))
+    if vac and app.payment_status != "PAID":
+        base_fee = float(vac.application_fee if vac.application_fee is not None else 500.0)
+        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        cats = [c.strip() for c in (app.inclusive_categories or "").split(",") if c.strip()]
+        inclusive_count = max(0, len(cats) - 1) if "खुला" in cats else len(cats)
+        amount = base_fee + (inclusive_count * inc_fee)
+        app.paid_amount = amount
+        db.commit()
+    else:
+        amount = float(app.paid_amount or (vac.application_fee if vac else 500.0))
 
     txn_uuid = f"TXN-REC-{datetime.datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
     gateway_name = data.gateway.upper()
@@ -1226,6 +1256,16 @@ def retry_payment(
         )
     ).first()
 
+    amount = float(app.paid_amount or 500.0)
+    if vac and app.payment_status != "PAID":
+        base_fee = float(vac.application_fee if vac.application_fee is not None else 500.0)
+        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        cats = [c.strip() for c in (app.inclusive_categories or "").split(",") if c.strip()]
+        inclusive_count = max(0, len(cats) - 1) if "खुला" in cats else len(cats)
+        amount = base_fee + (inclusive_count * inc_fee)
+        app.paid_amount = amount
+        db.commit()
+
     return {
         "already_paid": False,
         "can_retry": True,
@@ -1233,7 +1273,7 @@ def retry_payment(
         "full_name": app.full_name_np,
         "post_title": app.post_title,
         "vacancy_no": app.vacancy_no,
-        "amount": float(app.paid_amount or (vac.application_fee if vac else 500.0)),
+        "amount": amount,
         "message": "तपाईं नयाँ भुक्तानी माध्यम छनोट गरी पुनः भुक्तानी गर्न सक्नुहुन्छ।"
     }
 

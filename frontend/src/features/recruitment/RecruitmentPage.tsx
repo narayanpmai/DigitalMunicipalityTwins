@@ -403,6 +403,7 @@ export const RecruitmentPage: React.FC = () => {
   const [previewDoc, setPreviewDoc] = useState<{ url: string; label: string; isImg?: boolean } | null>(null);
   const [isZipping, setIsZipping] = useState(false);
   const [downloadingDocKey, setDownloadingDocKey] = useState<string | null>(null);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
 
   const getAppDocuments = (app: Application | null) => {
     if (!app) return [];
@@ -499,6 +500,72 @@ export const RecruitmentPage: React.FC = () => {
       alert('कागजातहरू जिप गर्दा समस्या आयो। कृपया व्यक्तिगत कागजात डाउनलोड गर्नुहोस्।');
     } finally {
       setIsZipping(false);
+    }
+  };
+
+  // Full-featured Excel Report Export (with Backend JWT + Client-side SheetJS Fallback)
+  const handleExportExcel = async () => {
+    try {
+      setIsExportingExcel(true);
+      // 1. Try backend authenticated download with JWT token via api client
+      const response: any = await api.get('/recruitment/export-excel', { responseType: 'blob' });
+      const blob = new Blob([response.data || response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `PTRM_Recruitment_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.warn('Backend excel export failed, falling back to client-side SheetJS XLSX:', err);
+      // 2. Client-side SheetJS export using active applications
+      try {
+        const appsToExport = (filteredApplications && filteredApplications.length > 0) ? filteredApplications : applications;
+        if (!appsToExport || appsToExport.length === 0) {
+          alert('डाउनलोड गर्नका लागि कुनै दरखास्त फेला परेन।');
+          return;
+        }
+        const excelRows = appsToExport.map((a, idx) => ({
+          'क्र.सं.': idx + 1,
+          'दरखास्त नं': a.applicationNo || a.application_no || '-',
+          'विज्ञापन नं': a.vacancyNo || a.vacancy_no || '-',
+          'पद': a.postTitle || a.post_title || '-',
+          'उम्मेदवारको नाम': a.fullNameNp || a.full_name_np || '-',
+          'अंग्रेजी नाम': a.fullNameEn || a.full_name_en || '-',
+          'लिङ्ग': a.gender || 'पुरुष',
+          'सम्पर्क फोन': a.contactPhone || a.contact_phone || '-',
+          'इमेल': a.email || '-',
+          'नागरिकता नं': a.citizenshipNo || a.citizenship_no || '-',
+          'जारी जिल्ला': a.citizenshipDistrict || a.citizenship_district || '-',
+          'स्थायी ठेगाना': a.permanentAddress || a.permanent_address || '-',
+          'शैक्षिक योग्यता': a.qualificationTitle || a.qualification_title || '-',
+          'शिक्षण संस्था / बोर्ड': a.boardUniversity || a.board_university || '-',
+          'उत्तीर्ण साल (वि.सं.)': a.passedYearBs || a.passed_year_bs || '-',
+          'श्रेणी / GPA': a.divisionGpa || a.division_gpa || '-',
+          'अध्यापन अनुमति पत्र नं': a.teachingLicenseNo || a.teaching_license_no || '-',
+          'काउन्सिल दर्ता नं': a.councilRegNo || a.council_reg_no || '-',
+          'कार्य अनुभव (वर्ष)': a.experienceYears || a.experience_years || 0,
+          'समावेशी समूह': a.inclusiveCategories || a.inclusive_categories || 'खुला',
+          'भुक्तानी अवस्था': a.paymentStatus || a.payment_status || 'UNPAID',
+          'दाखिला रकम (रु.)': a.paidAmount || (a as any).paid_amount || 0,
+          'रसिद नं': a.receiptNo || a.receipt_no || '-',
+          'कारोबार / भौचर नं': a.paymentVoucherNo || a.payment_voucher_no || '-',
+          'दरखास्त निर्णय स्थिति': a.status || 'विचाराधीन (Pending)',
+          'रोल नम्बर': a.admitCardRollNo || a.admit_card_roll_no || '-',
+          'परीक्षा केन्द्र': a.examCenter || a.exam_center || '-'
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelRows);
+        XLSX.utils.book_append_sheet(wb, ws, 'दरखास्त_फारम_विवरण');
+        XLSX.writeFile(wb, `PTRM_Recruitment_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      } catch (clientErr: any) {
+        alert('Excel फाइल डाउनलोड गर्न सकिएन: ' + (clientErr.message || err.message));
+      }
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
@@ -718,47 +785,7 @@ export const RecruitmentPage: React.FC = () => {
     }
   };
 
-  // Calculate live application fee
-  const calculatedFee = React.useMemo(() => {
-    const base = Number(applyForm.baseFee || 500);
-    const incFee = Number(applyForm.inclusiveGroupFee || 200);
-    const extraCount = applyForm.selectedInclusive.filter(c => c !== 'खुला').length;
-    return base + (extraCount * incFee);
-  }, [applyForm.baseFee, applyForm.inclusiveGroupFee, applyForm.selectedInclusive]);
-
-  // QR Code Generator Effect for NIMB Account 18301400000109 with Official Fonepay EMVCo Standee Payload
-  useEffect(() => {
-    const rawQr = activePaymentTxn?.qr_data || activePaymentTxn?.qrData || activePaymentTxn?.parameters?.qrData;
-    // Official Fonepay EMVCo static QR payload extracted from the official NIMB standee PDF:
-    // Merchant: GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA, A/C: 18301400000109, TID: 2222440022188201
-    const officialFonepayPayload = '0002010102110216122230002218820926400011fonepay.com07162222440022188201110115204939953035245802NP5959GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA6013PANCH POKHARI6211070722810926304df2a';
-    const finalQrString = (rawQr && rawQr.startsWith('00020101')) ? rawQr : officialFonepayPayload;
-
-    QRCode.toDataURL(finalQrString, {
-      width: 280,
-      margin: 1,
-      color: { dark: '#0f172a', light: '#ffffff' }
-    })
-      .then(url => {
-        setDynamicQrUrl(url);
-      })
-      .catch(err => {
-        console.error('QR generation error:', err);
-      });
-  }, [activePaymentTxn, savedDraftApp, calculatedFee, wizardStep]);
-
-// Payment Countdown Timer
-useEffect(() => {
-  let interval: any = null;
-  if (wizardStep === 4 && activePaymentTxn && paymentTimerSeconds > 0) {
-    interval = setInterval(() => {
-      setPaymentTimerSeconds(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-  }
-  return () => clearInterval(interval);
-}, [wizardStep, activePaymentTxn, paymentTimerSeconds]);
-
-// Document Upload Handler
+  // Document Upload Handler
 const handleFileUpload = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -841,6 +868,60 @@ const isTeacherPost = useMemo(
   ),
   [selectedVacancy, applyForm.postTitle]
 );
+
+// Calculate live application fee (always priorities active vacancy fee if edited)
+const calculatedFee = useMemo(() => {
+  const base = Number(selectedVacancy?.applicationFee || (selectedVacancy as any)?.application_fee || applyForm.baseFee || 500);
+  const incFee = Number(selectedVacancy?.inclusiveGroupFee || (selectedVacancy as any)?.inclusive_group_fee || applyForm.inclusiveGroupFee || 200);
+  const extraCount = applyForm.selectedInclusive.filter(c => c !== 'खुला').length;
+  return base + (extraCount * incFee);
+}, [selectedVacancy, applyForm.baseFee, applyForm.inclusiveGroupFee, applyForm.selectedInclusive]);
+
+// Keep applyForm base fee automatically in sync with the selected vacancy
+useEffect(() => {
+  if (selectedVacancy) {
+    const vFee = Number(selectedVacancy.applicationFee || (selectedVacancy as any).application_fee || 500);
+    const incFee = Number(selectedVacancy.inclusiveGroupFee || (selectedVacancy as any).inclusive_group_fee || 200);
+    setApplyForm(prev => {
+      if (prev.baseFee !== vFee || prev.inclusiveGroupFee !== incFee) {
+        return { ...prev, baseFee: vFee, inclusiveGroupFee: incFee };
+      }
+      return prev;
+    });
+  }
+}, [selectedVacancy]);
+
+// QR Code Generator Effect for NIMB Account 18301400000109 with Official Fonepay EMVCo Standee Payload
+useEffect(() => {
+  const rawQr = activePaymentTxn?.qr_data || activePaymentTxn?.qrData || activePaymentTxn?.parameters?.qrData;
+  // Official Fonepay EMVCo static QR payload extracted from the official NIMB standee PDF:
+  // Merchant: GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA, A/C: 18301400000109, TID: 2222440022188201
+  const officialFonepayPayload = '0002010102110216122230002218820926400011fonepay.com07162222440022188201110115204939953035245802NP5959GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA6013PANCH POKHARI6211070722810926304df2a';
+  const finalQrString = (rawQr && rawQr.startsWith('00020101')) ? rawQr : officialFonepayPayload;
+
+  QRCode.toDataURL(finalQrString, {
+    width: 280,
+    margin: 1,
+    color: { dark: '#0f172a', light: '#ffffff' }
+  })
+    .then(url => {
+      setDynamicQrUrl(url);
+    })
+    .catch(err => {
+      console.error('QR generation error:', err);
+    });
+}, [activePaymentTxn, savedDraftApp, calculatedFee, wizardStep]);
+
+// Payment Countdown Timer
+useEffect(() => {
+  let interval: any = null;
+  if (wizardStep === 4 && activePaymentTxn && paymentTimerSeconds > 0) {
+    interval = setInterval(() => {
+      setPaymentTimerSeconds(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+  }
+  return () => clearInterval(interval);
+}, [wizardStep, activePaymentTxn, paymentTimerSeconds]);
 
 // 3. Applications
 const { data: applications = [], isLoading: isAppsLoading, refetch: refetchApps } = useQuery<Application[]>({
@@ -1239,11 +1320,14 @@ return (
         ) : (
           <div className="rec-hero-actions">
             <button
-              onClick={() => window.open('/api/v1/recruitment/export-excel', '_blank')}
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isExportingExcel}
               className="rec-btn rec-btn-success"
+              title="सम्पूर्ण दरखास्त तथा पदपूर्ति विवरण Excel मा डाउनलोड गर्नुहोस्"
             >
-              <FileSpreadsheet size={16} />
-              Excel रिपोर्ट
+              {isExportingExcel ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
+              <span>{isExportingExcel ? 'तयार हुँदैछ...' : 'Excel रिपोर्ट'}</span>
             </button>
             <button onClick={() => setShowAddVacancyModal(true)} className="rec-btn rec-btn-primary">
               <Plus size={16} />
@@ -1762,12 +1846,15 @@ return (
               <RefreshCw size={16} />
             </button>
             <button
-              onClick={() => window.open('/api/v1/recruitment/export-excel', '_blank')}
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isExportingExcel}
               className="rec-btn rec-btn-success"
               style={{ fontSize: '0.8rem', padding: '0.55rem 0.95rem' }}
+              title="दरखास्त सूची Excel फाइलमा डाउनलोड गर्नुहोस्"
             >
-              <Download size={15} />
-              Excel डाउनलोड
+              {isExportingExcel ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+              <span>{isExportingExcel ? 'डाउनलोड हुँदैछ...' : 'Excel डाउनलोड'}</span>
             </button>
           </div>
         </div>
@@ -3035,7 +3122,7 @@ return (
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <strong style={{ fontSize: '1.45rem', color: '#15803d', fontWeight: 900 }}>
-                          रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-
+                          रु. {Number(calculatedFee || activePaymentTxn?.amount || 500).toLocaleString('ne-NP')} /-
                         </strong>
                       </div>
                     </div>
@@ -3145,7 +3232,7 @@ return (
                       <ol style={{ margin: 0, paddingLeft: '1.15rem' }}>
                         <li>आफ्नो जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart, NIC Asia, Nabil, आदि) वा <strong>eSewa / connectIPS</strong> खोल्नुहोस्।</li>
                         <li><strong>QR स्क्यान</strong> गर्नुहोस् (वा Fund Transfer मा खाता नं <strong>18301400000109</strong> राख्नुहोस्)।</li>
-                        <li>रकम <strong>रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-</strong> र Remarks मा <strong>{savedDraftApp?.applicationNo || 'PTRM-2083-XXXX'}</strong> राखी भुक्तानी सम्पन्न गर्नुहोस्।</li>
+                        <li>रकम <strong>रु. {Number(calculatedFee || activePaymentTxn?.amount || 500).toLocaleString('ne-NP')} /-</strong> र Remarks मा <strong>{savedDraftApp?.applicationNo || 'PTRM-2083-XXXX'}</strong> राखी भुक्तानी सम्पन्न गर्नुहोस्।</li>
                         <li>भुक्तानी सम्पन्न भएपछि प्राप्त <strong>कारोबार संकेत (Transaction ID / Ref No)</strong> र भौचर/स्क्रिनसट तल राखी पेश गर्नुहोस्।</li>
                       </ol>
                     </div>
