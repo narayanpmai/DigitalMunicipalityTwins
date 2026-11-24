@@ -611,7 +611,7 @@ export const RecruitmentPage: React.FC = () => {
     vacancyNo: '',
     postTitle: '',
     baseFee: 500,
-    inclusiveGroupFee: 200,
+    inclusiveGroupFee: 0,
     selectedInclusive: ['खुला'] as string[],
     fullNameNp: '',
     fullNameEn: '',
@@ -663,7 +663,7 @@ export const RecruitmentPage: React.FC = () => {
     openingsCount: 1,
     employmentType: 'करार सेवा (Contract)',
     applicationFee: 500,
-    inclusiveGroupFee: 200,
+    inclusiveGroupFee: 0,
     minQualification: '',
     publishDateBs: '२०८३-०५-०१',
     deadlineDateBs: '२०८३-०५-२५',
@@ -683,7 +683,7 @@ export const RecruitmentPage: React.FC = () => {
     openingsCount: 1,
     employmentType: 'करार सेवा (Contract)',
     applicationFee: 500,
-    inclusiveGroupFee: 200,
+    inclusiveGroupFee: 0,
     minQualification: '',
     publishDateBs: '२०८३-०५-०१',
     deadlineDateBs: '२०८३-०५-२५',
@@ -704,7 +704,7 @@ export const RecruitmentPage: React.FC = () => {
       openingsCount: Number(vac.openingsCount || vac.openings_count || 1),
       employmentType: vac.employmentType || vac.employment_type || 'करार सेवा (Contract)',
       applicationFee: Number(vac.applicationFee || (vac as any).application_fee || 500),
-      inclusiveGroupFee: Number(vac.inclusiveGroupFee || (vac as any).inclusive_group_fee || 200),
+      inclusiveGroupFee: Number(vac.inclusiveGroupFee || (vac as any).inclusive_group_fee || 0),
       minQualification: vac.minQualification || vac.min_qualification || '',
       publishDateBs: vac.publishDateBs || vac.publish_date_bs || '',
       deadlineDateBs: vac.deadlineDateBs || vac.deadline_date_bs || '',
@@ -872,19 +872,27 @@ const isTeacherPost = useMemo(
 // Calculate live application fee (always priorities active vacancy fee if edited)
 const calculatedFee = useMemo(() => {
   const base = Number(selectedVacancy?.applicationFee || (selectedVacancy as any)?.application_fee || applyForm.baseFee || 500);
-  const incFee = Number(selectedVacancy?.inclusiveGroupFee || (selectedVacancy as any)?.inclusive_group_fee || applyForm.inclusiveGroupFee || 200);
-  const extraCount = applyForm.selectedInclusive.filter(c => c !== 'खुला').length;
-  return base + (extraCount * incFee);
-}, [selectedVacancy, applyForm.baseFee, applyForm.inclusiveGroupFee, applyForm.selectedInclusive]);
+  return base;
+}, [selectedVacancy, applyForm.baseFee]);
+
+// Actual payable amount (always prioritizes server payment transaction or saved draft app amount)
+const payableAmount = useMemo(() => {
+  return Number(
+    activePaymentTxn?.amount ??
+    savedDraftApp?.paidAmount ??
+    (savedDraftApp as any)?.paid_amount ??
+    (savedDraftApp as any)?.amount ??
+    (selectedVacancy ? calculatedFee : (applyForm.baseFee || 500))
+  );
+}, [activePaymentTxn, savedDraftApp, selectedVacancy, calculatedFee, applyForm.baseFee]);
 
 // Keep applyForm base fee automatically in sync with the selected vacancy
 useEffect(() => {
   if (selectedVacancy) {
     const vFee = Number(selectedVacancy.applicationFee || (selectedVacancy as any).application_fee || 500);
-    const incFee = Number(selectedVacancy.inclusiveGroupFee || (selectedVacancy as any).inclusive_group_fee || 200);
     setApplyForm(prev => {
-      if (prev.baseFee !== vFee || prev.inclusiveGroupFee !== incFee) {
-        return { ...prev, baseFee: vFee, inclusiveGroupFee: incFee };
+      if (prev.baseFee !== vFee || prev.inclusiveGroupFee !== 0) {
+        return { ...prev, baseFee: vFee, inclusiveGroupFee: 0 };
       }
       return prev;
     });
@@ -1118,6 +1126,7 @@ const handlePayPendingLookup = async (appNo: string) => {
     if (data.already_paid) {
       await handleFetchReceipt(appNo);
     } else {
+      const matchVac = vacancies.find(v => v.vacancyNo === data.vacancy_no || (v as any).vacancy_no === data.vacancy_no);
       setSavedDraftApp({
         ...data,
         applicationNo: data.application_no,
@@ -1126,6 +1135,15 @@ const handlePayPendingLookup = async (appNo: string) => {
         vacancyNo: data.vacancy_no,
         paidAmount: data.amount,
       } as any);
+      setApplyForm(prev => ({
+        ...prev,
+        vacancyId: matchVac?.id || prev.vacancyId,
+        vacancyNo: data.vacancy_no || prev.vacancyNo,
+        postTitle: data.post_title || prev.postTitle,
+        baseFee: Number(data.amount || matchVac?.applicationFee || (matchVac as any)?.application_fee || 500),
+        inclusiveGroupFee: 0,
+        fullNameNp: data.full_name || prev.fullNameNp
+      }));
       await handleInitiatePaymentForApp(data.application_no, 'FONEPAY');
       setActiveTab('apply');
       setWizardStep(4);
@@ -1232,7 +1250,7 @@ const handleApplyToVacancy = (vac: Vacancy) => {
     vacancyNo: vac.vacancyNo || vac.vacancy_no || '',
     postTitle: vac.title || '',
     baseFee: Number(vac.applicationFee || (vac as any).application_fee || 500),
-    inclusiveGroupFee: Number(vac.inclusiveGroupFee || (vac as any).inclusive_group_fee || 200),
+    inclusiveGroupFee: 0,
     selectedInclusive: ['खुला']
   }));
   setWizardStep(1);
@@ -1683,10 +1701,6 @@ return (
                       <div className="rec-matrix-item">
                         <span className="rec-matrix-label">आधार दरखास्त शुल्क:</span>
                         <span className="rec-matrix-val">रु. {fee} /-</span>
-                      </div>
-                      <div className="rec-matrix-item">
-                        <span className="rec-matrix-label">समावेशी थप शुल्क:</span>
-                        <span className="rec-matrix-val">रु. {incFee} / समूह</span>
                       </div>
                       <div className="rec-matrix-item">
                         <span className="rec-matrix-label">अन्तिम मिति:</span>
@@ -2423,7 +2437,7 @@ return (
                       vacancyNo: selected ? (selected.vacancyNo || selected.vacancy_no || '') : '',
                       postTitle: selected ? selected.title : '',
                       baseFee: Number(selected?.applicationFee || (selected as any)?.application_fee || 500),
-                      inclusiveGroupFee: Number(selected?.inclusiveGroupFee || (selected as any)?.inclusive_group_fee || 200)
+                      inclusiveGroupFee: 0
                     }));
                   }}
                   className="rec-input-control"
@@ -2444,7 +2458,7 @@ return (
                     समावेशी समूह छनोट गर्नुहोस् (लागू हुने समूहमा चिन्ह लगाउनुहोस्):
                   </label>
                   <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0.2rem 0 0.75rem 0' }}>
-                    आधारभूत शुल्कमा प्रत्येक अतिरिक्त समावेशी समूहका लागि रु. {applyForm.inclusiveGroupFee} थप हुनेछ।
+                    गाउँपालिकाको नियमानुसार समावेशी समूहका लागि कुनै अतिरिक्त शुल्क लाग्ने छैन (एकमुष्ट आधार दरखास्त शुल्क मात्र)।
                   </p>
 
                   <div className="rec-inclusive-grid">
@@ -3115,14 +3129,12 @@ return (
                           दाखिला गर्नुपर्ने कुल दरखास्त दस्तुर:
                         </span>
                         <span style={{ fontSize: '0.72rem', color: '#15803d' }}>
-                          {applyForm.selectedInclusive.length > 1
-                            ? `(मूल दस्तुर रु. ${applyForm.baseFee || 500} + थप समावेशी रु. ${(applyForm.selectedInclusive.length - 1) * (applyForm.inclusiveGroupFee || 200)})`
-                            : 'राजस्व शीर्षक १४२२९ (परीक्षा दस्तुर)'}
+                          राजस्व शीर्षक १४२२९ (परीक्षा दस्तुर)
                         </span>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <strong style={{ fontSize: '1.45rem', color: '#15803d', fontWeight: 900 }}>
-                          रु. {Number(calculatedFee || activePaymentTxn?.amount || 500).toLocaleString('ne-NP')} /-
+                          रु. {payableAmount.toLocaleString('ne-NP')} /-
                         </strong>
                       </div>
                     </div>
@@ -3232,7 +3244,7 @@ return (
                       <ol style={{ margin: 0, paddingLeft: '1.15rem' }}>
                         <li>आफ्नो जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart, NIC Asia, Nabil, आदि) वा <strong>eSewa / connectIPS</strong> खोल्नुहोस्।</li>
                         <li><strong>QR स्क्यान</strong> गर्नुहोस् (वा Fund Transfer मा खाता नं <strong>18301400000109</strong> राख्नुहोस्)।</li>
-                        <li>रकम <strong>रु. {Number(calculatedFee || activePaymentTxn?.amount || 500).toLocaleString('ne-NP')} /-</strong> र Remarks मा <strong>{savedDraftApp?.applicationNo || 'PTRM-2083-XXXX'}</strong> राखी भुक्तानी सम्पन्न गर्नुहोस्।</li>
+                        <li>रकम <strong>रु. {payableAmount.toLocaleString('ne-NP')} /-</strong> र Remarks मा <strong>{savedDraftApp?.applicationNo || 'PTRM-2083-XXXX'}</strong> राखी भुक्तानी सम्पन्न गर्नुहोस्।</li>
                         <li>भुक्तानी सम्पन्न भएपछि प्राप्त <strong>कारोबार संकेत (Transaction ID / Ref No)</strong> र भौचर/स्क्रिनसट तल राखी पेश गर्नुहोस्।</li>
                       </ol>
                     </div>
@@ -4315,8 +4327,8 @@ return (
                         </div>
                       </div>
 
-                      {/* Row 3: Fees & Dates (4 Columns) */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                      {/* Row 3: Fees & Dates (3 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
                         <div className="rec-field-group">
                           <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
                             आधार दरखास्त दस्तुर (रु.) <span className="rec-req">*</span>
@@ -4328,22 +4340,6 @@ return (
                             required
                             value={vacancyForm.applicationFee}
                             onChange={(e) => setVacancyForm({ ...vacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
-                            className="rec-input-control"
-                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
-                            समावेशी थप शुल्क (रु.) <span className="rec-req">*</span>
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="50"
-                            required
-                            value={vacancyForm.inclusiveGroupFee}
-                            onChange={(e) => setVacancyForm({ ...vacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />
@@ -4718,8 +4714,8 @@ return (
                         </div>
                       </div>
 
-                      {/* Row 3: Fees & Dates (4 Columns) */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                      {/* Row 3: Fees & Dates (3 Columns) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
                         <div className="rec-field-group">
                           <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
                             आधार दरखास्त शुल्क (रु.) <span className="rec-req">*</span>
@@ -4731,22 +4727,6 @@ return (
                             required
                             value={editVacancyForm.applicationFee}
                             onChange={(e) => setEditVacancyForm({ ...editVacancyForm, applicationFee: parseFloat(e.target.value) || 0 })}
-                            className="rec-input-control"
-                            style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
-                          />
-                        </div>
-
-                        <div className="rec-field-group">
-                          <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.15rem' }}>
-                            समावेशी थप शुल्क (रु.) <span className="rec-req">*</span>
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="50"
-                            required
-                            value={editVacancyForm.inclusiveGroupFee}
-                            onChange={(e) => setEditVacancyForm({ ...editVacancyForm, inclusiveGroupFee: parseFloat(e.target.value) || 0 })}
                             className="rec-input-control"
                             style={{ padding: '0.38rem 0.65rem', fontSize: '0.84rem' }}
                           />

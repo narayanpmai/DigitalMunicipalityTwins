@@ -328,7 +328,7 @@ def export_recruitment_excel(
             v.openings_count,
             v.employment_type,
             float(v.application_fee or 0),
-            float(v.inclusive_group_fee or 200),
+            float(v.inclusive_group_fee if v.inclusive_group_fee is not None else 0.0),
             v.deadline_date_bs
         ]
         ws2.append(row2)
@@ -527,7 +527,7 @@ def create_vacancy(
         openings_count=data.openings_count or 1,
         employment_type=data.employment_type or "करार सेवा (Contract)",
         application_fee=data.application_fee or 500.0,
-        inclusive_group_fee=data.inclusive_group_fee or 200.0,
+        inclusive_group_fee=data.inclusive_group_fee if data.inclusive_group_fee is not None else 0.0,
         min_qualification=data.min_qualification,
         publish_date_bs=data.publish_date_bs,
         deadline_date_bs=data.deadline_date_bs,
@@ -622,7 +622,7 @@ def update_vacancy(
     # Sync fee updates to all unpaid applications linked to this vacancy
     if "application_fee" in update_dict or "inclusive_group_fee" in update_dict:
         new_base = float(vac.application_fee if vac.application_fee is not None else 500.0)
-        new_inc = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        new_inc = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 0.0)
         unpaid_apps = db.query(JobApplication).filter(
             or_(
                 JobApplication.vacancy_id == vac.id,
@@ -745,8 +745,8 @@ def submit_or_draft_application(
     application_no = f"{prefix}-{fy_year}-{count:04d}"
 
     # Calculate total fee: base fee + inclusive category fees
-    base_fee = float(vac.application_fee) if vac and vac.application_fee else 500.0
-    inclusive_fee = float(vac.inclusive_group_fee) if vac and vac.inclusive_group_fee else 200.0
+    base_fee = float(vac.application_fee) if (vac and vac.application_fee is not None) else 500.0
+    inclusive_fee = float(vac.inclusive_group_fee) if (vac and vac.inclusive_group_fee is not None) else 0.0
     
     inclusive_count = 0
     if data.inclusive_categories:
@@ -861,7 +861,7 @@ def initiate_payment(
     ).first()
     if vac and app.payment_status != "PAID":
         base_fee = float(vac.application_fee if vac.application_fee is not None else 500.0)
-        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 0.0)
         cats = [c.strip() for c in (app.inclusive_categories or "").split(",") if c.strip()]
         inclusive_count = max(0, len(cats) - 1) if "खुला" in cats else len(cats)
         amount = base_fee + (inclusive_count * inc_fee)
@@ -1259,7 +1259,7 @@ def retry_payment(
     amount = float(app.paid_amount or 500.0)
     if vac and app.payment_status != "PAID":
         base_fee = float(vac.application_fee if vac.application_fee is not None else 500.0)
-        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 200.0)
+        inc_fee = float(vac.inclusive_group_fee if vac.inclusive_group_fee is not None else 0.0)
         cats = [c.strip() for c in (app.inclusive_categories or "").split(",") if c.strip()]
         inclusive_count = max(0, len(cats) - 1) if "खुला" in cats else len(cats)
         amount = base_fee + (inclusive_count * inc_fee)
