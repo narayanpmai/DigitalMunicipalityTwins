@@ -857,18 +857,21 @@ def initiate_payment(
         prn = app.application_no
         trace_id = txn_uuid
         
-        # Standard EMVCo & Fonepay/NepalPay QR payload for NIMB
-        qr_data = f"fonepay://pay?merchant=NIMB&bank=NIMB&account={account_no}&name=GA+1.1+PANCHPOKHARI+THANGPAL+GA.PA.+AANTARIK+RAJASHO+KHATA&prn={prn}&amount={amount:.2f}&trace={trace_id}&remarks=Recruitment+Fee+{prn}"
+        # Official NIMB Fonepay EMVCo static payload from bank standee PDF
+        qr_data = "0002010102110216122230002218820926400011fonepay.com07162222440022188201110115204939953035245802NP5959GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA6013PANCH POKHARI6211070722810926304df2a"
         params = {
             "bankName": bank_name,
             "accountNumber": account_no,
             "accountName": account_name,
             "merchantName": "गाउँ कार्यपालिकाको कार्यालय, पाँचपोखरी थाङपाल",
             "merchantCode": "NIMB-18301400000109",
+            "terminalId": "2222440022188201",
+            "branch": "पाँचपोखरी थाङपाल (१८३)",
             "prn": prn,
             "traceId": trace_id,
             "amount": amount,
             "qrData": qr_data,
+            "standeeUrl": "/assets/nimb_fonepay_qr_standee.png",
             "expirySeconds": 900
         }
 

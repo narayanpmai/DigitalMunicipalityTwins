@@ -732,7 +732,7 @@ export const RecruitmentPage: React.FC = () => {
     // Official Fonepay EMVCo static QR payload extracted from the official NIMB standee PDF:
     // Merchant: GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA, A/C: 18301400000109, TID: 2222440022188201
     const officialFonepayPayload = '0002010102110216122230002218820926400011fonepay.com07162222440022188201110115204939953035245802NP5959GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA6013PANCH POKHARI6211070722810926304df2a';
-    const finalQrString = rawQr || officialFonepayPayload;
+    const finalQrString = (rawQr && rawQr.startsWith('00020101')) ? rawQr : officialFonepayPayload;
 
     QRCode.toDataURL(finalQrString, {
       width: 280,
@@ -3040,35 +3040,46 @@ return (
                       </div>
                     </div>
 
-                    {/* QR Code + Remarks & Details Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.25rem', alignItems: 'start', marginBottom: '1.25rem' }}>
-                      {/* Left: Official QR Frame */}
-                      <div style={{ textAlign: 'center', background: '#f8fafc', padding: '0.85rem', borderRadius: '12px', border: '1.5px solid #e2e8f0', minWidth: '185px' }}>
-                        <div style={{ background: '#ffffff', padding: '8px', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                    {/* QR Standee + Remarks & Details Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 310px) 1fr', gap: '1.25rem', alignItems: 'start', marginBottom: '1.25rem' }}>
+                      {/* Left: Official NIMB Fonepay Standee Image directly in place */}
+                      <div style={{ textAlign: 'center', background: '#f8fafc', padding: '0.65rem', borderRadius: '14px', border: '1.5px solid #cbd5e1', boxShadow: '0 4px 14px rgba(0,0,0,0.06)' }}>
+                        <div 
+                          style={{ position: 'relative', cursor: 'pointer', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1', background: '#ffffff' }}
+                          onClick={() => setShowStandeeModal(true)}
+                          title="क्लिक गरी पूर्ण स्ट्यान्डी ठूलो आकारमा हेर्नुहोस्"
+                        >
                           <img
-                            src={dynamicQrUrl || '/assets/nimb_fonepay_qr_code.png'}
-                            alt="NIMB Fonepay QR Code"
-                            style={{ width: '160px', height: '160px', display: 'block', objectFit: 'contain' }}
-                            onError={(e: any) => {
-                              e.target.src = '/assets/nimb_fonepay_qr_code.png';
-                            }}
+                            src="/assets/nimb_fonepay_qr_standee.png"
+                            alt="नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) आधिकारिक Fonepay QR स्ट्यान्डी"
+                            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
                           />
+                          <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(15, 23, 42, 0.82)', color: '#ffffff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', backdropFilter: 'blur(3px)' }}>
+                            <ExternalLink size={12} /> ठूलो हेर्नुहोस्
+                          </div>
                         </div>
-                        <div style={{ marginTop: '0.45rem' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#dbeafe', color: '#1e40af', padding: '0.2rem 0.5rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>
-                            <QrCode size={12} /> Scan with Mobile Banking
+
+                        <div style={{ marginTop: '0.55rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'center' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#dcfce7', color: '#15803d', padding: '0.25rem 0.65rem', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 800, border: '1px solid #86efac' }}>
+                            <CheckCircle2 size={13} /> बैंकको आधिकारिक Fonepay QR
                           </span>
-                        </div>
-                        <div style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                          <a
-                            href="/assets/nimb_fonepay_qr_standee.png"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download="NIMB_Fonepay_QR_Panchpokhari.png"
-                            style={{ fontSize: '0.7rem', color: '#2563eb', textDecoration: 'underline' }}
-                          >
-                            QR डाउनलोड
-                          </a>
+                          <div style={{ display: 'flex', gap: '0.65rem', fontSize: '0.72rem', marginTop: '0.15rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowStandeeModal(true)}
+                              style={{ background: 'none', border: 'none', color: '#1d4ed8', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontWeight: 700 }}
+                            >
+                              पूर्ण स्ट्यान्डी
+                            </button>
+                            <span style={{ color: '#cbd5e1' }}>|</span>
+                            <a
+                              href="/assets/nimb_fonepay_qr_standee.png"
+                              download="NIMB_Fonepay_Standee_Panchpokhari.png"
+                              style={{ color: '#1d4ed8', textDecoration: 'underline', fontWeight: 700 }}
+                            >
+                              डाउनलोड
+                            </a>
+                          </div>
                         </div>
                       </div>
 
