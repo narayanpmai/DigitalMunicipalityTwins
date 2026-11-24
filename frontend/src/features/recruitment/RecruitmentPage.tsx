@@ -509,7 +509,8 @@ export const RecruitmentPage: React.FC = () => {
       setIsExportingExcel(true);
       // 1. Try backend authenticated download with JWT token via api client
       const response: any = await api.get('/recruitment/export-excel', { responseType: 'blob' });
-      const blob = new Blob([response.data || response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const rawData = response?.data !== undefined ? response.data : response;
+      const blob = rawData instanceof Blob ? rawData : new Blob([rawData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -520,9 +521,9 @@ export const RecruitmentPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.warn('Backend excel export failed, falling back to client-side SheetJS XLSX:', err);
-      // 2. Client-side SheetJS export using active applications
+      // 2. Client-side SheetJS export using applications
       try {
-        const appsToExport = (filteredApplications && filteredApplications.length > 0) ? filteredApplications : applications;
+        const appsToExport = applications && applications.length > 0 ? applications : [];
         if (!appsToExport || appsToExport.length === 0) {
           alert('डाउनलोड गर्नका लागि कुनै दरखास्त फेला परेन।');
           return;

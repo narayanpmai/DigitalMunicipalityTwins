@@ -124,6 +124,18 @@ const fixMojibake = (data: any): any => {
   if (typeof data === 'string') {
     return fixMojibakeString(data);
   }
+  if (typeof Blob !== 'undefined' && data instanceof Blob) {
+    return data;
+  }
+  if (typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer) {
+    return data;
+  }
+  if (typeof FormData !== 'undefined' && data instanceof FormData) {
+    return data;
+  }
+  if (typeof Uint8Array !== 'undefined' && data instanceof Uint8Array) {
+    return data;
+  }
   if (Array.isArray(data)) {
     return data.map(item => fixMojibake(item));
   }
