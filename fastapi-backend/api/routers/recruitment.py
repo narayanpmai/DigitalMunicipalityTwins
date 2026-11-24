@@ -1039,6 +1039,8 @@ def verify_payment(
         app.status = "विचाराधीन (कार्यालय बैंक रुजु बाँकी)"
         app.payment_method = pay.gateway
         app.payment_voucher_no = ref_id
+        if data.voucher_doc_url:
+            app.payment_voucher_doc_url = data.voucher_doc_url.strip()
         db.commit()
 
         record_audit(
@@ -1081,6 +1083,8 @@ def verify_payment(
     app.paid_at = pay.verified_at
     app.payment_method = pay.gateway
     app.payment_voucher_no = pay.gateway_ref_id
+    if data.voucher_doc_url:
+        app.payment_voucher_doc_url = data.voucher_doc_url.strip()
 
     db.commit()
 

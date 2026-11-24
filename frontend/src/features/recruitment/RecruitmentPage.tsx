@@ -61,7 +61,8 @@ import {
   ShieldAlert,
   History,
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  Copy
 } from 'lucide-react';
 import {
   CentralDocumentSheet,
@@ -383,6 +384,7 @@ export const RecruitmentPage: React.FC = () => {
   const [showApprovalLetterModal, setShowApprovalLetterModal] = useState(false);
   const [selectedApprovalApp, setSelectedApprovalApp] = useState<any>(null);
   const [showExamNoticeModal, setShowExamNoticeModal] = useState(false);
+  const [showStandeeModal, setShowStandeeModal] = useState(false);
   const [selectedNoticeVacancy, setSelectedNoticeVacancy] = useState<any>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedAppointmentApp, setSelectedAppointmentApp] = useState<any>(null);
@@ -724,17 +726,16 @@ export const RecruitmentPage: React.FC = () => {
     return base + (extraCount * incFee);
   }, [applyForm.baseFee, applyForm.inclusiveGroupFee, applyForm.selectedInclusive]);
 
-  // QR Code Generator Effect for NIMB Account 18301400000109 with Instant Fallback
+  // QR Code Generator Effect for NIMB Account 18301400000109 with Official Fonepay EMVCo Standee Payload
   useEffect(() => {
     const rawQr = activePaymentTxn?.qr_data || activePaymentTxn?.qrData || activePaymentTxn?.parameters?.qrData;
-    const appNo = savedDraftApp?.applicationNo || savedDraftApp?.application_no || activePaymentTxn?.application_no || 'PTRM-2083-XXXX';
-    const amountVal = Number(activePaymentTxn?.amount || calculatedFee || 1000).toFixed(2);
-
-    // Standard EMVCo & Fonepay/NepalPay QR payload for NIMB Account 18301400000109
-    const finalQrString = rawQr || `fonepay://pay?merchant=NIMB&bank=Nepal+Investment+Mega+Bank&account=18301400000109&name=GA+1.1+PANCHPOKHARI+THANGPAL+GA.PA.+AANTARIK+RAJASHO+KHATA&prn=${appNo}&amount=${amountVal}&remarks=Recruitment+Fee+${appNo}`;
+    // Official Fonepay EMVCo static QR payload extracted from the official NIMB standee PDF:
+    // Merchant: GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA, A/C: 18301400000109, TID: 2222440022188201
+    const officialFonepayPayload = '0002010102110216122230002218820926400011fonepay.com07162222440022188201110115204939953035245802NP5959GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA6013PANCH POKHARI6211070722810926304df2a';
+    const finalQrString = rawQr || officialFonepayPayload;
 
     QRCode.toDataURL(finalQrString, {
-      width: 260,
+      width: 280,
       margin: 1,
       color: { dark: '#0f172a', light: '#ffffff' }
     })
@@ -992,6 +993,8 @@ const handleVerifyPayment = async () => {
     const res: any = await api.post('/recruitment/payment/verify', {
       transactionUuid: txnId,
       gateway: selectedGateway,
+      gatewayRefId: applyForm.paymentVoucherNo ? applyForm.paymentVoucherNo.trim() : undefined,
+      voucherDocUrl: applyForm.paymentVoucherDocUrl ? applyForm.paymentVoucherDocUrl.trim() : undefined,
       mockAutoApprove: true
     });
     const data = res.data || res;
@@ -2989,118 +2992,206 @@ return (
                 </div>
               </div>
 
-              {/* Gateway Active Screen: Official NIMB Revenue Transfer */}
+              {/* Gateway Active Screen: Official NIMB Fonepay QR & Bank Transfer */}
               {selectedGateway === 'FONEPAY' && (
-                <div className="rec-qr-display-card" style={{ maxWidth: '540px', margin: '0 auto', textAlign: 'left' }}>
-                  {/* Bank & Account Official Banner */}
-                  <div style={{ background: '#eff6ff', border: '2px solid #93c5fd', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e40af', fontWeight: 800, fontSize: '0.92rem' }}>
-                      <Landmark size={20} />
-                      <span>नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) — गाउँपालिका आन्तरिक राजस्व खाता</span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#1e293b', marginTop: '0.4rem', lineHeight: 1.5 }}>
-                      खातावालाको नाम: <strong>GA 1.1 PANCHPOKHARI THANGPAL GA.PA. AANTARIK RAJASHO KHATA</strong>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#334155', marginTop: '0.2rem' }}>
-                      शाखा: <strong>पाँचपोखरी थाङपाल शाखा, सिन्धुपाल्चोक</strong>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #93c5fd' }}>
-                      <span style={{ fontSize: '0.82rem', color: '#1e40af', fontWeight: 700 }}>आधिकारिक खाता नम्बर:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 900, color: '#0f172a', fontSize: '1.15rem', letterSpacing: '1px' }}>
-                          18301400000109
+                <div className="rec-qr-display-card" style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'left', padding: 0, overflow: 'hidden', border: '1.5px solid #bfdbfe', borderRadius: '16px', boxShadow: '0 8px 24px rgba(30, 58, 138, 0.08)' }}>
+                  {/* Bank & Fonepay Header */}
+                  <div style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)', padding: '1rem 1.25rem', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ background: '#ffffff', borderRadius: '8px', padding: '3px 8px', display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 900, color: '#dc2626', fontSize: '1rem', letterSpacing: '-0.5px' }}>fone<span style={{ color: '#2563eb' }}>pay</span></span>
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB)
+                          <CheckCircle2 size={16} color="#4ade80" />
+                        </h4>
+                        <span style={{ fontSize: '0.74rem', color: '#bfdbfe' }}>
+                          पाँचपोखरी थाङपाल गाउँपालिका आन्तरिक राजस्व खाता
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText('18301400000109');
-                            alert('NIMB खाता नं 18301400000109 कपी भयो!');
-                          }}
-                          style={{ background: '#1d4ed8', border: 'none', borderRadius: '6px', padding: '0.25rem 0.65rem', fontSize: '0.74rem', cursor: 'pointer', color: '#ffffff', fontWeight: 700 }}
-                        >
-                          कपी गर्नुहोस्
-                        </button>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowStandeeModal(true)}
+                      style={{ background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '6px', color: '#ffffff', padding: '0.35rem 0.65rem', fontSize: '0.74rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
+                    >
+                      <ExternalLink size={13} /> पूर्ण स्ट्यान्डी हेर्नुहोस्
+                    </button>
                   </div>
 
-                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                      <span style={{ fontSize: '0.82rem', color: '#64748b' }}>दाखिला गर्नुपर्ने दस्तुर रकम:</span>
-                      <strong style={{ fontSize: '1.25rem', color: '#15803d' }}>
-                        रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-
-                      </strong>
+                  <div style={{ padding: '1.25rem', background: '#ffffff' }}>
+                    {/* Payable Amount Highlight */}
+                    <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '12px', padding: '0.85rem 1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                      <div>
+                        <span style={{ fontSize: '0.78rem', color: '#166534', fontWeight: 700, display: 'block' }}>
+                          दाखिला गर्नुपर्ने कुल दरखास्त दस्तुर:
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: '#15803d' }}>
+                          {applyForm.selectedInclusive.length > 1
+                            ? `(मूल दस्तुर रु. ${applyForm.baseFee || 500} + थप समावेशी रु. ${(applyForm.selectedInclusive.length - 1) * (applyForm.inclusiveGroupFee || 200)})`
+                            : 'राजस्व शीर्षक १४२२९ (परीक्षा दस्तुर)'}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <strong style={{ fontSize: '1.45rem', color: '#15803d', fontWeight: 900 }}>
+                          रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-
+                        </strong>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                      कारोबार संकेत: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{activePaymentTxn?.transaction_uuid || activePaymentTxn?.transactionUuid}</span>
-                    </div>
-                  </div>
 
-                  {/* Payment Instructions */}
-                  <div style={{ background: '#fefce8', border: '1px solid #fef08a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.78rem', color: '#713f12' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.35rem', color: '#854d0e', fontSize: '0.82rem' }}>
-                      📌 रकम दाखिला गर्ने तरिका (Payment Instructions):
-                    </strong>
-                    <ol style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.6 }}>
-                      <li>आफ्नो जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart, NIC Asia MoBank, Nabil Smart, आदि) वा <strong>ConnectIPS / eSewa</strong> खोल्नुहोस्।</li>
-                      <li><strong>'Fund Transfer'</strong> वा <strong>'Send Money'</strong> मा गई माथिको खाता नम्बर (<strong>18301400000109</strong>) मा रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} ट्रान्सफर गर्नुहोस् (वा बैंक काउन्टरमा भौचर दाखिला गर्नुहोस्)।</li>
-                      <li><strong>Remarks</strong> मा आफ्नो नाम र दरखास्त नम्बर (<strong>{savedDraftApp?.applicationNo || savedDraftApp?.application_no}</strong>) उल्लेख गर्नुहोस्।</li>
-                      <li>भुक्तानी सम्पन्न भएपछि प्राप्त <strong>कारोबार संकेत (Transaction ID / भौचर नं.)</strong> तल राखी भौचर/स्क्रिनसट अपलोड गर्नुहोस्।</li>
-                    </ol>
-                  </div>
-
-                  {/* Voucher Upload & Input */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <div>
-                      <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
-                        कारोबार / भौचर नम्बर (Txn / Voucher ID)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="उदा: TXN-12345 वा भौचर नं"
-                        value={applyForm.paymentVoucherNo || ''}
-                        onChange={(e) => setApplyForm({ ...applyForm, paymentVoucherNo: e.target.value })}
-                        className="rec-input-control"
-                        style={{ padding: '0.45rem 0.65rem', fontSize: '0.82rem' }}
-                      />
-                    </div>
-                    <div>
-                      <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
-                        भौचर / स्क्रिनसट (Payment Receipt)
-                      </label>
-                      {applyForm.paymentVoucherDocUrl ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '36px' }}>
-                          <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>संलग्न छ</span>
-                          <a href={applyForm.paymentVoucherDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हेर्नुहोस्</a>
-                          <button type="button" onClick={() => handleRemoveFile('paymentVoucherDocUrl')} className="rec-doc-remove-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हटाउनुहोस्</button>
+                    {/* QR Code + Remarks & Details Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.25rem', alignItems: 'start', marginBottom: '1.25rem' }}>
+                      {/* Left: Official QR Frame */}
+                      <div style={{ textAlign: 'center', background: '#f8fafc', padding: '0.85rem', borderRadius: '12px', border: '1.5px solid #e2e8f0', minWidth: '185px' }}>
+                        <div style={{ background: '#ffffff', padding: '8px', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                          <img
+                            src={dynamicQrUrl || '/assets/nimb_fonepay_qr_code.png'}
+                            alt="NIMB Fonepay QR Code"
+                            style={{ width: '160px', height: '160px', display: 'block', objectFit: 'contain' }}
+                            onError={(e: any) => {
+                              e.target.src = '/assets/nimb_fonepay_qr_code.png';
+                            }}
+                          />
                         </div>
-                      ) : (
-                        <label className="rec-doc-upload-trigger" style={{ padding: '0.35rem 0.65rem', minHeight: '36px', height: '36px', fontSize: '0.76rem' }}>
-                          <UploadCloud size={14} /> <span>भौचर अपलोड</span>
-                          <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('paymentVoucherDocUrl', e)} style={{ display: 'none' }} />
-                        </label>
-                      )}
-                    </div>
-                  </div>
+                        <div style={{ marginTop: '0.45rem' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#dbeafe', color: '#1e40af', padding: '0.2rem 0.5rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>
+                            <QrCode size={12} /> Scan with Mobile Banking
+                          </span>
+                        </div>
+                        <div style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                          <a
+                            href="/assets/nimb_fonepay_qr_standee.png"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download="NIMB_Fonepay_QR_Panchpokhari.png"
+                            style={{ fontSize: '0.7rem', color: '#2563eb', textDecoration: 'underline' }}
+                          >
+                            QR डाउनलोड
+                          </a>
+                        </div>
+                      </div>
 
-                  <button
-                    onClick={handleVerifyPayment}
-                    disabled={isVerifyingPayment}
-                    className="rec-btn rec-btn-success"
-                    style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem', justifyContent: 'center' }}
-                  >
-                    {isVerifyingPayment ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        दरखास्त रुजुका लागि दर्ता गरिँदैछ...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle size={18} />
-                        मैले रकम दाखिला गरें — दरखास्त सुरक्षित गर्नुहोस् (Confirm & Submit)
-                      </>
-                    )}
-                  </button>
+                      {/* Right: Remarks & Account Details */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {/* Candidate Remarks Helper - 1-Click Copy */}
+                        <div style={{ background: '#fefce8', border: '1.5px solid #fde047', borderRadius: '10px', padding: '0.75rem 0.85rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                            <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#854d0e', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              ⭐ Remarks मा अनिवार्य राख्नुपर्ने:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const refText = `${savedDraftApp?.applicationNo || savedDraftApp?.application_no || 'PTRM-2083-XXXX'} ${applyForm.fullNameNp || applyForm.fullName || ''}`.trim();
+                                navigator.clipboard.writeText(refText);
+                                alert(`Remarks विवरण कपी भयो: "${refText}"`);
+                              }}
+                              style={{ background: '#ca8a04', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.55rem', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                            >
+                              <Copy size={12} /> कपी
+                            </button>
+                          </div>
+                          <div style={{ background: '#ffffff', border: '1px dashed #ca8a04', borderRadius: '6px', padding: '0.35rem 0.6rem', fontFamily: 'monospace', fontWeight: 800, color: '#0f172a', fontSize: '0.86rem' }}>
+                            {`${savedDraftApp?.applicationNo || savedDraftApp?.application_no || 'PTRM-2083-XXXX'} ${applyForm.fullNameNp || applyForm.fullName || ''}`}
+                          </div>
+                          <span style={{ fontSize: '0.67rem', color: '#713f12', marginTop: '0.25rem', display: 'block' }}>
+                            * मोबाइल बैंकिङमा भुक्तानी गर्दा Remarks मा यो विवरण हाल्नुभएमा बैंक स्टेटमेन्टमा तुरुन्तै पहिचान हुन्छ।
+                          </span>
+                        </div>
+
+                        {/* NIMB Bank Account Details Card */}
+                        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.75rem 0.85rem', fontSize: '0.76rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                            <span style={{ color: '#1e40af', fontWeight: 700 }}>NIMB खाता नम्बर:</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <strong style={{ fontFamily: 'monospace', fontSize: '1.05rem', color: '#0f172a' }}>18301400000109</strong>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText('18301400000109');
+                                  alert('NIMB खाता नं 18301400000109 कपी भयो!');
+                                }}
+                                style={{ background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.18rem 0.5rem', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 700 }}
+                              >
+                                कपी
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ color: '#334155', lineHeight: 1.45, fontSize: '0.73rem' }}>
+                            <strong>खातावाला:</strong> GA 1.1 PANCHPOKHARI THANGPAL GA. PA. AANTARIK RAJASHO KHATA<br/>
+                            <strong>बैंक:</strong> नेपाल इन्भेष्टमेन्ट मेगा बैंक (NIMB) | <strong>शाखा:</strong> पाँचपोखरी (१८३)
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step-by-Step Payment Instructions */}
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.75rem 0.95rem', marginBottom: '1.25rem', fontSize: '0.75rem', color: '#1e40af', lineHeight: 1.55 }}>
+                      <strong style={{ display: 'block', marginBottom: '0.2rem', color: '#1e3a8a' }}>
+                        📌 भुक्तानी तथा पेश गर्ने तरिका (Step-by-step Guide):
+                      </strong>
+                      <ol style={{ margin: 0, paddingLeft: '1.15rem' }}>
+                        <li>आफ्नो जुनसुकै बैंकको <strong>Mobile Banking एप</strong> (NIMB Smart, Global Smart, NIC Asia, Nabil, आदि) वा <strong>eSewa / connectIPS</strong> खोल्नुहोस्।</li>
+                        <li><strong>QR स्क्यान</strong> गर्नुहोस् (वा Fund Transfer मा खाता नं <strong>18301400000109</strong> राख्नुहोस्)।</li>
+                        <li>रकम <strong>रु. {Number(activePaymentTxn?.amount || calculatedFee).toLocaleString('ne-NP')} /-</strong> र Remarks मा <strong>{savedDraftApp?.applicationNo || 'PTRM-2083-XXXX'}</strong> राखी भुक्तानी सम्पन्न गर्नुहोस्।</li>
+                        <li>भुक्तानी सम्पन्न भएपछि प्राप्त <strong>कारोबार संकेत (Transaction ID / Ref No)</strong> र भौचर/स्क्रिनसट तल राखी पेश गर्नुहोस्।</li>
+                      </ol>
+                    </div>
+
+                    {/* Voucher Upload & Input */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div>
+                        <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                          कारोबार संकेत / भौचर नम्बर (Txn ID / Ref No)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="उदा: 2222440022... वा भौचर नं"
+                          value={applyForm.paymentVoucherNo || ''}
+                          onChange={(e) => setApplyForm({ ...applyForm, paymentVoucherNo: e.target.value })}
+                          className="rec-input-control"
+                          style={{ padding: '0.45rem 0.65rem', fontSize: '0.82rem' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="rec-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                          भुक्तानी भौचर / स्लिप / स्क्रिनसट
+                        </label>
+                        {applyForm.paymentVoucherDocUrl ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '36px' }}>
+                            <span style={{ fontSize: '0.74rem', color: '#059669', fontWeight: 700 }}>संलग्न छ</span>
+                            <a href={applyForm.paymentVoucherDocUrl} target="_blank" rel="noopener noreferrer" className="rec-doc-view-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हेर्नुहोस्</a>
+                            <button type="button" onClick={() => handleRemoveFile('paymentVoucherDocUrl')} className="rec-doc-remove-btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>हटाउनुहोस्</button>
+                          </div>
+                        ) : (
+                          <label className="rec-doc-upload-trigger" style={{ padding: '0.35rem 0.65rem', minHeight: '36px', height: '36px', fontSize: '0.76rem' }}>
+                            <UploadCloud size={14} /> <span>भौचर/स्लिप अपलोड</span>
+                            <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileUpload('paymentVoucherDocUrl', e)} style={{ display: 'none' }} />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleVerifyPayment}
+                      disabled={isVerifyingPayment}
+                      className="rec-btn rec-btn-success"
+                      style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem', justifyContent: 'center' }}
+                    >
+                      {isVerifyingPayment ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          दरखास्त रुजुका लागि दर्ता गरिँदैछ...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={18} />
+                          मैले भुक्तानी सम्पन्न गरें — दरखास्त अन्तिम पेश गर्नुहोस्
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -6123,6 +6214,53 @@ return (
                       type="button"
                       onClick={() => setPreviewDoc(null)}
                       className="rec-btn rec-btn-outline"
+                    >
+                      बन्द गर्नुहोस्
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Official NIMB Fonepay QR Standee Modal */}
+            {showStandeeModal && (
+              <div className="rec-modal-backdrop" onClick={() => setShowStandeeModal(false)}>
+                <div className="rec-modal-card" style={{ maxWidth: '540px', width: '92%' }} onClick={e => e.stopPropagation()}>
+                  <div className="rec-modal-header" style={{ background: '#1e3a8a', color: '#ffffff' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Landmark size={20} color="#93c5fd" />
+                      <h3 style={{ margin: 0, fontSize: '0.98rem', color: '#ffffff' }}>
+                        नेपाल इन्भेष्टमेन्ट मेगा बैंक — आधिकारिक Fonepay QR स्ट्यान्डी
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowStandeeModal(false)}
+                      style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="rec-modal-body" style={{ textAlign: 'center', padding: '1rem', background: '#f8fafc' }}>
+                    <img
+                      src="/assets/nimb_fonepay_qr_standee.png"
+                      alt="NIMB Fonepay Standee"
+                      style={{ width: '100%', maxHeight: '68vh', objectFit: 'contain', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    />
+                  </div>
+                  <div className="rec-modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <a
+                      href="/assets/nimb_fonepay_qr_standee.png"
+                      download="NIMB_Fonepay_Standee_Panchpokhari.png"
+                      className="rec-btn rec-btn-primary"
+                      style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem' }}
+                    >
+                      <Download size={14} /> स्ट्यान्डी डाउनलोड गर्नुहोस्
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setShowStandeeModal(false)}
+                      className="rec-btn rec-btn-outline"
+                      style={{ fontSize: '0.82rem' }}
                     >
                       बन्द गर्नुहोस्
                     </button>

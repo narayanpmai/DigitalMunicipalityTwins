@@ -268,6 +268,7 @@ class PaymentVerifyRequest(BaseModel):
     transaction_uuid: str = Field(alias="transactionUuid")
     gateway: str
     gateway_ref_id: Optional[str] = Field(None, alias="gatewayRefId")
+    voucher_doc_url: Optional[str] = Field(None, alias="voucherDocUrl")
     mock_auto_approve: Optional[bool] = Field(False, alias="mockAutoApprove")
 
     class Config:
