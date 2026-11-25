@@ -157,6 +157,7 @@ class ApplicationVerificationUpdate(BaseModel):
     chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
+    confirm_payment: Optional[bool] = Field(False, alias="confirmPayment")
 
     class Config:
         populate_by_name = True

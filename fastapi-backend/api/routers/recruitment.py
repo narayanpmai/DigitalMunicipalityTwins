@@ -1174,14 +1174,15 @@ def admin_confirm_payment(
 
     if not app.receipt_no:
         count_receipts = ctx.filter_query(db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)), JobApplication).count() + 1
-        receipt_no = f"RCPT-2081-{count_receipts:04d}"
+        receipt_no = f"RCPT-2083-{count_receipts:04d}"
         app.receipt_no = receipt_no
     else:
         receipt_no = app.receipt_no
 
     app.payment_status = "PAID"
     app.application_status = "SUBMITTED"
-    app.status = "विचाराधीन (Pending)"
+    if not app.status or "ड्राफ्ट" in app.status or "Unpaid" in app.status or "शुल्क" in app.status:
+        app.status = "विचाराधीन (Pending)"
     app.paid_amount = pay.amount
     app.paid_at = pay.verified_at
     app.payment_method = pay.gateway
@@ -1618,6 +1619,28 @@ def verify_job_application(
     elif "अस्वीकृत" in data.status:
         app.admit_card_roll_no = None
 
+    # भुक्तानी प्रमाणीकरण (Confirm payment if explicitly requested or application is approved)
+    if data.confirm_payment or ("स्वीकृत" in data.status and app.payment_status != "PAID"):
+        app.payment_status = "PAID"
+        app.application_status = "SUBMITTED"
+        if not app.paid_at:
+            app.paid_at = datetime.datetime.utcnow()
+        if not app.receipt_no:
+            count_receipts = ctx.filter_query(db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)), JobApplication).count() + 1
+            app.receipt_no = f"RCPT-2083-{count_receipts:04d}"
+
+        # Update latest payment transaction to SUCCESS
+        pay = db.query(RecruitmentPayment).filter(
+            RecruitmentPayment.application_id == app.id
+        ).order_by(desc(RecruitmentPayment.created_at)).first()
+        if pay:
+            pay.status = "SUCCESS"
+            pay.verified_at = datetime.datetime.utcnow()
+            if not pay.gateway_ref_id:
+                pay.gateway_ref_id = f"OFFICE-VERIFY-{uuid.uuid4().hex[:6].upper()}"
+            if not app.paid_amount or app.paid_amount <= 0:
+                app.paid_amount = pay.amount
+
     db.commit()
     db.refresh(app)
 
@@ -1627,12 +1650,76 @@ def verify_job_application(
         entity_id=app.application_no,
         action="DECISION_" + ("APPROVED" if "स्वीकृत" in data.status else "REJECTED"),
         performed_by=f"ADMIN:{current_user.email}",
-        details=f"Verification decision: {data.status}, Roll: {app.admit_card_roll_no}",
+        details=f"Verification decision: {data.status}, Roll: {app.admit_card_roll_no}, Payment: {app.payment_status}",
         ip_address=request.client.host if request.client else None,
         tenant_id=app.tenant_id
     )
 
     return app
+
+
+@router.post("/applications/{application_id}/confirm-payment")
+def confirm_application_payment(
+    application_id: str,
+    request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_roles(*RECRUITMENT_ADMIN_ROLES)),
+    db: Session = Depends(get_db)
+):
+    """
+    Dedicated endpoint for Admin to verify payment in 1-click from applications table or review modal.
+    Sets payment_status='PAID', generates official receipt number, and marks payment transaction as SUCCESS.
+    """
+    cond = [JobApplication.application_no == application_id]
+    if is_valid_uuid(application_id) or len(application_id) > 10:
+        cond.append(JobApplication.id == application_id)
+
+    app = ctx.filter_query(db.query(JobApplication).filter(or_(*cond)), JobApplication).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="दरखास्त फेला परेन।")
+
+    app.payment_status = "PAID"
+    app.application_status = "SUBMITTED"
+    if not app.paid_at:
+        app.paid_at = datetime.datetime.utcnow()
+
+    if not app.receipt_no:
+        count_receipts = ctx.filter_query(db.query(JobApplication).filter(JobApplication.receipt_no.isnot(None)), JobApplication).count() + 1
+        app.receipt_no = f"RCPT-2083-{count_receipts:04d}"
+
+    # Update latest payment transaction to SUCCESS
+    pay = db.query(RecruitmentPayment).filter(
+        RecruitmentPayment.application_id == app.id
+    ).order_by(desc(RecruitmentPayment.created_at)).first()
+    if pay:
+        pay.status = "SUCCESS"
+        pay.verified_at = datetime.datetime.utcnow()
+        if not pay.gateway_ref_id:
+            pay.gateway_ref_id = f"OFFICE-CONFIRM-{uuid.uuid4().hex[:6].upper()}"
+        if not app.paid_amount or app.paid_amount <= 0:
+            app.paid_amount = pay.amount
+
+    db.commit()
+    db.refresh(app)
+
+    record_audit(
+        db=db,
+        entity_type="APPLICATION",
+        entity_id=app.application_no,
+        action="PAYMENT_CONFIRMED",
+        performed_by=f"ADMIN:{current_user.email}",
+        details=f"Payment manually verified and marked PAID by admin {current_user.email}, receipt: {app.receipt_no}",
+        ip_address=request.client.host if request.client else None,
+        tenant_id=app.tenant_id
+    )
+
+    return {
+        "success": True,
+        "message": f"दरखास्त नं {app.application_no} को भुक्तानी प्रमाणित भई रसिद नं {app.receipt_no} जारी भयो।",
+        "receiptNo": app.receipt_no,
+        "paymentStatus": "PAID",
+        "paidAmount": float(app.paid_amount or 0)
+    }
 
 
 @router.post("/applications/{application_id}/resubmit-document")

@@ -725,6 +725,7 @@ export const RecruitmentPage: React.FC = () => {
     admitCardRollNo: '',
     examCenter: '',
     examDateTime: '',
+    confirmPayment: true,
   });
 
   // HRMS Onboarding State
@@ -1219,6 +1220,23 @@ const refundMutation = useMutation({
     alert('रकम फिर्ता असफल: ' + (err?.response?.data?.detail || err.message));
   }
 });
+
+// Admin Confirm / Verify Payment Action
+const handleConfirmPayment = async (appNo: string) => {
+  if (!window.confirm(`दरखास्त नं ${appNo} को दस्तुर रकम बैंक/क्यूआरमा प्राप्त भएको यकिन गरी 'PAID' प्रमाणित गर्न चाहनुहुन्छ?`)) {
+    return;
+  }
+  try {
+    const res: any = await api.post(`/recruitment/applications/${encodeURIComponent(appNo)}/confirm-payment`);
+    alert(res.message || 'भुक्तानी सफलतापूर्वक प्रमाणित भयो!');
+    queryClient.invalidateQueries({ queryKey: ['recruitment-applications'] });
+    queryClient.invalidateQueries({ queryKey: ['recruitment-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['recruitment-admin-payments'] });
+    queryClient.invalidateQueries({ queryKey: ['recruitment-reconciliation'] });
+  } catch (err: any) {
+    alert('भुक्तानी प्रमाणित गर्न सकिएन: ' + (err?.response?.data?.detail || err.message));
+  }
+};
 
 // Search Admit Card
 const handleSearchAdmitCard = async (e?: React.FormEvent) => {
@@ -1902,6 +1920,7 @@ return (
                     const isApproved = app.status.includes('स्वीकृत');
                     const isRejected = app.status.includes('अस्वीकृत');
                     const isPaid = (app.paymentStatus === 'PAID' || app.payment_status === 'PAID');
+                    const isPendingVerification = (app.paymentStatus === 'PENDING_VERIFICATION' || app.payment_status === 'PENDING_VERIFICATION');
 
                     return (
                       <tr key={app.id}>
@@ -1930,20 +1949,94 @@ return (
                           </div>
                         </td>
                         <td>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: '4px',
-                              fontSize: '0.72rem',
-                              fontWeight: 800,
-                              background: isPaid ? '#dcfce7' : '#fee2e2',
-                              color: isPaid ? '#15803d' : '#b91c1c',
-                              border: `1px solid ${isPaid ? '#86efac' : '#fca5a5'}`
-                            }}
-                          >
-                            {isPaid ? 'PAID (रु. ' + (app.paidAmount || app.paid_amount || 0) + ')' : 'UNPAID'}
-                          </span>
+                          {isPaid ? (
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '4px',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                background: '#dcfce7',
+                                color: '#15803d',
+                                border: '1px solid #86efac'
+                              }}
+                            >
+                              PAID (रु. {app.paidAmount || app.paid_amount || 0})
+                            </span>
+                          ) : isPendingVerification ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '0.2rem 0.5rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  background: '#fef3c7',
+                                  color: '#b45309',
+                                  border: '1px solid #fde68a'
+                                }}
+                                title="उम्मेदवारद्वारा भुक्तानी गरिएको - कार्यालय बैंक रुजु बाँकी"
+                              >
+                                ⏳ रुजु बाँकी (रु. {app.paidAmount || app.paid_amount || 0})
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmPayment(app.applicationNo || app.application_no)}
+                                style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  padding: '0.15rem 0.45rem',
+                                  borderRadius: '4px',
+                                  background: '#16a34a',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.2rem'
+                                }}
+                                title="बैंक स्टेटमेन्ट/भौचर रुजु गरी भुक्तानी स्वीकृत गर्नुहोस्"
+                              >
+                                ✓ भुक्तानी रुजु
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '0.2rem 0.55rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  background: '#fee2e2',
+                                  color: '#b91c1c',
+                                  border: '1px solid #fca5a5'
+                                }}
+                              >
+                                UNPAID
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmPayment(app.applicationNo || app.application_no)}
+                                style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  padding: '0.12rem 0.4rem',
+                                  borderRadius: '4px',
+                                  background: '#f8fafc',
+                                  color: '#475569',
+                                  border: '1px solid #cbd5e1',
+                                  cursor: 'pointer'
+                                }}
+                                title="नगदी वा बैंक भौचर प्राप्त भएको भए सिधै भुक्तानी प्रमाणित गर्नुहोस्"
+                              >
+                                + भुक्तानी प्रमाणित
+                              </button>
+                            </div>
+                          )}
                           <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.2rem' }}>
                             {app.paymentMethod || app.payment_method}
                           </div>
@@ -2027,6 +2120,7 @@ return (
                                   admitCardRollNo: app.admitCardRollNo || app.admit_card_roll_no || `2083-ROLL-${String(Math.floor(Math.random() * 899) + 100)}`,
                                   examCenter: app.examCenter || app.exam_center || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.examCenter || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.exam_center || '',
                                   examDateTime: app.examDateTime || app.exam_date_time || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.examDateBs || vacancies.find((v: any) => v.id === app.vacancyId || v.vacancyNo === app.vacancyNo || v.vacancy_no === app.vacancy_no)?.exam_date_bs || '',
+                                  confirmPayment: (app.paymentStatus === 'PAID' || app.payment_status === 'PAID') ? false : true,
                                 });
                                 setShowVerifyModal(true);
                               }}
@@ -2237,6 +2331,16 @@ return (
                         {new Date(p.created_at).toLocaleString('ne-NP')}
                       </td>
                       <td>
+                        {p.status !== 'SUCCESS' && p.status !== 'REFUNDED' && (
+                          <button
+                            onClick={() => handleConfirmPayment(p.application_no)}
+                            className="rec-btn-sm"
+                            style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '0.2rem 0.55rem', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', marginRight: '0.35rem' }}
+                            title="कारोबार रुजु गरी भुक्तानी स्वीकृत गर्नुहोस्"
+                          >
+                            ✓ रुजु (Confirm)
+                          </button>
+                        )}
                         {p.status === 'SUCCESS' && (
                           <button
                             onClick={() => {
@@ -5057,6 +5161,24 @@ return (
                               onChange={(e) => setVerifyForm({ ...verifyForm, examCenter: e.target.value })}
                               className="rec-input-control"
                             />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Payment Verification Section */}
+                      {!(selectedApp.paymentStatus === 'PAID' || selectedApp.payment_status === 'PAID') && (
+                        <div style={{ marginTop: '0.85rem', padding: '0.75rem 1rem', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '8px' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, color: '#166534' }}>
+                            <input
+                              type="checkbox"
+                              checked={verifyForm.confirmPayment ?? true}
+                              onChange={(e) => setVerifyForm({ ...verifyForm, confirmPayment: e.target.checked })}
+                              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                            />
+                            <span>✅ दस्तुर भुक्तानी रकम (रु. {selectedApp.paidAmount || selectedApp.paid_amount || 0}) प्राप्त भएको प्रमाणित गरी रसिद जारी गर्ने</span>
+                          </label>
+                          <div style={{ fontSize: '0.72rem', color: '#15803d', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            * यो विकल्प छनोट गर्दा उम्मेदवारको भुक्तानी स्थिति तत्काल 'PAID' हुनेछ र आधिकारिक विद्युतीय राजस्व रसिद नम्बर स्वतः जारी हुनेछ।
                           </div>
                         </div>
                       )}
