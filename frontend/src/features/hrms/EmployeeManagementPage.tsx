@@ -333,7 +333,7 @@ export const EmployeeManagementPage: React.FC = () => {
       ramanaDateBs: emp.ramanaDateBs || '',
       ramanaLetterUrl: emp.ramanaLetterUrl || '',
       ramanaLetterName: emp.ramanaLetterName || '',
-      documents: emp.documents || [],
+      documents: Array.isArray(emp.documents) ? emp.documents : [],
     });
     setActiveTab('personal');
     setShowFormModal(true);
@@ -372,6 +372,7 @@ export const EmployeeManagementPage: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
       setShowFormModal(false);
       setPhotoFile(null);
       setPhotoPreview(null);
@@ -395,7 +396,13 @@ export const EmployeeManagementPage: React.FC = () => {
       setActiveTab('service_tor');
       return;
     }
-    saveMutation.mutate(formData);
+    saveMutation.mutate({
+      ...formData,
+      fullName: formData.fullName.trim(),
+      designation: formData.designation.trim(),
+      email: formData.email?.trim() || null,
+      documents: Array.isArray(formData.documents) ? formData.documents : [],
+    });
   };
 
   // Delete Mutation
@@ -403,7 +410,11 @@ export const EmployeeManagementPage: React.FC = () => {
     mutationFn: (id: string) => api.delete(`/employees/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
       alert('कर्मचारी विवरण हटाइयो।');
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || err.response?.data?.message || 'कर्मचारी विवरण हटाउन सकिएन।');
     }
   });
 
@@ -1364,7 +1375,7 @@ export const EmployeeManagementPage: React.FC = () => {
                         इमेल ठेगाना
                       </label>
                       <input
-                        type="email"
+                        type="text"
                         placeholder="employee@panchpokhari.gov.np"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -1431,6 +1442,9 @@ export const EmployeeManagementPage: React.FC = () => {
                       onChange={(e) => handleBranchChange(e.target.value)}
                       style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', backgroundColor: '#ffffff', boxSizing: 'border-box' }}
                     >
+                      {formData.department && !branches.some(b => b.name === formData.department) && (
+                        <option value={formData.department}>{formData.department}</option>
+                      )}
                       {branches.map((b) => (
                         <option key={b.id} value={b.name}>
                           {b.name} ({b.type === 'ward' ? `वडा नं. ${b.wardNumber}` : 'पालिका शाखा'})
@@ -1468,6 +1482,17 @@ export const EmployeeManagementPage: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, levelGrade: e.target.value })}
                       style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', backgroundColor: '#ffffff', boxSizing: 'border-box' }}
                     >
+                      {formData.levelGrade && ![
+                        'अधिकृत नवौं (9th Level)',
+                        'अधिकृत आठौं (8th Level)',
+                        'अधिकृत सातौं (7th Level)',
+                        'अधिकृत छैटौं (6th Level)',
+                        'सहायक पाँचौं (5th Level)',
+                        'सहायक चौथो (4th Level)',
+                        'श्रेणीविहीन (Non-Graded)',
+                      ].includes(formData.levelGrade) && (
+                        <option value={formData.levelGrade}>{formData.levelGrade}</option>
+                      )}
                       <option value="अधिकृत नवौं (9th Level)">अधिकृत नवौं (9th Level)</option>
                       <option value="अधिकृत आठौं (8th Level)">अधिकृत आठौं (8th Level)</option>
                       <option value="अधिकृत सातौं (7th Level)">अधिकृत सातौं (7th Level)</option>

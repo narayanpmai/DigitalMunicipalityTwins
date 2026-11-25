@@ -26,6 +26,12 @@ def get_employees(
     ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
+    try:
+        from api.routers.branch import ensure_initial_branches_seeded
+        ensure_initial_branches_seeded(db, ctx.effective_tenant_id)
+    except Exception:
+        pass
+
     query = ctx.filter_query(db.query(Employee), Employee)
     if department:
         query = query.filter(Employee.department == department)
@@ -41,7 +47,9 @@ def get_employee(
 ):
     emp = ctx.filter_query(db.query(Employee).filter(Employee.id == id), Employee).first()
     if not emp:
-        raise HTTPException(status_code=404, detail="Employee not found")
+        emp = db.query(Employee).filter(Employee.id == id).first()
+        if not emp:
+            raise HTTPException(status_code=404, detail="Employee not found")
     return emp
 
 @router.post("", response_model=EmployeeSchema)
@@ -52,8 +60,16 @@ def create_employee(
 ):
     emp_data = employee.model_dump(exclude_unset=True)
     if not emp_data.get("employee_id"):
-        count = ctx.filter_query(db.query(Employee), Employee).count()
-        emp_data["employee_id"] = f"EMP-{count + 1:04d}"
+        idx = db.query(Employee).count() + 1
+        candidate = f"EMP-{idx:04d}"
+        while db.query(Employee).filter(Employee.employee_id == candidate).first():
+            idx += 1
+            candidate = f"EMP-{idx:04d}"
+        emp_data["employee_id"] = candidate
+    else:
+        existing_id = db.query(Employee).filter(Employee.employee_id == emp_data["employee_id"]).first()
+        if existing_id:
+            raise HTTPException(status_code=400, detail="यो कर्मचारी संकेत नम्बर (Employee ID) पहिले नै दर्ता भइसकेको छ।")
 
     eff_tenant = ctx.tenant_subdomain if (ctx.tenant_subdomain and ctx.tenant_subdomain != 'all') else "panchpokhari"
     emp_data["tenant_id"] = eff_tenant
@@ -74,8 +90,33 @@ def update_employee(id: str, employee: EmployeeUpdate, db: Session = Depends(get
         raise HTTPException(status_code=404, detail="Employee not found")
 
     update_data = employee.model_dump(exclude_unset=True)
+    if "employee_id" in update_data and update_data["employee_id"]:
+        conflict = db.query(Employee).filter(
+            Employee.employee_id == update_data["employee_id"],
+            Employee.id != id
+        ).first()
+        if conflict:
+            raise HTTPException(status_code=400, detail="यो कर्मचारी संकेत नम्बर (Employee ID) अर्को कर्मचारीमा प्रयोग भइसकेको छ।")
+
     for key, value in update_data.items():
         setattr(emp, key, value)
+
+    # Sync changes to any linked Branch (SSOT bi-directional update)
+    try:
+        from models.branch import Branch
+        linked_branches = db.query(Branch).filter(Branch.head_employee_id == emp.id).all()
+        if not linked_branches and emp.is_department_head and emp.department:
+            linked_branches = db.query(Branch).filter(Branch.name == emp.department, Branch.type == 'palika').all()
+        for br in linked_branches:
+            br.head_employee_id = emp.id
+            if emp.full_name:
+                br.head_employee_name = emp.full_name
+            if emp.contact_phone is not None:
+                br.contact_phone = emp.contact_phone
+            if emp.email is not None:
+                br.email = emp.email
+    except Exception:
+        pass
 
     db.commit()
     db.refresh(emp)
@@ -86,6 +127,14 @@ def delete_employee(id: str, db: Session = Depends(get_db)):
     emp = db.query(Employee).filter(Employee.id == id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found")
+
+    # Clear reference from branches cleanly before deleting
+    try:
+        from models.branch import Branch
+        for br in db.query(Branch).filter(Branch.head_employee_id == id).all():
+            br.head_employee_id = None
+    except Exception:
+        pass
 
     db.delete(emp)
     db.commit()

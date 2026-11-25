@@ -24,13 +24,26 @@ import {
   ScrollText
 } from 'lucide-react';
 import { useTenant } from '../../../context/TenantContext';
+import { api } from '../../../api/client';
 import { municipalityApi } from '../../../api/municipality';
 import { representativesApi, Representative } from '../../../api/representatives';
 import { PalikaProfileEditModal } from './PalikaProfileEditModal';
 
+const HERO_ICON_MAP: Record<string, string> = {
+  waves: '🌊',
+  mountain: '🏔️',
+  apple: '🍎',
+};
+
 export const PalikaOverviewTab: React.FC = () => {
   const { settings, tenantId } = useTenant();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editInitialTab, setEditInitialTab] = useState<'admin' | 'boundaries' | 'heritage' | 'leadership' | 'stats'>('admin');
+
+  const openEditOnTab = (tab: 'admin' | 'boundaries' | 'heritage' | 'leadership' | 'stats') => {
+    setEditInitialTab(tab);
+    setIsEditModalOpen(true);
+  };
 
   // Fetch central profile from database
   const { data: profile, isLoading, refetch } = useQuery({
@@ -38,10 +51,15 @@ export const PalikaOverviewTab: React.FC = () => {
     queryFn: () => municipalityApi.getProfile(),
   });
 
-  // Single Source of Truth: Fetch representatives from central database
+  // Single Source of Truth: Fetch representatives & HRMS employees for live photo/details lookup
   const { data: representatives = [] } = useQuery({
     queryKey: ['representatives', tenantId],
     queryFn: () => representativesApi.getAll(),
+  });
+
+  const { data: hrmsEmployees = [] } = useQuery<any[]>({
+    queryKey: ['employees', tenantId],
+    queryFn: () => api.get<any[]>('/employees'),
   });
 
   const palikaName = profile?.nameNp || profile?.name || settings?.palika_name || 'स्थानीय तह';
@@ -87,112 +105,90 @@ export const PalikaOverviewTab: React.FC = () => {
     }
   ];
 
-  // Derive leaders dynamically from the authoritative representatives table
+  // Derive leaders from saved MunicipalityProfile leadership, enriched with live photos from Representatives & HRMS
   const leaders = React.useMemo(() => {
-    if (representatives && representatives.length > 0) {
-      const repChair = representatives.find((r: Representative) =>
-        r.isCurrent !== false &&
-        (r.designation === 'अध्यक्ष' || r.designation === 'गाउँपालिका अध्यक्ष' || (r.designation?.includes('अध्यक्ष') && !r.designation?.includes('वडा') && !r.designation?.includes('उपाध्यक्ष')))
+    const findPhotoUrl = (personName?: string, fallbackUrl?: string) => {
+      const clean = personName?.trim();
+      if (!clean) return fallbackUrl;
+      const repMatch = representatives.find((r: Representative) => r.name?.trim() === clean && r.photoUrl);
+      if (repMatch?.photoUrl) return repMatch.photoUrl;
+      const empMatch = hrmsEmployees.find(
+        (e: any) => (e.fullName || e.full_name)?.trim() === clean && (e.photoUrl || e.photo_url)
       );
+      if (empMatch) return empMatch.photoUrl || empMatch.photo_url;
+      return fallbackUrl;
+    };
 
-      const repVice = representatives.find((r: Representative) =>
-        r.isCurrent !== false &&
-        (r.designation === 'उपाध्यक्ष' || r.designation?.includes('उपाध्यक्ष'))
-      );
+    const savedLd = (profile as any)?.leadership || {};
+    const apiLeaders = (profile as any)?.leaders || [];
 
-      const repCao = representatives.find((r: Representative) =>
-        r.isCurrent !== false &&
-        (r.designation === 'प्रमुख प्रशासकीय अधिकृत' || r.designation?.includes('प्रशासकीय'))
-      );
+    const repChair = representatives.find((r: Representative) =>
+      r.isCurrent !== false &&
+      (r.designation === 'अध्यक्ष' || r.designation === 'गाउँपालिका अध्यक्ष' || (r.designation?.includes('अध्यक्ष') && !r.designation?.includes('वडा') && !r.designation?.includes('उपाध्यक्ष')))
+    );
+    const repVice = representatives.find((r: Representative) =>
+      r.isCurrent !== false &&
+      (r.designation === 'उपाध्यक्ष' || r.designation?.includes('उपाध्यक्ष'))
+    );
+    const empCao = hrmsEmployees.find((e: any) =>
+      (e.designation || '').includes('प्रमुख प्रशासकीय')
+    );
+    const repCao = representatives.find((r: Representative) =>
+      r.isCurrent !== false &&
+      (r.designation === 'प्रमुख प्रशासकीय अधिकृत' || r.designation?.includes('प्रशासकीय'))
+    );
+    const repSpokesperson = representatives.find((r: Representative) =>
+      r.isCurrent !== false && r.designation?.includes('प्रवक्ता')
+    );
 
-      const repSpokesperson = representatives.find((r: Representative) =>
-        r.isCurrent !== false &&
-        (r.designation?.includes('प्रवक्ता') || r.wardNo === 3)
-      );
+    const mayorName = savedLd.mayor?.name || apiLeaders[0]?.name || repChair?.name || 'टासी लामा ह्योल्मो';
+    const deputyName = savedLd.deputyMayor?.name || apiLeaders[1]?.name || repVice?.name || 'सुनिता अधिकारी';
+    const caoName = savedLd.chiefOfficer?.name || apiLeaders[2]?.name || empCao?.fullName || repCao?.name || 'लक्ष्मण कुईकेल';
+    const spokesName = savedLd.spokesperson?.name || apiLeaders[3]?.name || repSpokesperson?.name || 'नारायण भट्टराई';
 
-      return [
-        {
-          name: repChair?.name || 'टासी लामा',
-          role: repChair?.designation || 'गाउँपालिका अध्यक्ष',
-          phone: repChair?.phone || '९८५११०२८३७',
-          email: repChair?.email || 'chairperson@panchpokhari.gov.np',
-          badge: 'कार्यकारी प्रमुख',
-          color: '#0f4c81',
-          initials: repChair?.name?.slice(0, 2) || 'TL',
-          photoUrl: repChair?.photoUrl,
-        },
-        {
-          name: repVice?.name || 'सुनिता अधिकारी',
-          role: repVice?.designation || 'गाउँपालिका उपाध्यक्ष',
-          phone: repVice?.phone || '९७४९३२६६२७',
-          email: repVice?.email || 'vicechair@panchpokhari.gov.np',
-          badge: 'न्यायिक समिति संयोजक',
-          color: '#047857',
-          initials: repVice?.name?.slice(0, 2) || 'SA',
-          photoUrl: repVice?.photoUrl,
-        },
-        {
-          name: repCao?.name || 'लक्ष्मण कुईकेल',
-          role: repCao?.designation || 'प्रमुख प्रशासकीय अधिकृत',
-          phone: repCao?.phone || '९७४९३२६६१९',
-          email: repCao?.email || 'cao@panchpokhari.gov.np',
-          badge: 'प्रशासनिक प्रमुख',
-          color: '#b45309',
-          initials: repCao?.name?.slice(0, 2) || 'LK',
-          photoUrl: repCao?.photoUrl,
-        },
-        {
-          name: repSpokesperson?.name || 'नारायण भट्टराई',
-          role: repSpokesperson?.designation || 'प्रवक्ता तथा वडा अध्यक्ष (वडा ३)',
-          phone: repSpokesperson?.phone || '९८६४१६५३६६',
-          email: repSpokesperson?.email || 'ward3@panchpokhari.gov.np',
-          badge: 'सञ्चार तथा समन्वय',
-          color: '#6d28d9',
-          initials: repSpokesperson?.name?.slice(0, 2) || 'NB',
-          photoUrl: repSpokesperson?.photoUrl,
-        },
-      ];
-    }
-
-    return profile?.leaders || [
+    return [
       {
-        name: 'टासी लामा',
-        role: 'गाउँपालिका अध्यक्ष',
-        phone: '९८५११०२८३७',
-        email: 'chairperson@panchpokhari.gov.np',
+        name: mayorName,
+        role: savedLd.mayor?.designation || apiLeaders[0]?.role || repChair?.designation || 'गाउँपालिका अध्यक्ष',
+        phone: savedLd.mayor?.phone || apiLeaders[0]?.phone || repChair?.phone || '९८५११०२८३७',
+        email: savedLd.mayor?.email || apiLeaders[0]?.email || repChair?.email || 'chairperson@panchpokharimun.gov.np',
         badge: 'कार्यकारी प्रमुख',
         color: '#0f4c81',
-        initials: 'TL'
+        initials: mayorName.slice(0, 2) || 'TL',
+        photoUrl: findPhotoUrl(mayorName, repChair?.photoUrl),
       },
       {
-        name: 'सुनिता अधिकारी',
-        role: 'गाउँपालिका उपाध्यक्ष',
-        phone: '९७४९३२६६२७',
-        email: 'vicechair@panchpokhari.gov.np',
+        name: deputyName,
+        role: savedLd.deputyMayor?.designation || apiLeaders[1]?.role || repVice?.designation || 'गाउँपालिका उपाध्यक्ष',
+        phone: savedLd.deputyMayor?.phone || apiLeaders[1]?.phone || repVice?.phone || '९७४९३२६६२७',
+        email: savedLd.deputyMayor?.email || apiLeaders[1]?.email || repVice?.email || 'vicechair@panchpokharimun.gov.np',
         badge: 'न्यायिक समिति संयोजक',
         color: '#047857',
-        initials: 'SA'
+        initials: deputyName.slice(0, 2) || 'SA',
+        photoUrl: findPhotoUrl(deputyName, repVice?.photoUrl),
       },
       {
-        name: 'लक्ष्मण कुईकेल',
-        role: 'प्रमुख प्रशासकीय अधिकृत',
-        phone: '९७४९३२६६१९',
-        email: 'cao@panchpokhari.gov.np',
+        name: caoName,
+        role: savedLd.chiefOfficer?.designation || apiLeaders[2]?.role || empCao?.designation || repCao?.designation || 'प्रमुख प्रशासकीय अधिकृत',
+        phone: savedLd.chiefOfficer?.phone || apiLeaders[2]?.phone || empCao?.contactPhone || repCao?.phone || '९७४९३२६६१९',
+        email: savedLd.chiefOfficer?.email || apiLeaders[2]?.email || empCao?.email || repCao?.email || 'cao@panchpokharimun.gov.np',
         badge: 'प्रशासनिक प्रमुख',
         color: '#b45309',
-        initials: 'LK'
+        initials: caoName.slice(0, 2) || 'LK',
+        photoUrl: findPhotoUrl(caoName, empCao?.photoUrl || repCao?.photoUrl),
       },
       {
-        name: 'नारायण भट्टराई',
-        role: 'प्रवक्ता तथा वडा अध्यक्ष (वडा ३)',
-        phone: '९८६४१६५३६६',
-        email: 'ward3@panchpokhari.gov.np',
+        name: spokesName,
+        role: savedLd.spokesperson?.designation || apiLeaders[3]?.role || repSpokesperson?.designation || 'प्रवक्ता',
+        phone: savedLd.spokesperson?.phone || apiLeaders[3]?.phone || repSpokesperson?.phone || '9864165366',
+        email: savedLd.spokesperson?.email || apiLeaders[3]?.email || repSpokesperson?.email || 'spokesperson@panchpokharimun.gov.np',
         badge: 'सञ्चार तथा समन्वय',
         color: '#6d28d9',
-        initials: 'NB'
+        initials: spokesName.slice(0, 2) || 'NB',
+        photoUrl: findPhotoUrl(spokesName, repSpokesperson?.photoUrl),
       },
     ];
-  }, [representatives, profile?.leaders]);
+  }, [profile, representatives, hrmsEmployees]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
@@ -346,7 +342,7 @@ export const PalikaOverviewTab: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditOnTab('admin')}
               title="यो विवरण सम्पादन गर्नुहोस्"
               style={{
                 background: 'none',
@@ -408,7 +404,7 @@ export const PalikaOverviewTab: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditOnTab('boundaries')}
               title="सिमाना सम्पादन गर्नुहोस्"
               style={{
                 background: 'none',
@@ -461,7 +457,7 @@ export const PalikaOverviewTab: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditOnTab('heritage')}
               title="पहिचान सम्पादन गर्नुहोस्"
               style={{
                 background: 'none',
@@ -484,10 +480,11 @@ export const PalikaOverviewTab: React.FC = () => {
                 { bg: '#fdf2f8', border: '#fbcfe8', text: '#9d174d', icon: '🍎' },
               ];
               const c = colors[idx % 3];
+              const displayIcon = HERO_ICON_MAP[item.icon] || item.icon || c.icon;
               return (
                 <div key={idx} style={{ padding: '0.85rem', borderRadius: '10px', background: c.bg, border: `1px solid ${c.border}` }}>
                   <strong style={{ color: c.text, display: 'block', marginBottom: '2px' }}>
-                    {item.icon || c.icon} {item.title}:
+                    {displayIcon} {item.title}:
                   </strong>
                   {item.desc}
                 </div>
@@ -506,7 +503,7 @@ export const PalikaOverviewTab: React.FC = () => {
               गाउँ कार्यपालिका नेतृत्व तथा सम्पर्क म्याट्रिक्स
             </h3>
             <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-              पालिकाका जनप्रतिनिधि तथा प्रमुख प्रशासनिक पदाधिकारीहरू (जनप्रतिनिधि व्यवस्थापनसँग सिधै आबद्ध)
+              पालिकाका जनप्रतिनिधि तथा प्रमुख प्रशासनिक पदाधिकारीहरू (जनप्रतिनिधि र HRMS सँग सिधै आबद्ध)
             </span>
           </div>
 
@@ -533,7 +530,7 @@ export const PalikaOverviewTab: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditOnTab('leadership')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -630,6 +627,7 @@ export const PalikaOverviewTab: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         initialData={profile}
+        initialTab={editInitialTab}
       />
     </div>
   );

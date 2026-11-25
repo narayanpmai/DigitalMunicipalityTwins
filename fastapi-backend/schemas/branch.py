@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic.alias_generators import to_camel
 from typing import Optional, List, Union
 from datetime import datetime
 import uuid
@@ -18,6 +19,8 @@ class BranchBase(BaseModel):
     is_information_officer_branch: bool = False
     is_grievance_officer_branch: bool = False
     status: str = 'active'
+
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
     
     @field_validator('roles_and_responsibilities', mode='before')
     def parse_roles(cls, v):
@@ -52,10 +55,13 @@ class BranchUpdate(BaseModel):
     is_grievance_officer_branch: Optional[bool] = None
     status: Optional[str] = None
 
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+
 class BranchSchema(BranchBase):
     id: Union[str, uuid.UUID]
     tenant_id: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
+

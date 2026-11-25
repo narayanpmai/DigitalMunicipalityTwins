@@ -74,6 +74,7 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['representatives'] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
       queryClient.invalidateQueries({ queryKey: ['wards-profile'] });
       queryClient.invalidateQueries({ queryKey: ['wards'] });
       queryClient.invalidateQueries({ queryKey: ['wards-demographics'] });
@@ -93,10 +94,14 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
     mutationFn: (id: string) => representativesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['representatives'] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
       queryClient.invalidateQueries({ queryKey: ['wards-profile'] });
       queryClient.invalidateQueries({ queryKey: ['wards'] });
       queryClient.invalidateQueries({ queryKey: ['wards-demographics'] });
       queryClient.invalidateQueries({ queryKey: ['municipality-profile'] });
+    },
+    onError: (err: any) => {
+      alert('जनप्रतिनिधि विवरण हटाउन सकिएन: ' + (err?.response?.data?.detail || err?.message || 'अज्ञात त्रुटि'));
     }
   });
 
@@ -148,14 +153,15 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
       return;
     }
 
+    const wardRaw = (formData.get('wardNo') as string)?.trim();
     const data: Partial<Representative> = {
       id: editingRep?.id,
       name: (formData.get('name') as string)?.trim(),
       designation: finalDesignation,
-      wardNo: formData.get('wardNo') ? parseInt(formData.get('wardNo') as string, 10) : undefined,
-      phone: (formData.get('phone') as string)?.trim() || undefined,
-      email: (formData.get('email') as string)?.trim() || undefined,
-      politicalParty: (formData.get('politicalParty') as string)?.trim() || undefined,
+      wardNo: (wardRaw ? parseInt(wardRaw, 10) : null) as any,
+      phone: ((formData.get('phone') as string)?.trim() || null) as any,
+      email: ((formData.get('email') as string)?.trim() || null) as any,
+      politicalParty: ((formData.get('politicalParty') as string)?.trim() || null) as any,
       photoUrl: editingRep?.photoUrl,
       isCurrent: formData.get('isCurrent') === 'true',
     };
@@ -486,7 +492,7 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
                   </label>
                   <input
                     name="email"
-                    type="email"
+                    type="text"
                     defaultValue={editingRep?.email}
                     placeholder="mail@panchpokharimun.gov.np"
                     style={{ width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.95rem', boxSizing: 'border-box' }}

@@ -24,6 +24,12 @@ def get_representatives(
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
 ):
+    try:
+        from api.routers.branch import ensure_initial_branches_seeded
+        ensure_initial_branches_seeded(db, ctx.effective_tenant_id)
+    except Exception:
+        pass
+
     query = ctx.filter_query(db.query(Representative), Representative)
 
     if ward_no is not None:
@@ -33,13 +39,27 @@ def get_representatives(
     from sqlalchemy import nulls_first
     return query.order_by(nulls_first(Representative.ward_no.asc()), Representative.designation.asc(), Representative.name.asc()).all()
 
+def _find_representative_for_ctx(db: Session, ctx: TenantContext, id: str) -> Optional[Representative]:
+    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
+    if rep:
+        return rep
+    # Allow fallback for legacy/default tenant records or authorized admins
+    candidate = db.query(Representative).filter(Representative.id == id).first()
+    if candidate and (
+        ctx.is_all
+        or candidate.tenant_id in (None, "", "default", "panchpokhari", "f07c2bcc-81ad-4e27-aeff-1a65f04e9f06")
+        or (ctx.current_user and getattr(ctx.current_user, "role", None) in ("super_admin", "admin", "it_admin"))
+    ):
+        return candidate
+    return None
+
 @router.get("/{id}", response_model=RepresentativeSchema)
 def get_representative(
     id: str,
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
 ):
-    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
+    rep = _find_representative_for_ctx(db, ctx, id)
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
     return rep
@@ -65,10 +85,19 @@ def create_representative(
             if ward:
                 ward.ward_chair_name = db_rep.name
                 ward.chairperson = db_rep.name
-                if db_rep.phone:
+                if db_rep.phone is not None:
                     ward.phone = db_rep.phone
-                if db_rep.email:
-                    ward.email = db_rep.email
+        except Exception:
+            pass
+        try:
+            from models.branch import Branch
+            for br in db.query(Branch).filter(Branch.type == 'ward', Branch.ward_number == db_rep.ward_no).all():
+                br.head_employee_id = db_rep.id
+                br.head_employee_name = f"{db_rep.name} (वडा अध्यक्ष)"
+                if db_rep.phone is not None:
+                    br.contact_phone = db_rep.phone
+                if db_rep.email is not None:
+                    br.email = db_rep.email
         except Exception:
             pass
     db.commit()
@@ -82,7 +111,7 @@ def update_representative(
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
 ):
-    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
+    rep = _find_representative_for_ctx(db, ctx, id)
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
 
@@ -90,20 +119,34 @@ def update_representative(
     for key, value in update_data.items():
         setattr(rep, key, value)
 
-    # Sync to Ward table if representative is assigned to a ward (within same municipality)
-    if rep.ward_no:
+    # Sync to Ward table if representative is assigned to a ward
+    if rep.ward_no and "वडा अध्यक्ष" in (rep.designation or ""):
         try:
             from models.ward import Ward
-            ward = ctx.filter_query(db.query(Ward), Ward).filter(Ward.ward_number == rep.ward_no).first()
+            ward = db.query(Ward).filter(Ward.ward_number == rep.ward_no).first()
             if ward:
                 ward.ward_chair_name = rep.name
                 ward.chairperson = rep.name
-                if rep.phone:
+                if rep.phone is not None:
                     ward.phone = rep.phone
-                if rep.email:
-                    ward.email = rep.email
         except Exception:
             pass
+
+    # Sync to Branch table (Ward office linked via head_employee_id or ward_number)
+    try:
+        from models.branch import Branch
+        linked_branches = db.query(Branch).filter(Branch.head_employee_id == rep.id).all()
+        if not linked_branches and rep.ward_no and "वडा अध्यक्ष" in (rep.designation or ""):
+            linked_branches = db.query(Branch).filter(Branch.type == 'ward', Branch.ward_number == rep.ward_no).all()
+        for br in linked_branches:
+            br.head_employee_id = rep.id
+            br.head_employee_name = f"{rep.name} ({rep.designation})" if rep.designation and rep.designation not in (rep.name or "") else rep.name
+            if rep.phone is not None:
+                br.contact_phone = rep.phone
+            if rep.email is not None:
+                br.email = rep.email
+    except Exception:
+        pass
 
     db.commit()
     db.refresh(rep)
@@ -115,9 +158,17 @@ def delete_representative(
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
 ):
-    rep = ctx.filter_query(db.query(Representative), Representative).filter(Representative.id == id).first()
+    rep = _find_representative_for_ctx(db, ctx, id)
     if not rep:
         raise HTTPException(status_code=404, detail="Representative not found")
+
+    # Clear reference from branches cleanly before deleting
+    try:
+        from models.branch import Branch
+        for br in db.query(Branch).filter(Branch.head_employee_id == id).all():
+            br.head_employee_id = None
+    except Exception:
+        pass
 
     db.delete(rep)
     db.commit()

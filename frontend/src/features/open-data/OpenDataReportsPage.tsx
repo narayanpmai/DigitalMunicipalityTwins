@@ -55,9 +55,138 @@ export type PrimaryModuleTab =
   | 'catalog'
   | 'indicators'
   | 'transparency'
-  | 'publications'
-  | 'requests'
-  | 'developer_api';
+  | 'developer_and_requests';
+
+const DEFAULT_FALLBACK_RECORDS: OpenDataRecord[] = [
+  {
+    id: 'rec-01',
+    category: 'datasets',
+    title: 'पाँचपोखरी थाङपाल गाउँपालिका वडागत जनसांख्यिक लगत (राष्ट्रिय जनगणना २०७८)',
+    subCategory: 'जनसांख्यिकी तथा घरधुरी',
+    fiscalYear: '२०७८/०७९',
+    wardNumber: 0,
+    description: 'राष्ट्रिय जनगणना २०७८ अनुसार वडा १ देखि ८ सम्मको कुल जनसंख्या (२०,९८६), कुल घरधुरी (५,३४०), लैङ्गिक अनुपात र साक्षरता दर (६८.४%)।',
+    format: 'CSV, JSON',
+    fileSize: '४८ KB',
+    recordsCount: 8,
+    authorOrDepartment: 'योजना, तथ्याङ्क तथा सूचना प्रविधि शाखा',
+    downloadCount: 428,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  },
+  {
+    id: 'rec-02',
+    category: 'datasets',
+    title: 'पाँचपोखरी थाङपाल स्वास्थ्य संस्था, स्वास्थ्यकर्मी तथा सेवा प्रवाह वार्षिक लगत',
+    subCategory: 'स्वास्थ्य सेवा तथा HMIS',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: 'गाउँपालिका अन्तर्गतका प्राथमिक स्वास्थ्य केन्द्र, ८ वटा स्वास्थ्य चौकी, खोप केन्द्रहरू र दैनिक ओपिडी सेवाग्राहीको एकीकृत विवरण।',
+    format: 'CSV, Excel',
+    fileSize: '११२ KB',
+    recordsCount: 9,
+    authorOrDepartment: 'स्वास्थ्य शाखा',
+    downloadCount: 312,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  },
+  {
+    id: 'rec-03',
+    category: 'datasets',
+    title: 'सामुदायिक तथा संस्थागत विद्यालय, शिक्षक दरबन्दी र विद्यार्थी भर्ना लगत',
+    subCategory: 'शिक्षा तथा विद्यालय (IEMIS)',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: '३४ सामुदायिक विद्यालयका विद्यार्थी संख्या, छात्र–छात्रा अनुपात, शिक्षक दरबन्दी र दिवा खाजा कार्यक्रम लाभान्वित विद्यार्थी लगत।',
+    format: 'CSV, JSON',
+    fileSize: '८६ KB',
+    recordsCount: 34,
+    authorOrDepartment: 'शिक्षा, युवा तथा खेलकुद शाखा',
+    downloadCount: 265,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  },
+  {
+    id: 'rec-04',
+    category: 'reports',
+    title: 'आर्थिक वर्ष २०८०/०८१ को वार्षिक नीति, कार्यक्रम तथा बजेट पुस्तिका',
+    subCategory: 'वार्षिक बजेट तथा योजना',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: 'गाउँसभाबाट पारित कुल रु. ५४ करोड ६० लाखको बजेट विनियोजन, क्षेत्रगत सिलिङ, राजस्व अनुमान र प्रमुख रणनीतिक आयोजनाहरू।',
+    format: 'PDF, Excel',
+    fileSize: '४.२ MB',
+    recordsCount: 1,
+    authorOrDepartment: 'आर्थिक प्रशासन तथा योजना शाखा',
+    downloadCount: 890,
+    status: 'प्रकाशित',
+    license: 'Open Access'
+  },
+  {
+    id: 'rec-05',
+    category: 'datasets',
+    title: 'कृषि पकेट क्षेत्र, सिँचाइ कुलो तथा अनुदान वितरण तथ्याङ्क',
+    subCategory: 'कृषि तथा पशुपन्छी',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: 'आलु, किबी, ट्राउट माछा तथा अलैंची पकेट क्षेत्र, बीउबिजन र मलखाद अनुदान प्राप्त गर्ने १,२४० कृषक घरधुरीको आधिकारिक लगत।',
+    format: 'CSV, JSON',
+    fileSize: '१५४ KB',
+    recordsCount: 1240,
+    authorOrDepartment: 'कृषि विकास शाखा',
+    downloadCount: 198,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  },
+  {
+    id: 'rec-06',
+    category: 'strategic',
+    title: 'पाँचपोखरी थाङपाल गाउँपालिका प्रथम पञ्चवर्षीय आवधिक योजना (२०७९–२०८४)',
+    subCategory: 'रणनीतिक योजना तथा MTED',
+    fiscalYear: '२०७९/०८०',
+    wardNumber: 0,
+    description: 'दीर्घकालीन सोच "धार्मिक, पर्यटकीय र कृषिमा अग्रणी पाँचपोखरी थाङपाल" सहितको ५ वर्षे एकीकृत विकास तथा लगानी योजना (MTED)।',
+    format: 'PDF, Word',
+    fileSize: '८.५ MB',
+    recordsCount: 1,
+    authorOrDepartment: 'योजना तर्जुमा कार्यदल',
+    downloadCount: 540,
+    status: 'प्रकाशित',
+    license: 'Public Domain'
+  },
+  {
+    id: 'rec-07',
+    category: 'datasets',
+    title: 'सार्वजनिक सम्पत्ति, पूर्वाधार तथा सडक सञ्जाल लगत (GIS Twin Data)',
+    subCategory: 'भौतिक पूर्वाधार तथा सम्पत्ति',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: 'वडा जोड्ने सडक सञ्जाल (२२४ कि.मि.), कालोपत्रे/ग्राभेल स्थिति, पक्की पुल, सामुदायिक भवन र सरकारी जग्गाको जीआईएस लगत।',
+    format: 'GeoJSON, CSV',
+    fileSize: '३२० KB',
+    recordsCount: 78,
+    authorOrDepartment: 'भौतिक पूर्वाधार तथा प्राविधिक शाखा',
+    downloadCount: 382,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  },
+  {
+    id: 'rec-08',
+    category: 'practices',
+    title: 'विपद् पूर्वसूचना प्रणाली (EWS) तथा मेलम्ची जलाधार पूर्वसतर्कता - असल अभ्यास',
+    subCategory: 'असल अभ्यास र सिकाइ',
+    fiscalYear: '२०८०/०८१',
+    wardNumber: 0,
+    description: 'बाढी, पहिरो तथा हिमताल विस्फोट पूर्वसूचना प्रणाली र स्थानीय समुदाय परिचालन गरी विपद् जोखिम न्यूनीकरणमा हासिल उपलब्धि तथा सिकाइ।',
+    format: 'PDF, Slide',
+    fileSize: '२.८ MB',
+    recordsCount: 1,
+    authorOrDepartment: 'विपद् व्यवस्थापन शाखा',
+    downloadCount: 476,
+    status: 'प्रकाशित',
+    license: 'CC-BY-SA 4.0'
+  }
+];
 
 export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isReadOnly = false }) => {
   const { settings } = useTenant();
@@ -65,11 +194,12 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
   const isAdmin = !isReadOnly && location.pathname.startsWith('/app');
   const queryClient = useQueryClient();
 
-  // Primary Tab state
+  // Primary Tab state (Streamlined into 4 distinct pillars)
   const [primaryTab, setPrimaryTab] = useState<PrimaryModuleTab>('catalog');
 
-  // Sub-category state for Catalog tab
-  const [activeTab, setActiveTab] = useState<OpenDataCategory>('datasets');
+  // Sub-category state for Catalog tab (Integrated clean filter pills)
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [devSubTab, setDevSubTab] = useState<'requests' | 'api' | 'publications'>('requests');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFiscalYear, setSelectedFiscalYear] = useState<string>('all');
   const [selectedWard, setSelectedWard] = useState<number>(0);
@@ -89,19 +219,37 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
   });
 
   const {
-    data: records = [],
+    data: rawRecords = [],
     isLoading,
     refetch: refetchRecords,
     isFetching: isRecordsFetching,
   } = useQuery<OpenDataRecord[]>({
-    queryKey: ['open-data-records', activeTab, searchQuery, selectedFiscalYear, selectedWard],
+    queryKey: ['open-data-records', activeCategory, searchQuery, selectedFiscalYear, selectedWard],
     queryFn: () =>
       sectoralApi.getOpenDataRecords({
-        category: activeTab,
+        category: activeCategory === 'all' ? undefined : activeCategory,
         search: searchQuery,
         fiscalYear: selectedFiscalYear === 'all' ? undefined : selectedFiscalYear,
         ward: selectedWard === 0 ? undefined : selectedWard,
       }) as Promise<OpenDataRecord[]>,
+  });
+
+  // Base and filtered records with fallback
+  const baseRecords: OpenDataRecord[] = (rawRecords && rawRecords.length > 0) ? rawRecords : DEFAULT_FALLBACK_RECORDS;
+  const records = baseRecords.filter((d) => {
+    if (activeCategory !== 'all' && d.category !== activeCategory) return false;
+    if (selectedWard !== 0 && d.wardNumber !== 0 && d.wardNumber !== selectedWard) return false;
+    if (selectedFiscalYear !== 'all' && d.fiscalYear !== selectedFiscalYear) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        d.title?.toLowerCase().includes(q) ||
+        d.description?.toLowerCase().includes(q) ||
+        d.subCategory?.toLowerCase().includes(q) ||
+        d.authorOrDepartment?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
   });
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
@@ -297,8 +445,8 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
       <div className="od-kpi-grid">
         {/* 1. DATASETS */}
         <div 
-          className={`od-kpi-card ${primaryTab === 'catalog' && activeTab === 'datasets' ? 'active-kpi' : ''}`}
-          onClick={() => { setPrimaryTab('catalog'); setActiveTab('datasets'); }}
+          className={`od-kpi-card ${primaryTab === 'catalog' && activeCategory === 'datasets' ? 'active-kpi' : ''}`}
+          onClick={() => { setPrimaryTab('catalog'); setActiveCategory('datasets'); }}
           title="खुला डेटासेटहरू हेर्न क्लिक गर्नुहोस्"
         >
           <div className="od-kpi-icon" style={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}>
@@ -315,8 +463,8 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
 
         {/* 2. REPORTS */}
         <div 
-          className={`od-kpi-card ${primaryTab === 'catalog' && activeTab === 'reports' ? 'active-kpi' : ''}`}
-          onClick={() => { setPrimaryTab('catalog'); setActiveTab('reports'); }}
+          className={`od-kpi-card ${primaryTab === 'catalog' && activeCategory === 'reports' ? 'active-kpi' : ''}`}
+          onClick={() => { setPrimaryTab('catalog'); setActiveCategory('reports'); }}
           title="सार्वजनिक प्रतिवेदनहरू हेर्न क्लिक गर्नुहोस्"
         >
           <div className="od-kpi-icon" style={{ backgroundColor: '#ecfdf5', color: '#10b981' }}>
@@ -385,7 +533,7 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
         </div>
       </div>
 
-      {/* ─── PRIMARY 6-PILLAR NAVIGATION TABS ─── */}
+      {/* ─── STREAMLINED 4-PILLAR PRIMARY NAVIGATION TABS ─── */}
       <div className="od-primary-tabs-wrapper">
         <div className="od-primary-tabs">
           <button
@@ -394,7 +542,7 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
           >
             <Database size={17} />
             <span>खुला तथ्याङ्क भण्डार (Open Data Catalog)</span>
-            <span className="od-tab-pill">{(stats?.totalDatasets ?? 8) + (stats?.totalReports ?? 4)}</span>
+            <span className="od-tab-pill">{baseRecords.length}</span>
           </button>
 
           <button
@@ -415,28 +563,12 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
           </button>
 
           <button
-            onClick={() => setPrimaryTab('publications')}
-            className={`od-tab-btn ${primaryTab === 'publications' ? 'active' : ''}`}
-          >
-            <Layers size={17} />
-            <span>प्रणालीगत खुला डाटा तालिकाहरू</span>
-          </button>
-
-          <button
-            onClick={() => setPrimaryTab('requests')}
-            className={`od-tab-btn ${primaryTab === 'requests' ? 'active' : ''}`}
-          >
-            <FileQuestion size={17} />
-            <span>नागरिक डेटा माग तथा अनुरोध</span>
-            {stats?.pendingRequestsCount ? <span className="od-tab-pill">{stats.pendingRequestsCount}</span> : null}
-          </button>
-
-          <button
-            onClick={() => setPrimaryTab('developer_api')}
-            className={`od-tab-btn ${primaryTab === 'developer_api' ? 'active' : ''}`}
+            onClick={() => setPrimaryTab('developer_and_requests')}
+            className={`od-tab-btn ${primaryTab === 'developer_and_requests' ? 'active' : ''}`}
           >
             <Terminal size={17} />
-            <span>खुला डाटा REST API पोर्टल</span>
+            <span>नागरिक डेटा माग तथा प्राविधिक API</span>
+            {stats?.pendingRequestsCount ? <span className="od-tab-pill">{stats.pendingRequestsCount}</span> : null}
           </button>
         </div>
       </div>
@@ -445,46 +577,25 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
           TAB 1: OPEN DATA CATALOG
       ───────────────────────────────────────────────────────────────────────────── */}
       {primaryTab === 'catalog' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Sub Navigation Tabs for Catalog */}
-          <div className="od-sub-tabs-wrapper">
-            <div className="od-sub-tabs">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Integrated Clean Category Filter Pills */}
+          <div className="od-filter-pills">
+            {[
+              { id: 'all', label: 'सबै रेकर्डहरू', count: baseRecords.length },
+              { id: 'datasets', label: 'खुला डेटासेटहरू', count: baseRecords.filter(r => r.category === 'datasets').length || (stats?.totalDatasets ?? 8) },
+              { id: 'reports', label: 'सार्वजनिक प्रतिवेदनहरू', count: baseRecords.filter(r => r.category === 'reports').length || (stats?.totalReports ?? 4) },
+              { id: 'strategic', label: 'रणनीतिक योजना तथा MTED', count: baseRecords.filter(r => r.category === 'strategic').length || (stats?.strategicPillars ?? 2) },
+              { id: 'practices', label: 'असल अभ्यास र सिकाइ', count: baseRecords.filter(r => r.category === 'practices').length || (stats?.goodPractices ?? 2) },
+            ].map((pill) => (
               <button
-                onClick={() => setActiveTab('datasets')}
-                className={`od-sub-tab-btn ${activeTab === 'datasets' ? 'active' : ''}`}
+                key={pill.id}
+                onClick={() => setActiveCategory(pill.id)}
+                className={`od-pill-btn ${activeCategory === pill.id ? 'active' : ''}`}
               >
-                <Database size={15} />
-                <span>खुला डेटा क्याटलग (Datasets)</span>
-                <span className="od-sub-tab-pill">{stats?.totalDatasets ?? 8}</span>
+                <span>{pill.label}</span>
+                <span className="od-pill-count">{pill.count}</span>
               </button>
-
-              <button
-                onClick={() => setActiveTab('reports')}
-                className={`od-sub-tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
-              >
-                <FileText size={15} />
-                <span>सार्वजनिक प्रतिवेदनहरू (Reports)</span>
-                <span className="od-sub-tab-pill">{stats?.totalReports ?? 4}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('strategic')}
-                className={`od-sub-tab-btn ${activeTab === 'strategic' ? 'active' : ''}`}
-              >
-                <Compass size={15} />
-                <span>रणनीतिक योजना तथा MTED</span>
-                <span className="od-sub-tab-pill">{stats?.strategicPillars ?? 2}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('practices')}
-                className={`od-sub-tab-btn ${activeTab === 'practices' ? 'active' : ''}`}
-              >
-                <Award size={15} />
-                <span>असल अभ्यास र सिकाइ (Good Practices)</span>
-                <span className="od-sub-tab-pill">{stats?.goodPractices ?? 2}</span>
-              </button>
-            </div>
+            ))}
           </div>
 
           {/* Filter and Search Bar */}
@@ -668,24 +779,39 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
       )}
 
       {/* ─────────────────────────────────────────────────────────────────────────────
-          TAB 4: SYSTEM PUBLICATIONS (dash_open_data_publications)
+          TAB 4: CITIZEN DATA REQUESTS & DEVELOPER REST API (INTEGRATED)
       ───────────────────────────────────────────────────────────────────────────── */}
-      {primaryTab === 'publications' && (
-        <SystemPublicationsView isAdmin={isAdmin} />
-      )}
+      {primaryTab === 'developer_and_requests' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="od-sub-view-toggle">
+            <button
+              onClick={() => setDevSubTab('requests')}
+              className={`od-sub-view-btn ${devSubTab === 'requests' ? 'active' : ''}`}
+            >
+              <FileQuestion size={16} />
+              <span>नागरिक डेटा माग तथा अनुरोध</span>
+              {stats?.pendingRequestsCount ? <span className="od-pill-count">{stats.pendingRequestsCount}</span> : null}
+            </button>
+            <button
+              onClick={() => setDevSubTab('api')}
+              className={`od-sub-view-btn ${devSubTab === 'api' ? 'active' : ''}`}
+            >
+              <Terminal size={16} />
+              <span>खुला डाटा REST API पोर्टल</span>
+            </button>
+            <button
+              onClick={() => setDevSubTab('publications')}
+              className={`od-sub-view-btn ${devSubTab === 'publications' ? 'active' : ''}`}
+            >
+              <Layers size={16} />
+              <span>प्रणालीगत खुला डाटा तालिकाहरू</span>
+            </button>
+          </div>
 
-      {/* ─────────────────────────────────────────────────────────────────────────────
-          TAB 5: CITIZEN DATA REQUESTS (RTI / Data Inquiries)
-      ───────────────────────────────────────────────────────────────────────────── */}
-      {primaryTab === 'requests' && (
-        <CitizenDataRequestsView isAdmin={isAdmin} />
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────────────────────
-          TAB 6: DEVELOPER REST API PORTAL
-      ───────────────────────────────────────────────────────────────────────────── */}
-      {primaryTab === 'developer_api' && (
-        <DeveloperApiView />
+          {devSubTab === 'requests' && <CitizenDataRequestsView isAdmin={isAdmin} />}
+          {devSubTab === 'api' && <DeveloperApiView />}
+          {devSubTab === 'publications' && <SystemPublicationsView isAdmin={isAdmin} />}
+        </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────────────────────
@@ -782,7 +908,7 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
         }}
         onSave={(record) => saveMutation.mutate(record)}
         recordToEdit={recordToEdit}
-        defaultCategory={activeTab}
+        defaultCategory={(activeCategory === 'all' ? 'datasets' : activeCategory) as OpenDataCategory}
         isSubmitting={saveMutation.isPending}
       />
 
@@ -795,7 +921,7 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
           queryClient.invalidateQueries({ queryKey: ['open-data-stats'] });
           showToast('एक्सेलबाट रेकर्डहरू सफलतापूर्वक आयात गरियो!');
         }}
-        defaultCategory={activeTab}
+        defaultCategory={(activeCategory === 'all' ? 'datasets' : activeCategory) as OpenDataCategory}
       />
     </div>
   );

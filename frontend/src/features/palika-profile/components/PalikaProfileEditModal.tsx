@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   Compass,
@@ -16,6 +16,8 @@ import {
   Sparkles,
   Link2
 } from 'lucide-react';
+import { api } from '../../../api/client';
+import { representativesApi } from '../../../api/representatives';
 import { municipalityApi } from '../../../api/municipality';
 import { MunicipalityProfile } from '../../../types/profile';
 
@@ -23,15 +25,36 @@ interface PalikaProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: MunicipalityProfile;
+  initialTab?: 'admin' | 'boundaries' | 'heritage' | 'leadership' | 'stats';
 }
 
 export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
   isOpen,
   onClose,
-  initialData
+  initialData,
+  initialTab = 'admin',
 }) => {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'admin' | 'boundaries' | 'heritage' | 'leadership' | 'stats'>('admin');
+  const [activeTab, setActiveTab] = useState<'admin' | 'boundaries' | 'heritage' | 'leadership' | 'stats'>(initialTab);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab || 'admin');
+    }
+  }, [isOpen, initialTab]);
+
+  // Dynamic Lookups from HRMS (Employees) and Representatives (SSOT)
+  const { data: hrmsEmployees = [] } = useQuery<any[]>({
+    queryKey: ['employees', 'lookup'],
+    queryFn: () => api.get<any[]>('/employees'),
+    enabled: isOpen,
+  });
+
+  const { data: allRepresentatives = [] } = useQuery<any[]>({
+    queryKey: ['representatives', 'lookup'],
+    queryFn: () => representativesApi.getAll(),
+    enabled: isOpen,
+  });
 
   const [formData, setFormData] = useState({
     nameNp: 'पाँचपोखरी थाङपाल गाउँपालिका',
@@ -240,6 +263,8 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ['demographics-summary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['representatives'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
       queryClient.invalidateQueries({ queryKey: ['wards-profile'] });
       alert('सफलतापूर्वक पालिका डिजिटल प्रोफाइल, जनसांख्यिकी र घरधुरी विवरण अद्यावधिक (Sync) भयो!');
       onClose();
@@ -649,7 +674,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
               </div>
             )}
 
-            {/* TAB 4: LEADERSHIP MATRIX (SYNCED TO REPRESENTATIVES) */}
+            {/* TAB 4: LEADERSHIP MATRIX (SYNCED TO REPRESENTATIVES & HRMS) */}
             {activeTab === 'leadership' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div
@@ -667,16 +692,43 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                 >
                   <Link2 size={20} color="#38bdf8" style={{ flexShrink: 0 }} />
                   <div>
-                    <strong>🔗 एकीकृत तथ्याङ्क सिङ्क (Single Source of Truth):</strong> यहाँ कार्यपालिका नेतृत्वको नाम, फोन वा इमेल सम्पादन गर्दा <strong>"जनप्रतिनिधि व्यवस्थापन"</strong> तालिकामा पनि विवरण स्वतः अद्यावधिक हुन्छ।
+                    <strong>🔗 एकीकृत तथ्याङ्क सिङ्क (Single Source of Truth):</strong> अब प्रत्येक पदमा <strong>"जनप्रतिनिधि व्यवस्थापन"</strong> र <strong>"कर्मचारी अभिलेख (HRMS)"</strong> बाट सिधै Dropdown मार्फत छनोट गर्न सकिन्छ (नाम, फोन र इमेल स्वतः भरिन्छ तथा सम्पादन गर्दा सिङ्क पनि हुन्छ)।
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
                   {/* Leader 1: Mayor */}
                   <div style={{ backgroundColor: '#1e293b', border: '1px solid #0f4c81', borderRadius: '10px', padding: '1rem' }}>
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: '#0f4c81', color: '#ffffff' }}>
                       कार्यकारी प्रमुख • गाउँपालिका अध्यक्ष
                     </span>
+                    <div style={{ marginTop: '0.65rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: '#38bdf8', fontWeight: 700, marginBottom: '0.2rem' }}>
+                        जनप्रतिनिधिबाट छान्नुहोस् (Dropdown)
+                      </label>
+                      <select
+                        value={allRepresentatives.find(r => r.name?.trim() === formData.mayorName?.trim())?.id || ''}
+                        onChange={(e) => {
+                          const rep = allRepresentatives.find(r => r.id === e.target.value);
+                          if (rep) {
+                            setFormData({
+                              ...formData,
+                              mayorName: rep.name || formData.mayorName,
+                              mayorPhone: rep.phone || formData.mayorPhone,
+                              mayorEmail: rep.email || formData.mayorEmail,
+                            });
+                          }
+                        }}
+                        style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0c192c', border: '1px solid #0284c7', borderRadius: '6px', color: '#e0f2fe', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <option value="">-- जनप्रतिनिधि सूचीबाट छान्नुहोस् --</option>
+                        {allRepresentatives.map((r: any) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name} ({r.designation}{r.wardNo ? ` - वडा ${r.wardNo}` : ''})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div style={{ marginTop: '0.6rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>अध्यक्षको नाम *</label>
                       <input
@@ -699,7 +751,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <div style={{ marginTop: '0.5rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>इमेल ठेगाना</label>
                       <input
-                        type="email"
+                        type="text"
                         value={formData.mayorEmail}
                         onChange={(e) => setFormData({ ...formData, mayorEmail: e.target.value })}
                         style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff' }}
@@ -712,6 +764,33 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: '#047857', color: '#ffffff' }}>
                       न्यायिक समिति संयोजक • उपाध्यक्ष
                     </span>
+                    <div style={{ marginTop: '0.65rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: '#34d399', fontWeight: 700, marginBottom: '0.2rem' }}>
+                        जनप्रतिनिधिबाट छान्नुहोस् (Dropdown)
+                      </label>
+                      <select
+                        value={allRepresentatives.find(r => r.name?.trim() === formData.deputyMayorName?.trim())?.id || ''}
+                        onChange={(e) => {
+                          const rep = allRepresentatives.find(r => r.id === e.target.value);
+                          if (rep) {
+                            setFormData({
+                              ...formData,
+                              deputyMayorName: rep.name || formData.deputyMayorName,
+                              deputyMayorPhone: rep.phone || formData.deputyMayorPhone,
+                              deputyMayorEmail: rep.email || formData.deputyMayorEmail,
+                            });
+                          }
+                        }}
+                        style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0b221a', border: '1px solid #10b981', borderRadius: '6px', color: '#d1fae5', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <option value="">-- जनप्रतिनिधि सूचीबाट छान्नुहोस् --</option>
+                        {allRepresentatives.map((r: any) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name} ({r.designation}{r.wardNo ? ` - वडा ${r.wardNo}` : ''})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div style={{ marginTop: '0.6rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>उपाध्यक्षको नाम *</label>
                       <input
@@ -734,7 +813,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <div style={{ marginTop: '0.5rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>इमेल ठेगाना</label>
                       <input
-                        type="email"
+                        type="text"
                         value={formData.deputyMayorEmail}
                         onChange={(e) => setFormData({ ...formData, deputyMayorEmail: e.target.value })}
                         style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff' }}
@@ -747,6 +826,65 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: '#b45309', color: '#ffffff' }}>
                       प्रशासनिक प्रमुख • प्रमुख प्रशासकीय अधिकृत
                     </span>
+                    <div style={{ marginTop: '0.65rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700, marginBottom: '0.2rem' }}>
+                        कर्मचारी (HRMS) / पदाधिकारी छान्नुहोस्
+                      </label>
+                      <select
+                        value={
+                          hrmsEmployees.find(e => e.fullName?.trim() === formData.caoName?.trim())
+                            ? `emp:${hrmsEmployees.find(e => e.fullName?.trim() === formData.caoName?.trim()).id}`
+                            : allRepresentatives.find(r => r.name?.trim() === formData.caoName?.trim())
+                            ? `rep:${allRepresentatives.find(r => r.name?.trim() === formData.caoName?.trim()).id}`
+                            : ''
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.startsWith('emp:')) {
+                            const emp = hrmsEmployees.find(x => x.id === val.slice(4));
+                            if (emp) {
+                              setFormData({
+                                ...formData,
+                                caoName: emp.fullName || formData.caoName,
+                                caoPhone: emp.contactPhone || formData.caoPhone,
+                                caoEmail: emp.email || formData.caoEmail,
+                              });
+                            }
+                          } else if (val.startsWith('rep:')) {
+                            const rep = allRepresentatives.find(x => x.id === val.slice(4));
+                            if (rep) {
+                              setFormData({
+                                ...formData,
+                                caoName: rep.name || formData.caoName,
+                                caoPhone: rep.phone || formData.caoPhone,
+                                caoEmail: rep.email || formData.caoEmail,
+                              });
+                            }
+                          }
+                        }}
+                        style={{ width: '100%', padding: '0.45rem', backgroundColor: '#251b0e', border: '1px solid #d97706', borderRadius: '6px', color: '#fef3c7', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <option value="">-- कर्मचारी (HRMS) वा सूचीबाट छान्नुहोस् --</option>
+                        {hrmsEmployees.length > 0 && (
+                          <optgroup label="कर्मचारी अभिलेख (HRMS)">
+                            {hrmsEmployees.map((emp: any) => (
+                              <option key={`emp-${emp.id}`} value={`emp:${emp.id}`}>
+                                {emp.fullName} ({emp.designation || emp.department || 'कर्मचारी'})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {allRepresentatives.length > 0 && (
+                          <optgroup label="जनप्रतिनिधि / अधिकारी सूची">
+                            {allRepresentatives.map((r: any) => (
+                              <option key={`rep-${r.id}`} value={`rep:${r.id}`}>
+                                {r.name} ({r.designation})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </select>
+                    </div>
                     <div style={{ marginTop: '0.6rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>अधिकृतको नाम *</label>
                       <input
@@ -769,7 +907,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <div style={{ marginTop: '0.5rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>इमेल ठेगाना</label>
                       <input
-                        type="email"
+                        type="text"
                         value={formData.caoEmail}
                         onChange={(e) => setFormData({ ...formData, caoEmail: e.target.value })}
                         style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff' }}
@@ -782,6 +920,69 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', background: '#6d28d9', color: '#ffffff' }}>
                       सञ्चार तथा समन्वय • पालिका प्रवक्ता
                     </span>
+                    <div style={{ marginTop: '0.65rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: '#c4b5fd', fontWeight: 700, marginBottom: '0.2rem' }}>
+                        जनप्रतिनिधि वा कर्मचारी (HRMS) छान्नुहोस्
+                      </label>
+                      <select
+                        value={
+                          allRepresentatives.find(r => r.name?.trim() === formData.spokespersonName?.trim())
+                            ? `rep:${allRepresentatives.find(r => r.name?.trim() === formData.spokespersonName?.trim()).id}`
+                            : hrmsEmployees.find(e => e.fullName?.trim() === formData.spokespersonName?.trim())
+                            ? `emp:${hrmsEmployees.find(e => e.fullName?.trim() === formData.spokespersonName?.trim()).id}`
+                            : ''
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.startsWith('rep:')) {
+                            const rep = allRepresentatives.find(x => x.id === val.slice(4));
+                            if (rep) {
+                              setFormData({
+                                ...formData,
+                                spokespersonName: rep.name || formData.spokespersonName,
+                                spokespersonRole: rep.wardNo
+                                  ? `प्रवक्ता तथा वडा अध्यक्ष (वडा ${rep.wardNo})`
+                                  : `प्रवक्ता (${rep.designation || 'जनप्रतिनिधि'})`,
+                                spokespersonPhone: rep.phone || formData.spokespersonPhone,
+                                spokespersonEmail: rep.email || formData.spokespersonEmail,
+                              });
+                            }
+                          } else if (val.startsWith('emp:')) {
+                            const emp = hrmsEmployees.find(x => x.id === val.slice(4));
+                            if (emp) {
+                              setFormData({
+                                ...formData,
+                                spokespersonName: emp.fullName || formData.spokespersonName,
+                                spokespersonRole: `प्रवक्ता (${emp.department || emp.designation || 'सूचना अधिकारी'})`,
+                                spokespersonPhone: emp.contactPhone || formData.spokespersonPhone,
+                                spokespersonEmail: emp.email || formData.spokespersonEmail,
+                              });
+                            }
+                          }
+                        }}
+                        style={{ width: '100%', padding: '0.45rem', backgroundColor: '#1e1633', border: '1px solid #8b5cf6', borderRadius: '6px', color: '#ede9fe', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <option value="">-- जनप्रतिनिधि वा कर्मचारी सूचीबाट छान्नुहोस् --</option>
+                        {allRepresentatives.length > 0 && (
+                          <optgroup label="जनप्रतिनिधि व्यवस्थापन">
+                            {allRepresentatives.map((r: any) => (
+                              <option key={`srep-${r.id}`} value={`rep:${r.id}`}>
+                                {r.name} ({r.designation}{r.wardNo ? ` - वडा ${r.wardNo}` : ''})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {hrmsEmployees.length > 0 && (
+                          <optgroup label="कर्मचारी अभिलेख (HRMS)">
+                            {hrmsEmployees.map((emp: any) => (
+                              <option key={`semp-${emp.id}`} value={`emp:${emp.id}`}>
+                                {emp.fullName} ({emp.designation || emp.department || 'कर्मचारी'})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </select>
+                    </div>
                     <div style={{ marginTop: '0.6rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>प्रवक्ताको नाम *</label>
                       <input
@@ -813,7 +1014,7 @@ export const PalikaProfileEditModal: React.FC<PalikaProfileEditModalProps> = ({
                     <div style={{ marginTop: '0.5rem' }}>
                       <label style={{ display: 'block', fontSize: '0.74rem', color: '#94a3b8', marginBottom: '0.2rem' }}>इमेल ठेगाना</label>
                       <input
-                        type="email"
+                        type="text"
                         value={formData.spokespersonEmail}
                         onChange={(e) => setFormData({ ...formData, spokespersonEmail: e.target.value })}
                         style={{ width: '100%', padding: '0.45rem', backgroundColor: '#0f172a', border: '1px solid #475569', borderRadius: '6px', color: '#ffffff' }}

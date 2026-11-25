@@ -691,7 +691,7 @@ def update_profile(
             "spokesperson": leaders_val[3] if len(leaders_val) > 3 else {},
         }
 
-    # Leadership sync: Single Source of Truth – update representatives table
+    # Leadership sync: Single Source of Truth – update representatives & HRMS employees tables
     def sync_leadership(role_type: str, info: dict):
         if not info or not info.get("name"):
             return
@@ -713,9 +713,23 @@ def update_profile(
                     "अधिकृत" in r.designation or "CAO" in r.designation or "प्रशासकीय" in r.designation
                 )), None
             )
+            # Also sync CAO into HRMS Employee record if present
+            try:
+                from models.employee import Employee
+                cao_emp = db.query(Employee).filter(Employee.designation.ilike("%प्रमुख प्रशासकीय%")).first()
+                if cao_emp:
+                    cao_emp.full_name = info["name"]
+                    if info.get("phone"):
+                        cao_emp.contact_phone = info["phone"]
+                    if info.get("email"):
+                        cao_emp.email = info["email"]
+                    db.add(cao_emp)
+            except Exception:
+                pass
         elif role_type == "spokesperson":
+            # Only sync into a dedicated spokesperson representative row; never overwrite Ward 3 chairperson
             target = next(
-                (r for r in reps if (r.designation and "प्रवक्ता" in r.designation) or (r.ward_no == 3)), None
+                (r for r in reps if r.designation and "प्रवक्ता" in r.designation and "वडा अध्यक्ष" not in r.designation), None
             )
 
         if target:
@@ -725,7 +739,7 @@ def update_profile(
                 target.phone = info["phone"]
             if info.get("email"):
                 target.email = info["email"]
-            if info.get("designation"):
+            if info.get("designation") and role_type != "spokesperson":
                 target.designation = info["designation"]
             db.add(target)
 

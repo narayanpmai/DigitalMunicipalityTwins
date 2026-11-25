@@ -34,8 +34,11 @@ import {
   Database,
   FileSpreadsheet,
   CalendarRange,
+  RefreshCw,
 } from 'lucide-react';
 import { ROLE_DEFINITIONS } from '../super-admin/SuperAdminPage';
+import { api } from '../../api/client';
+import { representativesApi } from '../../api/representatives';
 import { branchesApi, type Branch } from '../../api/branches';
 import { rtiApi, type RtiRequest, type RtiStatus } from '../../api/rti';
 import { usersApi, type User as ApiUser, type Role as ApiRole } from '../../api/users';
@@ -186,7 +189,7 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
       if (Array.isArray(roles) && roles.length > 0) {
         try {
           localStorage.setItem('p5_role_permissions', JSON.stringify(roles));
-        } catch {}
+        } catch { }
       }
       return roles;
     },
@@ -207,7 +210,7 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
           list.push({ name: variables.roleName, permissions: variables.permissions });
         }
         localStorage.setItem('p5_role_permissions', JSON.stringify(list));
-      } catch {}
+      } catch { }
     },
     onError: (error) => {
       console.error('Failed to update role permissions:', error);
@@ -281,6 +284,19 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
   const [editingBranch, setEditingBranch] = useState<Partial<Branch> | null>(null);
   const [responsibilitiesText, setResponsibilitiesText] = useState('');
 
+  // Dynamic Master Data Lookups for Branch Head & Ward Chair Assignment
+  const { data: hrmsEmployees = [] } = useQuery<any[]>({
+    queryKey: ['employees', 'lookup'],
+    queryFn: () => api.get<any[]>('/employees'),
+    enabled: branchModalOpen,
+  });
+
+  const { data: allRepresentatives = [] } = useQuery<any[]>({
+    queryKey: ['representatives', 'lookup'],
+    queryFn: () => representativesApi.getAll(),
+    enabled: branchModalOpen,
+  });
+
   const handleOpenBranchModal = (branch?: Branch) => {
     if (branch) {
       setEditingBranch(branch);
@@ -324,6 +340,8 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
         await branchesApi.create(payload);
       }
       queryClient.invalidateQueries({ queryKey: ['branches'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['representatives'] });
       setBranchModalOpen(false);
     } catch (err) {
       alert('शाखा सुरक्षित गर्दा समस्या आयो।');
@@ -985,10 +1003,29 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
               </button>
             </div>
 
-            <button className="dt-btn dt-btn-primary" onClick={() => handleOpenBranchModal()}>
-              <Plus size={16} />
-              <span>नयाँ शाखा थप्नुहोस्</span>
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                className="dt-btn dt-btn-outline"
+                style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                onClick={async () => {
+                  try {
+                    await branchesApi.seedDefault();
+                    queryClient.invalidateQueries({ queryKey: ['branches'] });
+                  } catch (err) {
+                    console.error('Failed to seed default branches', err);
+                  }
+                }}
+                title="नेपाल सरकार तथा पालिका मानक ११ शाखाहरू तथा ८ वडा कार्यालयहरू स्वतः लोड गर्नुहोस्"
+              >
+                <RefreshCw size={14} />
+                <span>मानक शाखाहरू लोड गर्नुहोस्</span>
+              </button>
+
+              <button className="dt-btn dt-btn-primary" onClick={() => handleOpenBranchModal()}>
+                <Plus size={16} />
+                <span>नयाँ शाखा थप्नुहोस्</span>
+              </button>
+            </div>
           </div>
 
           {/* Branches Table */}
@@ -1664,9 +1701,96 @@ export const AdminConsolePage: React.FC<AdminConsolePageProps> = ({ defaultTab }
                   )}
                 </div>
 
+                {/* Dynamic Master Data Dropdowns (Single Source of Truth) */}
+                {editingBranch.type === 'palika' ? (
+                  <div style={{ background: '#f0f9ff', padding: '0.85rem', borderRadius: '10px', border: '1px solid #bae6fd' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#0369a1', marginBottom: '0.4rem' }}>
+                      <Users size={16} />
+                      <span>कर्मचारी अभिलेख (HRMS) बाट शाखा प्रमुख चयन गर्नुहोस्:</span>
+                    </label>
+                    <select
+                      value={editingBranch.headEmployeeId || ''}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        const emp = hrmsEmployees.find(x => x.id === selectedId);
+                        if (emp) {
+                          setEditingBranch({
+                            ...editingBranch,
+                            headEmployeeId: emp.id,
+                            headEmployeeName: emp.fullName || emp.full_name || editingBranch.headEmployeeName,
+                            contactPhone: emp.contactPhone || emp.contact_phone || editingBranch.contactPhone,
+                            email: emp.email || editingBranch.email,
+                          });
+                        } else {
+                          setEditingBranch({
+                            ...editingBranch,
+                            headEmployeeId: undefined,
+                          });
+                        }
+                      }}
+                      className="dt-input"
+                      style={{ background: '#ffffff', borderColor: '#7dd3fc', fontSize: '0.88rem' }}
+                    >
+                      <option value="">-- HRMS कर्मचारी सूचीबाट छान्नुहोस् (वा तल विवरण भर्नुहोस्) --</option>
+                      {hrmsEmployees.map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.fullName || emp.full_name} ({emp.designation || 'कर्मचारी'} - {emp.department || 'सामान्य प्रशासन'})
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{ fontSize: '0.74rem', color: '#0284c7', marginTop: '4px' }}>
+                      💡 HRMS बाट छान्दा शाखा प्रमुखको नाम, पद, फोन र इमेल स्वतः सेट हुन्छ।
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ background: '#faf5ff', padding: '0.85rem', borderRadius: '10px', border: '1px solid #e9d5ff' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#7e22ce', marginBottom: '0.4rem' }}>
+                      <ShieldCheck size={16} />
+                      <span>जनप्रतिनिधि व्यवस्थापनबाट वडा अध्यक्ष चयन गर्नुहोस्:</span>
+                    </label>
+                    <select
+                      value={editingBranch.headEmployeeId || ''}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        const rep = allRepresentatives.find(x => x.id === selectedId);
+                        if (rep) {
+                          setEditingBranch({
+                            ...editingBranch,
+                            headEmployeeId: rep.id,
+                            headEmployeeName: `${rep.name} (वडा अध्यक्ष)`,
+                            contactPhone: rep.phone || editingBranch.contactPhone,
+                            email: rep.email || editingBranch.email,
+                          });
+                        } else {
+                          setEditingBranch({
+                            ...editingBranch,
+                            headEmployeeId: undefined,
+                          });
+                        }
+                      }}
+                      className="dt-input"
+                      style={{ background: '#ffffff', borderColor: '#d8b4fe', fontSize: '0.88rem' }}
+                    >
+                      <option value="">-- जनप्रतिनिधि सूचीबाट छान्नुहोस् (वा तल विवरण भर्नुहोस्) --</option>
+                      {allRepresentatives
+                        .filter(r => !editingBranch.wardNumber || r.wardNo === editingBranch.wardNumber || r.ward_no === editingBranch.wardNumber)
+                        .map(rep => (
+                          <option key={rep.id} value={rep.id}>
+                            {rep.name} ({rep.designation || 'वडा अध्यक्ष'}{rep.wardNo ? ` - वडा नं. ${rep.wardNo}` : ''})
+                          </option>
+                        ))}
+                    </select>
+                    <div style={{ fontSize: '0.74rem', color: '#9333ea', marginTop: '4px' }}>
+                      💡 जनप्रतिनिधिबाट छान्दा वडा अध्यक्षको नाम, फोन र इमेल स्वतः सेट हुन्छ।
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>शाखा प्रमुखको नाम</label>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                      {editingBranch.type === 'ward' ? 'वडा अध्यक्ष / प्रमुखको नाम' : 'शाखा प्रमुखको नाम'}
+                    </label>
                     <input
                       type="text"
                       placeholder="उदा. सीता शर्मा (अधिकृत)"

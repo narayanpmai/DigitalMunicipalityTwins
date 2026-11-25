@@ -29,6 +29,15 @@ def query_records(
     fiscal_year: Optional[str] = None,
     ward: Optional[int] = None
 ) -> List[OpenDataRecord]:
+    if db.query(OpenDataRecord).count() == 0:
+        try:
+            import importlib
+            seed_mod = importlib.import_module("seed_open_data_transparency")
+            if hasattr(seed_mod, "seed_open_data_transparency"):
+                seed_mod.seed_open_data_transparency()
+        except Exception as e:
+            pass
+
     query = db.query(OpenDataRecord).filter(OpenDataRecord.deleted_at == None)
     
     if category and category != "all":
@@ -58,6 +67,14 @@ def query_records(
 # ── 1. Statistics & Overview ──────────────────────────────────────────
 @router.get("/stats", response_model=OpenDataStats)
 def get_stats(db: Session = Depends(get_db)):
+    if db.query(OpenDataRecord).count() == 0:
+        try:
+            import importlib
+            seed_mod = importlib.import_module("seed_open_data_transparency")
+            if hasattr(seed_mod, "seed_open_data_transparency"):
+                seed_mod.seed_open_data_transparency()
+        except Exception as e:
+            pass
     records = db.query(OpenDataRecord).filter(OpenDataRecord.deleted_at == None).all()
     
     datasets = [r for r in records if r.category == "datasets"]

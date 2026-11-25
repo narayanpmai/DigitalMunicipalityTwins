@@ -129,15 +129,6 @@ export const adminNavSections: NavSection[] = [
     title: 'कोर डाटा तथा डिजिटल फाउन्डेसन (Core MDM)',
     items: [
       {
-        label: 'मास्टर डाटा व्यवस्थापन (MDM)',
-        path: '/app/mdm',
-        icon: <Database size={16} style={{ color: '#0ea5e9' }} />,
-        badge: 'Core MDM',
-        badgeColor: '#0ea5e9',
-        featureId: 'f_mdm',
-        roles: ['super_admin', 'admin', 'it_admin', 'planning_officer', 'data_entry'],
-      },
-      {
         label: 'घरधुरी तथा जनसांख्यिकी ३६०',
         path: '/app/demographics',
         icon: <Home size={16} />,
@@ -169,14 +160,6 @@ export const adminNavSections: NavSection[] = [
         badge: 'Registry',
         badgeColor: '#10b981',
         featureId: 'f_darta',
-      },
-      {
-        label: 'डिजिटल दस्ताबेज तथा OCR अभिलेख',
-        path: '/app/document-archive',
-        icon: <BookOpen size={16} style={{ color: '#06b6d4' }} />,
-        badge: 'OCR & Acts',
-        badgeColor: '#06b6d4',
-        featureId: 'f_eoffice',
       },
       {
         label: 'कर्मचारी व्यवस्थापन (HRMS)',
@@ -242,14 +225,6 @@ export const adminNavSections: NavSection[] = [
         featureId: 'f_master',
       },
       {
-        label: 'अनलाइन डिजिटल सिफारिस (४०+)',
-        path: '/app/sifaris',
-        icon: <FileCheck size={16} style={{ color: '#22c55e' }} />,
-        badge: '४०+ सिफारिस',
-        badgeColor: '#22c55e',
-        featureId: 'f_digital_sifaris',
-      },
-      {
         label: 'नागरिक सेवा पोर्टल ३६०',
         path: '/app/citizen-portal',
         icon: <Users size={16} />,
@@ -293,15 +268,6 @@ export const adminNavSections: NavSection[] = [
     title: 'योजना, बजेट तथा आयोजना चक्र (Planning & Projects)',
     items: [
       {
-        label: 'सम्पूर्ण आयोजना जीवनचक्र ३६०',
-        path: '/app/project-lifecycle',
-        icon: <FolderGit2 size={16} style={{ color: '#eab308' }} />,
-        badge: 'PPIS/360',
-        badgeColor: '#eab308',
-        featureId: 'f_project_lifecycle',
-        roles: ['super_admin', 'admin', 'cao', 'planning_officer', 'engineer', 'accountant'],
-      },
-      {
         label: 'वार्षिक योजना तथा कार्यक्रम',
         path: '/app/projects',
         icon: <FolderGit2 size={16} />,
@@ -342,14 +308,6 @@ export const adminNavSections: NavSection[] = [
         badgeColor: '#f59e0b',
         featureId: 'f_ebps',
         roles: ['super_admin', 'admin', 'cao', 'engineer', 'planning_officer'],
-      },
-      {
-        label: '३डी/जीआईएस डिजिटल ट्विन',
-        path: '/app/asset-twin',
-        icon: <MapPin size={16} style={{ color: '#6366f1' }} />,
-        badge: '3D Twin',
-        badgeColor: '#6366f1',
-        featureId: 'f_asset_twin',
       },
       {
         label: 'डिजिटल क्याडास्ट्रल नक्सा (GIS)',

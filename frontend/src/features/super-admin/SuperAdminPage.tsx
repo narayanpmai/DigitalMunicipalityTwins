@@ -31,6 +31,11 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Database,
+  BookOpen,
+  FileCheck,
+  FolderGit2,
+  MapPin,
 } from 'lucide-react';
 import axios from 'axios';
 import { tenantApi } from '../../api/tenant';
@@ -43,6 +48,11 @@ import {
 import { NEPAL_ADMIN_STRUCTURE } from '../../utils/nepalAdministrativeData';
 import { BackupManagement } from '../admin/BackupManagement';
 import { DataExportCenter } from '../admin/DataExportCenter';
+import MasterDataManagement from '../../pages/public/MasterDataManagement';
+import { DocumentArchivePage } from '../document-archive/DocumentArchivePage';
+import DigitalSifaris from '../../pages/public/DigitalSifaris';
+import ProjectLifecycle from '../../pages/public/ProjectLifecycle';
+import AssetGisTwin from '../../pages/public/AssetGisTwin';
 
 interface Tenant {
   id: string;
@@ -111,7 +121,17 @@ interface FiscalYear {
 export const SuperAdminPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'municipalities' | 'users' | 'roles' | 'settings' | 'fiscal-year'
+    | 'dashboard'
+    | 'municipalities'
+    | 'users'
+    | 'roles'
+    | 'settings'
+    | 'fiscal-year'
+    | 'mdm'
+    | 'document-archive'
+    | 'sifaris'
+    | 'project-lifecycle'
+    | 'asset-twin'
   >('dashboard');
 
   // Auth state
@@ -890,6 +910,59 @@ export const SuperAdminPage: React.FC = () => {
             { id: 'roles', label: 'भूमिका तथा पहुँच (Roles)', sub: 'RBAC Access', icon: <Shield size={16} /> },
             { id: 'settings', label: 'प्रणाली सेटिङ (Settings)', sub: 'System Settings', icon: <Settings size={16} /> },
             { id: 'fiscal-year', label: 'आर्थिक वर्ष (Fiscal Year)', sub: 'वि.सं. पात्रो सेटअप', icon: <Calendar size={16} /> },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.625rem',
+                padding: '0.5rem 0.625rem',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeTab === item.id ? '#1e4d9b' : 'transparent',
+                color: activeTab === item.id ? '#ffffff' : '#c8daf5',
+                fontWeight: activeTab === item.id ? 600 : 400,
+                fontSize: '0.825rem',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.15s ease',
+                width: '100%',
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== item.id) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#1a3260';
+                  (e.currentTarget as HTMLElement).style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== item.id) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = '#c8daf5';
+                }
+              }}
+            >
+              <span style={{ opacity: 0.85, flexShrink: 0 }}>{item.icon}</span>
+              <div>
+                <span style={{ display: 'block', lineHeight: 1.3 }}>{item.label}</span>
+                <small style={{ fontSize: '0.68rem', color: activeTab === item.id ? '#7ba3d4' : '#7ba3d4', opacity: 0.8 }}>
+                  {item.sub}
+                </small>
+              </div>
+            </button>
+          ))}
+
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7ba3d4', padding: '0.75rem 0.625rem 0.4rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.25rem' }}>
+            केन्द्रीय व्यवस्थापन तथा जुम्ल्याहा (Core Twins)
+          </div>
+
+          {[
+            { id: 'mdm', label: 'केन्द्रीय मास्टर डाटा व्यवस्थापन (MDM)', sub: 'Master Data Management', icon: <Database size={16} /> },
+            { id: 'document-archive', label: 'डिजिटल दस्ताबेज तथा OCR', sub: 'राजपत्र तथा OCR निष्कर्षण', icon: <BookOpen size={16} /> },
+            { id: 'sifaris', label: 'Digital Sifaris Portal', sub: 'डिजिटल सिफारिस पोर्टल', icon: <FileCheck size={16} /> },
+            { id: 'project-lifecycle', label: 'Project Lifecycle Management', sub: 'आयोजना जीवनचक्र ३६०', icon: <FolderGit2 size={16} /> },
+            { id: 'asset-twin', label: 'Asset & GIS Digital Twin', sub: 'सम्पत्ति तथा GIS ट्विन', icon: <MapPin size={16} /> },
           ].map((item) => (
             <button
               key={item.id}
@@ -2760,6 +2833,51 @@ export const SuperAdminPage: React.FC = () => {
               <div style={{ marginTop: '2rem' }}>
                 <DataExportCenter />
               </div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════
+              TAB 7: CENTRAL MASTER DATA MANAGEMENT (MDM)
+             ══════════════════════════════════════════════════════════ */}
+          {activeTab === 'mdm' && (
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.25rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+              <MasterDataManagement />
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════
+              TAB 8: DIGITAL DOCUMENT ARCHIVE & OCR
+             ══════════════════════════════════════════════════════════ */}
+          {activeTab === 'document-archive' && (
+            <div style={{ borderRadius: '18px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
+              <DocumentArchivePage />
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════
+              TAB 9: DIGITAL SIFARIS PORTAL
+             ══════════════════════════════════════════════════════════ */}
+          {activeTab === 'sifaris' && (
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.25rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+              <DigitalSifaris />
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════
+              TAB 10: PROJECT LIFECYCLE MANAGEMENT
+             ══════════════════════════════════════════════════════════ */}
+          {activeTab === 'project-lifecycle' && (
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.25rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+              <ProjectLifecycle />
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════
+              TAB 11: ASSET & GIS DIGITAL TWIN
+             ══════════════════════════════════════════════════════════ */}
+          {activeTab === 'asset-twin' && (
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '1.25rem', boxShadow: '0 4px 14px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+              <AssetGisTwin />
             </div>
           )}
         </div>
