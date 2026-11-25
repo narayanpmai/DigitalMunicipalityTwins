@@ -73,6 +73,13 @@ export const createApiClient = (): AxiosInstance => {
       }
       config.headers['x-tenant-id'] = getTenantId();
 
+      // Automatic FormData multipart header handling
+      if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+        if (config.headers) {
+          delete (config.headers as any)['Content-Type'];
+        }
+      }
+
       // Normalize relative paths so /api/v1 is always preserved
       if (config.url && !config.url.startsWith('http://') && !config.url.startsWith('https://')) {
         let clean = config.url.replace(/^\/+/, '');

@@ -1,5 +1,5 @@
-// Municipal Digital Twin & Citizen PWA Service Worker (v9 - recruitment & alert hotfix)
-const CACHE_NAME = 'p5-citizen-pwa-v9';
+// Municipal Digital Twin & Citizen PWA Service Worker (v10 - document resubmit permanent fix)
+const CACHE_NAME = 'p5-citizen-pwa-v10';
 const STATIC_ASSETS = [
   '/',
   '/pwa',

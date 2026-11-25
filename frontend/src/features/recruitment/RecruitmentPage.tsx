@@ -799,9 +799,7 @@ const handleFileUpload = async (field: string, e: React.ChangeEvent<HTMLInputEle
   try {
     const formData = new FormData();
     formData.append('file', file);
-    const res: any = await api.post('/recruitment/upload-document', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res: any = await api.post('/recruitment/upload-document', formData);
     const data = res.data || res;
     if (data && data.url) {
       setApplyForm(prev => ({
@@ -3560,13 +3558,11 @@ return (
                                     const formData = new FormData();
                                     formData.append('file', file);
                                     try {
-                                      const res: any = await api.post('/recruitment/upload-document', formData, {
-                                        headers: { 'Content-Type': 'multipart/form-data' }
-                                      });
+                                      const res: any = await api.post('/recruitment/upload-document', formData);
                                       setResubmitFileUrl(res.data?.url || res.url);
                                       alert('फाइल सफलतापूर्वक अपलोड भयो!');
-                                    } catch {
-                                      alert('फाइल अपलोड गर्न सकिएन।');
+                                    } catch (uploadErr: any) {
+                                      alert(uploadErr?.response?.data?.detail || 'फाइल अपलोड गर्न सकिएन।');
                                     }
                                   }}
                                   style={{ fontSize: '0.82rem' }}

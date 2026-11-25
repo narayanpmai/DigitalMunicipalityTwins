@@ -1657,7 +1657,7 @@ def resubmit_candidate_document(
 
     # सुरक्षा प्रमाणीकरण (Security Verification): दर्ता भएको फोन वा नागरिकता मिलेको हुनुपर्छ
     auth_input = (payload.phone_or_citizenship or '').strip()
-    cand_phone = (app.phone or '').strip()
+    cand_phone = (app.contact_phone or '').strip()
     cand_cit = (app.citizenship_no or '').strip()
     if auth_input != cand_phone and auth_input != cand_cit:
         raise HTTPException(
@@ -1681,18 +1681,33 @@ def resubmit_candidate_document(
         app.citizenship_doc_url = payload.new_doc_url
         doc_label = "नागरिकता (अगाडि)"
     elif dt in ('citizenship_back', 'citizenship_back_doc_url'):
-        app.citizenship_back_doc_url = payload.new_doc_url
+        if not app.citizenship_doc_url:
+            app.citizenship_doc_url = payload.new_doc_url
         doc_label = "नागरिकता (पछाडि)"
-    elif dt in ('voucher', 'payment_voucher_url'):
-        app.payment_voucher_url = payload.new_doc_url
+    elif dt in ('voucher', 'payment_voucher_doc_url', 'payment_voucher_url'):
+        app.payment_voucher_doc_url = payload.new_doc_url
         doc_label = "राजस्व भौचर"
-    elif dt in ('photo', 'photo_doc_url'):
-        app.photo_doc_url = payload.new_doc_url
+    elif dt in ('photo', 'photo_url', 'photo_doc_url'):
+        app.photo_url = payload.new_doc_url
         doc_label = "पासपोर्ट फोटो"
+    elif dt in ('council', 'council_doc_url'):
+        app.council_doc_url = payload.new_doc_url
+        doc_label = "काउन्सिल दर्ता प्रमाणपत्र"
+    elif dt in ('experience', 'experience_doc_url'):
+        app.experience_doc_url = payload.new_doc_url
+        doc_label = "अनुभव / तालिम प्रमाणपत्र"
     else:
         # Default fallback
         app.qualification_doc_url = payload.new_doc_url
         doc_label = dt
+
+    # documents_json सुरक्षित रूपमा अद्यावधिक गर्ने
+    try:
+        docs_dict = json.loads(app.documents_json) if app.documents_json else {}
+        docs_dict[dt] = payload.new_doc_url
+        app.documents_json = json.dumps(docs_dict, ensure_ascii=False)
+    except Exception:
+        pass
 
     # अवस्था स्वतः पुनः पेश (Resubmitted / Pending Review) मा परिवर्तन
     app.status = "पुनः पेश (Resubmitted / Pending Review)"
