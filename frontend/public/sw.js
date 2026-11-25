@@ -1,5 +1,5 @@
-// Municipal Digital Twin & Citizen PWA Service Worker (v8 - modern ehr tabs update)
-const CACHE_NAME = 'p5-citizen-pwa-v8';
+// Municipal Digital Twin & Citizen PWA Service Worker (v9 - recruitment & alert hotfix)
+const CACHE_NAME = 'p5-citizen-pwa-v9';
 const STATIC_ASSETS = [
   '/',
   '/pwa',
