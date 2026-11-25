@@ -258,24 +258,44 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
             </thead>
             <tbody>
               {filteredRepresentatives.map((rep) => {
-                const photoSrc = rep.photoUrl
-                  ? (rep.photoUrl.startsWith('/uploads') ? `http://localhost:3001${rep.photoUrl}` : rep.photoUrl)
-                  : null;
+                const photoSrc = rep.photoUrl ? rep.photoUrl : null;
 
                 return (
                   <tr key={rep.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.15s' }}>
                     <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                      {photoSrc ? (
+                      {photoSrc && (
                         <img
                           src={photoSrc}
                           alt={rep.name}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.style.display = 'none';
+                            if (target.nextElementSibling) {
+                              (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
                           style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.06)' }}
                         />
-                      ) : (
-                        <div style={{ width: '46px', height: '46px', borderRadius: '50%', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 700, color: '#0284c7', margin: '0 auto', border: '2px solid #bae6fd' }}>
-                          {rep.name?.trim().charAt(0) || 'जन'}
-                        </div>
                       )}
+                      <div
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '50%',
+                          backgroundColor: '#e0f2fe',
+                          display: photoSrc ? 'none' : 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.2rem',
+                          fontWeight: 700,
+                          color: '#0284c7',
+                          margin: '0 auto',
+                          border: '2px solid #bae6fd'
+                        }}
+                      >
+                        {rep.name?.trim().charAt(0) || 'जन'}
+                      </div>
                     </td>
                     <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#0f172a' }}>
                       <span style={{ fontSize: '1rem' }}>{rep.name}</span>
@@ -396,7 +416,7 @@ export const RepresentativesPage: React.FC<RepresentativesPageProps> = ({ isRead
                 >
                   {photoPreview ? (
                     <img
-                      src={photoPreview.startsWith('/uploads') ? `http://localhost:3001${photoPreview}` : photoPreview}
+                      src={photoPreview}
                       alt="preview"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

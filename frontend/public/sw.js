@@ -1,5 +1,5 @@
-// Municipal Digital Twin & Citizen PWA Service Worker (v11 - recruitment payment verify and badge fix)
-const CACHE_NAME = 'p5-citizen-pwa-v11';
+// Municipal Digital Twin & Citizen PWA Service Worker (v12 - representatives photo path fix)
+const CACHE_NAME = 'p5-citizen-pwa-v12';
 const STATIC_ASSETS = [
   '/',
   '/pwa',

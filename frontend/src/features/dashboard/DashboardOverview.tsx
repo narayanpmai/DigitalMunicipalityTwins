@@ -472,7 +472,6 @@ export const DashboardOverview: React.FC<{ readOnly?: boolean; defaultTab?: stri
 
     const candidateUrls = [
       `/api/v1/dashboard/stats${fyParam}`,
-      `http://localhost:3001/api/v1/dashboard/stats${fyParam}`,
     ];
 
     let foundData = false;
