@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Municipal Digital Twins — Digital Marketing Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #0b1120;
+      color: #f8fafc;
+      font-family: 'Mukta', 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+    .action-bar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      padding: 0.6rem 1.4rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+    }
+    .btn-secondary {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+
+    /* POSTER CONTAINER (Standard A4 / 4:5 Marketing Aspect Ratio) */
+    .poster {
+      width: 800px;
+      max-width: 100%;
+      background: radial-gradient(circle at top right, #1e3a8a 0%, #0f172a 40%, #020617 100%);
+      border-radius: 24px;
+      border: 2px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(14, 165, 233, 0.15);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* TOP HEADER */
+    .poster-header {
+      padding: 2rem 2.5rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(10px);
+    }
+    .header-branding {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    .logo-img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    }
+    .header-text h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+    }
+    .header-text p {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .dot-live {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* HERO SECTION */
+    .hero-section {
+      padding: 2.2rem 2.5rem 1.5rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.15));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.3rem 1rem;
+      border-radius: 9999px;
+      margin-bottom: 1rem;
+      letter-spacing: 0.03em;
+    }
+    .hero-title {
+      font-size: 2.35rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, #ffffff 30%, #93c5fd 70%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.6rem;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: #cbd5e1;
+      max-width: 640px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.5;
+    }
+
+    /* POSTER VISUAL BANNER */
+    .visual-wrapper {
+      margin: 0 2rem 1.8rem;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .visual-wrapper img {
+      width: 100%;
+      height: 340px;
+      object-fit: cover;
+      display: block;
+    }
+    .visual-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem 1.8rem 1.2rem;
+      background: linear-gradient(to top, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.6) 60%, transparent 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .visual-overlay-text h4 {
+      font-size: 1.25rem;
+      color: #f8fafc;
+      font-weight: 800;
+    }
+    .visual-overlay-text p {
+      font-size: 0.85rem;
+      color: #93c5fd;
+    }
+    .stat-pill {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #38bdf8;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* 6 KEY MODULES GRID */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 0 2rem 2rem;
+    }
+    .module-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.1rem;
+      transition: all 0.2s ease;
+    }
+    .module-card:hover {
+      border-color: #38bdf8;
+      background: rgba(30, 41, 59, 0.8);
+      transform: translateY(-2px);
+    }
+    .module-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+    }
+    .module-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 0.3rem;
+    }
+    .module-desc {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* FOOTER & CTA */
+    .poster-footer {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border-top: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 1.8rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .footer-left {
+      max-width: 500px;
+    }
+    .footer-left h4 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
+    }
+    .footer-left p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .cta-url {
+      color: #38bdf8;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    .footer-qr-card {
+      background: #ffffff;
+      padding: 0.6rem;
+      border-radius: 12px;
+      text-align: center;
+      color: #0f172a;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .footer-qr-card img {
+      width: 75px;
+      height: 75px;
+      display: block;
+      margin: 0 auto 0.2rem;
+    }
+    .footer-qr-card span {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      .action-bar {
+        display: none !important;
+      }
+      .poster {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ACTION BUTTONS -->
+  <div class="action-bar">
+    <button class="btn" onclick="window.print()">
+      🖨️ Poster प्रिन्ट वा PDF सेभ गर्नुहोस्
+    </button>
+    <a href="/assets/municipal_digital_twins_poster.jpg" target="_blank" class="btn btn-secondary" download="Municipal_Digital_Twins_Poster.jpg">
+      ⬇️ HD Poster फोटो डाउनलोड गर्नुहोस्
+    </a>
+    <a href="/app/recruitment" class="btn btn-secondary">
+      ⬅️ मुख्य प्रणालीमा फर्कनुहोस्
+    </a>
+  </div>
+
+  <!-- POSTER MAIN CANVAS -->
+  <div class="poster" id="posterContent">
+    
+    <!-- TOP HEADER -->
+    <div class="poster-header">
+      <div class="header-branding">
+        <img src="/emblem-of-nepal.png" alt="Nepal Emblem" class="logo-img" onerror="this.src='/panchpokhari-logo.png'">
+        <div class="header-text">
+          <h3>पाँचपोखरी थाङपाल गाउँपालिका</h3>
+          <p>गाउँकार्यपालिकाको कार्यालय • बागमती प्रदेश, नेपाल</p>
+        </div>
+      </div>
+      <div class="badge-live">
+        <span class="dot-live"></span>
+        Digital Twins v2.0 Live
+      </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+      <div class="hero-badge">🚀 स्मार्ट स्थानीय सरकार तथा डिजिटल रूपान्तरण</div>
+      <h1 class="hero-title">Municipal Digital Twins</h1>
+      <p class="hero-sub">
+        पालिकाको सम्पूर्ण भू-बनोट, पूर्वाधार, नागरिक सेवा, योजना र पदपूर्ति अब एउटै एकीकृत ३D डिजिटल प्रणालीमा!
+      </p>
+    </div>
+
+    <!-- POSTER GRAPHIC VISUAL -->
+    <div class="visual-wrapper">
+      <img src="/assets/municipal_digital_twins_poster.jpg" alt="Municipal Digital Twins 3D Holographic Poster">
+      <div class="visual-overlay">
+        <div class="visual-overlay-text">
+          <h4>3D GIS & Municipal Intelligence</h4>
+          <p>वास्तविक समयमा पालिकाको समग्र विकास, योजना र सेवा व्यवस्थापन</p>
+        </div>
+        <div class="stat-pill">
+          ✓ ७५३ वटै पालिकाका लागि उपयुक्त
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 KEY MODULES GRID -->
+    <div class="modules-grid">
+      <div class="module-card">
+        <span class="module-icon">🗺️</span>
+        <div class="module-title">३D डिजिटल जुम्ल्याहा (3D GIS)</div>
+        <div class="module-desc">पालिकाको नक्सा, सडक, घर, योजना तथा सार्वजनिक सम्पत्तिको प्रत्यक्ष ३D अनुगमन।</div>
+      </div>
+
+      <div class="module-card">
+        <span class="module-icon">💼</span>
+        <div class="module-title">अनलाइन दरखास्त र QR भुक्तानी</div>
+        <div class="module-desc">उम्मेदवार दर्ता, Fonepay QR बाट शुल्क दाखिला, विद्युतीय रसिद र प्रवेशपत्र स्वतः जारी।</div>
+      </div>
+
+      <div class="module-card">
+        <span class="module-icon">📋</span>
+        <div class="module-title">डिजिटल नागरिक वडापत्र (Badapatra)</div>
+        <div class="module-desc">सेवा, शाखा, शुल्क र समय सीमाको डिजिटल डिस्प्ले साथै स्वचालित नेपाली अडियो उद्घोषण।</div>
+      </div>
+
+      <div class="module-card">
+        <span class="module-icon">📂</span>
+        <div class="module-title">एकीकृत ई-अफिस र दर्ता-चलानी</div>
+        <div class="module-desc">कागजविहीन सरकारी कार्यप्रवाह, चलानी नम्बर स्वतः दाबी र डिजिटल टिप्पणी व्यवस्थापन।</div>
+      </div>
+
+      <div class="module-card">
+        <span class="module-icon">👨‍👩‍👧‍👦</span>
+        <div class="module-title">घरधुरी तथा नागरिक ३६० (MDM)</div>
+        <div class="module-desc">वडास्तरीय घरधुरी लगत, सामाजिक सुरक्षा, जनसांख्यिकी र लक्षित सेवा वितरण।</div>
+      </div>
+
+      <div class="module-card">
+        <span class="module-icon">💰</span>
+        <div class="module-title">राजस्व, कर तथा योजना ट्र्याकिङ</div>
+        <div class="module-desc">शीर्षकगत राजस्व सङ्कलन, योजनाको भौतिक तथा वित्तीय प्रगति र पूर्ण पारदर्शिता।</div>
+      </div>
+    </div>
+
+    <!-- FOOTER & CALL TO ACTION -->
+    <div class="poster-footer">
+      <div class="footer-left">
+        <h4>तपाईंको पालिकालाई पनि आजै पूर्ण डिजिटल बनाउनुहोस्!</h4>
+        <p>
+          प्रत्यक्ष प्रणाली अवलोकन (Live Demo) का लागि भ्रमण गर्नुहोस्:<br>
+          🌐 <a href="https://digitaltwin.smartptrm.com" target="_blank" class="cta-url">digitaltwin.smartptrm.com</a>
+        </p>
+      </div>
+
+      <div class="footer-qr-card">
+        <img src="/assets/nimb_fonepay_qr_code.png" alt="Live Portal QR Code" onerror="this.src='/panchpokhari-logo.png'">
+        <span>स्क्यान गरी खोल्नुहोस्</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
