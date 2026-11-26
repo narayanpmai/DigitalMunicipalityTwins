@@ -1932,6 +1932,7 @@ return (
                     const isPendingReview = app.status.includes('विचाराधीन');
                     const hasDeposited = (app.paymentStatus === 'PAID' || app.payment_status === 'PAID' || (app.paidAmount || app.paid_amount || 0) > 0);
                     const isPendingVerification = (app.paymentStatus === 'PENDING_VERIFICATION' || app.payment_status === 'PENDING_VERIFICATION');
+                    const isPaid = isApproved && hasDeposited;
 
                     return (
                       <tr key={app.id}>
