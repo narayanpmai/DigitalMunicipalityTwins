@@ -184,10 +184,13 @@ def get_recruitment_summary(
     approved_applications = app_query.filter(JobApplication.status.like("%स्वीकृत%")).count()
     rejected_applications = app_query.filter(JobApplication.status.like("%अस्वीकृत%")).count()
 
+    # केवल 'स्वीकृत (Approved)' भएका र भुक्तानी भएका दरखास्तलाई मात्र आधिकारिक भुक्तानी मान्ने
     paid_applications = app_query.filter(
+        JobApplication.status.like("%स्वीकृत%"),
         or_(
             JobApplication.payment_status == "PAID",
-            JobApplication.receipt_no.isnot(None)
+            JobApplication.receipt_no.isnot(None),
+            JobApplication.paid_amount > 0
         )
     ).count()
 
@@ -198,9 +201,28 @@ def get_recruitment_summary(
         )
     ).count()
 
-    total_revenue = pay_query.filter(
-        RecruitmentPayment.status == "SUCCESS"
-    ).with_entities(func.sum(RecruitmentPayment.amount)).scalar() or 0.0
+    # संकलित दस्तुर राजस्व (Realized Revenue): केवल स्वीकृत भएका दरखास्तहरूको शुल्क मात्र (शीर्षक १४२२९)
+    approved_paid_apps = app_query.filter(
+        JobApplication.status.like("%स्वीकृत%"),
+        or_(
+            JobApplication.payment_status == "PAID",
+            JobApplication.receipt_no.isnot(None),
+            JobApplication.paid_amount > 0
+        )
+    ).all()
+    total_revenue = sum([float(a.paid_amount or 0.0) for a in approved_paid_apps])
+
+    # धरौटी / छानबिनमा रहेको रकम (Suspense / In-Review Revenue: कागजात अपूरो, पुनः पेश, वा विचाराधीन)
+    pending_paid_apps = app_query.filter(
+        ~JobApplication.status.like("%स्वीकृत%"),
+        or_(
+            JobApplication.payment_status == "PAID",
+            JobApplication.payment_status == "PENDING_VERIFICATION",
+            JobApplication.receipt_no.isnot(None),
+            JobApplication.paid_amount > 0
+        )
+    ).all()
+    pending_revenue = sum([float(a.paid_amount or 0.0) for a in pending_paid_apps])
 
     total_openings = vac_query.with_entities(VacancyAnnouncement.openings_count).all()
     sum_openings = sum([o[0] for o in total_openings if o[0]])
@@ -215,7 +237,8 @@ def get_recruitment_summary(
         "rejected_applications": rejected_applications,
         "paid_applications": paid_applications,
         "unpaid_applications": unpaid_applications,
-        "total_revenue": float(total_revenue)
+        "total_revenue": float(total_revenue),
+        "pending_revenue": float(pending_revenue)
     }
 
 
@@ -266,6 +289,24 @@ def export_recruitment_excel(
     )
 
     for idx, a in enumerate(applications, start=1):
+        is_app_approved = "स्वीकृत" in (a.status or "")
+        has_deposit = (a.payment_status == "PAID" or float(a.paid_amount or 0) > 0 or a.receipt_no is not None)
+        if is_app_approved and has_deposit:
+            payment_status_disp = "सदर भुक्तानी (PAID)"
+            receipt_disp = a.receipt_no or "-"
+        elif "कागजात अपूरो" in (a.status or "") and has_deposit:
+            payment_status_disp = "दाखिला भएको (रोक्का/अपूरो)"
+            receipt_disp = f"{a.receipt_no} (रोक्का)" if a.receipt_no else "रोक्का"
+        elif "पुनः पेश" in (a.status or "") and has_deposit:
+            payment_status_disp = "दाखिला भएको (पुनः रुजु बाँकी)"
+            receipt_disp = f"{a.receipt_no} (पुनः रुजु)" if a.receipt_no else "रुजुमा"
+        elif has_deposit:
+            payment_status_disp = "दाखिला भएको (रुजु बाँकी)"
+            receipt_disp = "रुजु बाँकी"
+        else:
+            payment_status_disp = "दाखिला बाँकी (UNPAID)"
+            receipt_disp = "-"
+
         row = [
             idx,
             a.application_no,
@@ -277,8 +318,8 @@ def export_recruitment_excel(
             f"{a.citizenship_no or ''} ({a.citizenship_district or ''})",
             a.permanent_address,
             f"{a.qualification_title or ''} - {a.board_university or ''}",
-            a.payment_status or "UNPAID",
-            a.receipt_no or "-",
+            payment_status_disp,
+            receipt_disp,
             float(a.paid_amount or 0),
             a.status or "विचाराधीन (Pending)",
             a.admit_card_roll_no or "-",

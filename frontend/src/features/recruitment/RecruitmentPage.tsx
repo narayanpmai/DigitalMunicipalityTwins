@@ -207,6 +207,7 @@ interface RecruitmentSummary {
   paid_applications: number;
   unpaid_applications: number;
   total_revenue: number;
+  pending_revenue?: number;
 }
 
 interface OfficialReceipt {
@@ -1426,7 +1427,7 @@ return (
             <div className="rec-stat-value rec-stat-emerald">
               {summary?.paid_applications ?? 0}
             </div>
-            <div className="rec-stat-sub rec-stat-emerald">रसिद जारी भएको</div>
+            <div className="rec-stat-sub rec-stat-emerald">सदर रसिद जारी भएको</div>
           </div>
 
           <div className="rec-stat-card">
@@ -1437,7 +1438,14 @@ return (
             <div className="rec-stat-value rec-stat-sky">
               रु. {Number(summary?.total_revenue || 0).toLocaleString('ne-NP')}
             </div>
-            <div className="rec-stat-sub" style={{ color: '#93c5fd' }}>राजस्व शीर्षक १४२२९</div>
+            <div className="rec-stat-sub" style={{ color: '#93c5fd', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+              <span>राजस्व शीर्षक १४२२९ (स्वीकृत)</span>
+              {Number(summary?.pending_revenue || 0) > 0 && (
+                <span style={{ color: '#fef08a', fontSize: '0.68rem', fontWeight: 600 }}>
+                  रोक्का/रुजुमा: रु. {Number(summary?.pending_revenue).toLocaleString('ne-NP')}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="rec-stat-card">
@@ -1919,7 +1927,10 @@ return (
                   filteredApplications.map((app, idx) => {
                     const isApproved = app.status.includes('स्वीकृत');
                     const isRejected = app.status.includes('अस्वीकृत');
-                    const isPaid = (app.paymentStatus === 'PAID' || app.payment_status === 'PAID');
+                    const isDocIncomplete = app.status.includes('कागजात अपूरो');
+                    const isResubmitted = app.status.includes('पुनः पेश');
+                    const isPendingReview = app.status.includes('विचाराधीन');
+                    const hasDeposited = (app.paymentStatus === 'PAID' || app.payment_status === 'PAID' || (app.paidAmount || app.paid_amount || 0) > 0);
                     const isPendingVerification = (app.paymentStatus === 'PENDING_VERIFICATION' || app.payment_status === 'PENDING_VERIFICATION');
 
                     return (
@@ -1949,7 +1960,7 @@ return (
                           </div>
                         </td>
                         <td>
-                          {isPaid ? (
+                          {isApproved && hasDeposited ? (
                             <span
                               style={{
                                 display: 'inline-block',
@@ -1962,9 +1973,51 @@ return (
                                 border: '1px solid #86efac'
                               }}
                             >
-                              PAID (रु. {app.paidAmount || app.paid_amount || 0})
+                              ✅ PAID (रु. {app.paidAmount || app.paid_amount || 0})
                             </span>
-                          ) : isPendingVerification ? (
+                          ) : isDocIncomplete && hasDeposited ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-start' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '0.2rem 0.55rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  background: '#fef3c7',
+                                  color: '#92400e',
+                                  border: '1px solid #fcd34d'
+                                }}
+                                title="रकम दाखिला भए पनि कागजात अपूरो रहेकाले रोक्का अवस्थामा छ"
+                              >
+                                ⚠️ दाखिला भएको (रोक्का)
+                              </span>
+                              <span style={{ fontSize: '0.65rem', color: '#b45309', fontWeight: 600 }}>
+                                कागजात रुजु भएपछि सदर हुने
+                              </span>
+                            </div>
+                          ) : isResubmitted && hasDeposited ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-start' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '0.2rem 0.55rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  background: '#e0f2fe',
+                                  color: '#0369a1',
+                                  border: '1px solid #bae6fd'
+                                }}
+                                title="पुनः कागजात पेश भएको - छानबिन प्रक्रियामा"
+                              >
+                                ⏳ दाखिला भएको (पुनः रुजु)
+                              </span>
+                              <span style={{ fontSize: '0.65rem', color: '#0284c7', fontWeight: 600 }}>
+                                छानबिन प्रक्रियामा
+                              </span>
+                            </div>
+                          ) : hasDeposited && !isRejected ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
                               <span
                                 style={{
@@ -1973,35 +2026,53 @@ return (
                                   borderRadius: '4px',
                                   fontSize: '0.72rem',
                                   fontWeight: 800,
-                                  background: '#fef3c7',
-                                  color: '#b45309',
-                                  border: '1px solid #fde68a'
+                                  background: '#fef9c3',
+                                  color: '#854d0e',
+                                  border: '1px solid #fef08a'
                                 }}
                                 title="उम्मेदवारद्वारा भुक्तानी गरिएको - कार्यालय बैंक रुजु बाँकी"
                               >
                                 ⏳ रुजु बाँकी (रु. {app.paidAmount || app.paid_amount || 0})
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => handleConfirmPayment(app.applicationNo || app.application_no)}
-                                style={{
-                                  fontSize: '0.68rem',
-                                  fontWeight: 700,
-                                  padding: '0.15rem 0.45rem',
-                                  borderRadius: '4px',
-                                  background: '#16a34a',
-                                  color: '#ffffff',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '0.2rem'
-                                }}
-                                title="बैंक स्टेटमेन्ट/भौचर रुजु गरी भुक्तानी स्वीकृत गर्नुहोस्"
-                              >
-                                ✓ भुक्तानी रुजु
-                              </button>
+                              {isPendingVerification && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleConfirmPayment(app.applicationNo || app.application_no)}
+                                  style={{
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    padding: '0.15rem 0.45rem',
+                                    borderRadius: '4px',
+                                    background: '#16a34a',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.2rem'
+                                  }}
+                                  title="बैंक स्टेटमेन्ट/भौचर रुजु गरी भुक्तानी स्वीकृत गर्नुहोस्"
+                                >
+                                  ✓ भुक्तानी रुजु
+                                </button>
+                              )}
                             </div>
+                          ) : isRejected && hasDeposited ? (
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '4px',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                background: '#fee2e2',
+                                color: '#991b1b',
+                                border: '1px solid #fecaca'
+                              }}
+                              title="दरखास्त अस्वीकृत भएकोले रकम फिर्ता योग्य"
+                            >
+                              ❌ फिर्ता योग्य (रु. {app.paidAmount || app.paid_amount || 0})
+                            </span>
                           ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
                               <span
@@ -2042,7 +2113,7 @@ return (
                           </div>
                         </td>
                         <td>
-                          {app.receiptNo || app.receipt_no ? (
+                          {isApproved && (app.receiptNo || app.receipt_no) ? (
                             <button
                               onClick={() => handleFetchReceipt(app.applicationNo || app.application_no)}
                               style={{
@@ -2059,10 +2130,29 @@ return (
                                 alignItems: 'center',
                                 gap: '0.25rem'
                               }}
+                              title="सदर राजस्व रसिद हेर्नुहोस्"
                             >
                               <Receipt size={12} />
                               {app.receiptNo || app.receipt_no}
                             </button>
+                          ) : hasDeposited ? (
+                            <span
+                              style={{
+                                color: '#92400e',
+                                background: '#fef3c7',
+                                border: '1px solid #fcd34d',
+                                padding: '0.15rem 0.45rem',
+                                borderRadius: '4px',
+                                fontSize: '0.68rem',
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.2rem'
+                              }}
+                              title="दरखास्त स्वीकृत भएपछि मात्र आधिकारिक रसिद जारी हुनेछ"
+                            >
+                              <Lock size={11} /> रोक्का (सदर बाँकी)
+                            </span>
                           ) : (
                             <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>रसिद छैन</span>
                           )}
