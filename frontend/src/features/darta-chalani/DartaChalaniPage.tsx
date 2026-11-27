@@ -80,6 +80,7 @@ export const DartaChalaniPage: React.FC = () => {
   const [fiscalYear, setFiscalYear] = useState('२०८१/०८२');
   const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
@@ -599,6 +600,13 @@ export const DartaChalaniPage: React.FC = () => {
     return chalaniList.filter((c: any) => {
       if (branchFilter && c.department !== branchFilter) return false;
       if (statusFilter && c.status !== statusFilter) return false;
+      if (sourceFilter !== 'all') {
+        if (sourceFilter === 'general_admin') {
+          if (c.sourceModule && c.sourceModule !== 'general_admin' && c.sourceModule !== 'admin') return false;
+        } else {
+          if (c.sourceModule !== sourceFilter) return false;
+        }
+      }
       if (!searchTerm) return true;
       const term = searchTerm.toLowerCase();
       const nepTerm = toNepaliDigits(term);
@@ -2136,6 +2144,29 @@ export const DartaChalaniPage: React.FC = () => {
                 </div>
               )}
               <div><strong>प्रक्रियागत स्थिति:</strong> {selectedRecord.status || '-'}</div>
+              {selectedRecord.sourceModule && (
+                <div style={{ backgroundColor: '#f0f9ff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#0369a1', fontSize: '0.82rem' }}>मूल स्रोत मोड्युल (Source Module):</div>
+                    <div style={{ fontWeight: 600, color: '#0c4a6e', marginTop: '2px' }}>
+                      {selectedRecord.sourceModule === 'yojana_planning' ? '🏗️ वार्षिक योजना तथा पूर्वाधार विकास' : selectedRecord.sourceModule === 'ward_sifaris' ? '📜 नागरिक वडा सिफारिस' : selectedRecord.sourceModule === 'tippani_eoffice' ? '📝 ई-कार्यालय तथा टिप्पणी' : selectedRecord.sourceModule}
+                    </div>
+                    {selectedRecord.sourceTitle && (
+                      <div style={{ fontSize: '0.8rem', color: '#334155', marginTop: '2px' }}>
+                        योजना/विषय: <strong>{selectedRecord.sourceTitle}</strong>
+                      </div>
+                    )}
+                  </div>
+                  {selectedRecord.sourceModule === 'yojana_planning' && (
+                    <a
+                      href="/app/projects"
+                      style={{ padding: '5px 12px', backgroundColor: '#0284c7', color: '#ffffff', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      🔗 योजना खोल्नुहोस्
+                    </a>
+                  )}
+                </div>
+              )}
               {selectedRecord.verificationCode && <div><strong>प्रमाणीकरण कोड:</strong> <code>{selectedRecord.verificationCode}</code></div>}
               {selectedRecord.remarks && <div><strong>कैफियत:</strong> {selectedRecord.remarks}</div>}
             </div>
@@ -2174,7 +2205,7 @@ export const DartaChalaniPage: React.FC = () => {
         >
           <button
             type="button"
-            onClick={() => { setActiveTab('darta'); setBranchFilter(''); setStatusFilter(''); }}
+            onClick={() => { setActiveTab('darta'); setBranchFilter(''); setStatusFilter(''); setSourceFilter('all'); }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -2211,7 +2242,7 @@ export const DartaChalaniPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => { setActiveTab('chalani'); setBranchFilter(''); setStatusFilter(''); }}
+            onClick={() => { setActiveTab('chalani'); setBranchFilter(''); setStatusFilter(''); setSourceFilter('all'); }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -2282,6 +2313,23 @@ export const DartaChalaniPage: React.FC = () => {
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
+
+          {/* Central Source Module Filter */}
+          {activeTab === 'chalani' && (
+            <select
+              className="dt-select"
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              style={{ maxWidth: '210px', height: '42px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, borderColor: '#38bdf8' }}
+            >
+              <option value="all">🌐 सबै स्रोत (All Sources)</option>
+              <option value="yojana_planning">🏗️ योजना तथा पूर्वाधार विकास</option>
+              <option value="ward_sifaris">📜 नागरिक वडा सिफारिस</option>
+              <option value="tippani_eoffice">📝 ई-कार्यालय तथा टिप्पणी</option>
+              <option value="revenue">💰 राजस्व तथा कर</option>
+              <option value="general_admin">🏛️ सामान्य प्रशासन / अन्य</option>
+            </select>
+          )}
 
           {/* Status Filter */}
           <select
@@ -2570,9 +2618,43 @@ export const DartaChalaniPage: React.FC = () => {
                         {getPriorityBadge(c.priority || c.classification)}
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600 }}>{c.subject || '-'}</div>
+                        <div style={{ fontWeight: 600, color: '#0f172a' }}>{c.subject || '-'}</div>
+                        {/* Source Module & Bi-directional Link Badge */}
+                        {c.sourceModule && (
+                          <div style={{ marginTop: '5px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            {c.sourceModule === 'yojana_planning' && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 7px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
+                                🏗️ योजना शाखा
+                              </span>
+                            )}
+                            {c.sourceModule === 'ward_sifaris' && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 7px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, backgroundColor: '#fdf4ff', color: '#a21caf', border: '1px solid #f5d0fe' }}>
+                                📜 वडा सिफारिस
+                              </span>
+                            )}
+                            {c.sourceModule === 'tippani_eoffice' && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 7px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' }}>
+                                📝 ई-कार्यालय
+                              </span>
+                            )}
+                            {c.sourceRecordId && c.sourceModule === 'yojana_planning' && (
+                              <a
+                                href="/app/projects"
+                                title={`सम्बन्धित योजना खोल्नुहोस् (ID: ${c.sourceRecordId})`}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', color: '#0284c7', textDecoration: 'underline', fontWeight: 700 }}
+                              >
+                                🔗 योजना हेर्नुहोस्
+                              </a>
+                            )}
+                            {c.letterType && (
+                              <span style={{ fontSize: '0.7rem', color: '#64748b', backgroundColor: '#f8fafc', padding: '1px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                                {c.letterType === 'work_order' ? 'कार्यादेश' : c.letterType === 'bank_rec' ? 'बैंक सिफारिस' : c.letterType === 'agreement_deed' ? 'सम्झौता' : c.letterType === 'committee_reg' ? 'दर्ता प्रमाणपत्र' : c.letterType === 'time_extension' ? 'म्याद थप' : c.letterType === 'completion_farfarak' ? 'फरफारक' : c.letterType}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {c.verificationCode && (
-                          <div style={{ fontSize: '0.72rem', color: '#475569' }}>कोड: <code>{c.verificationCode}</code></div>
+                          <div style={{ fontSize: '0.72rem', color: '#475569', marginTop: '3px' }}>कोड: <code>{c.verificationCode}</code></div>
                         )}
                       </td>
                       <td>

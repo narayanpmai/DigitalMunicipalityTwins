@@ -110,6 +110,11 @@ def serialize_chalani(c: Chalani) -> Dict[str, Any]:
         "approvedAt": c.approved_at.isoformat() if c.approved_at else None,
         "rejectionReason": c.rejection_reason or "",
         "receivedBy": c.received_by or "",
+        "sourceModule": getattr(c, "source_module", None) or "",
+        "sourceRecordId": getattr(c, "source_record_id", None) or "",
+        "sourceTitle": getattr(c, "source_title", None) or "",
+        "letterType": getattr(c, "letter_type", None) or "",
+        "metadataJson": getattr(c, "metadata_json", None) or "",
         "remarks": c.remarks or "",
         "createdAt": c.created_at.isoformat() if c.created_at else None,
         "updatedAt": c.updated_at.isoformat() if c.updated_at else None
@@ -324,6 +329,8 @@ def get_chalani_list(
     fiscalYear: Optional[str] = Query(None),
     department: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    sourceModule: Optional[str] = Query(None),
+    letterType: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context)
@@ -335,13 +342,18 @@ def get_chalani_list(
         query = query.filter(Chalani.department == department)
     if status and status != 'all':
         query = query.filter(Chalani.status == status)
+    if sourceModule and sourceModule != 'all':
+        query = query.filter(Chalani.source_module == sourceModule)
+    if letterType and letterType != 'all':
+        query = query.filter(Chalani.letter_type == letterType)
     if search:
         s = f"%{search}%"
         query = query.filter(
             (Chalani.subject.ilike(s)) |
             (Chalani.receiver_name.ilike(s)) |
             (Chalani.dispatch_no.ilike(s)) |
-            (Chalani.letter_ref_no.ilike(s))
+            (Chalani.letter_ref_no.ilike(s)) |
+            (Chalani.source_title.ilike(s))
         )
     records = query.order_by(Chalani.created_at.desc()).all()
     return [serialize_chalani(r) for r in records]
@@ -391,12 +403,109 @@ def create_chalani(
         attachment_url=payload.get("attachmentUrl"),
         status=payload.get("status") or "चलानी भएको",
         approval_status=payload.get("approvalStatus") or "approved",
+        source_module=payload.get("sourceModule") or payload.get("source_module"),
+        source_record_id=str(payload.get("sourceRecordId") or payload.get("source_record_id") or "") or None,
+        source_title=payload.get("sourceTitle") or payload.get("source_title"),
+        letter_type=payload.get("letterType") or payload.get("letter_type"),
+        metadata_json=str(payload.get("metadataJson") or payload.get("metadata_json") or "") or None,
         remarks=payload.get("remarks")
     )
     db.add(db_chalani)
     db.commit()
     db.refresh(db_chalani)
     return serialize_chalani(db_chalani)
+
+@router.post("/chalani/auto-dispatch")
+def auto_dispatch_chalani(
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """
+    Central Municipal Auto-Chalani Pipeline:
+    Idempotently returns the existing Chalani record if already dispatched for
+    (source_module, source_record_id, letter_type, fiscal_year) unless forceNew=True.
+    Otherwise allocates the next official dispatch number, registers the dispatch record,
+    and returns full verification data for official letterheads.
+    """
+    source_mod = payload.get("sourceModule") or payload.get("source_module")
+    source_id = str(payload.get("sourceRecordId") or payload.get("source_record_id") or "")
+    letter_type = payload.get("letterType") or payload.get("letter_type")
+    fy = payload.get("fiscalYear") or payload.get("fiscal_year") or "२०८१/०८२"
+    force_new = bool(payload.get("forceNew") or False)
+    eff_tenant = payload.get("tenant_id") or payload.get("tenantId") or ctx.effective_tenant_id
+
+    # Check for existing dispatch to avoid duplicate numbers on multiple print/views
+    if source_mod and source_id and letter_type and not force_new:
+        existing_chalani = ctx.filter_query(
+            db.query(Chalani).filter(
+                Chalani.source_module == source_mod,
+                Chalani.source_record_id == source_id,
+                Chalani.letter_type == letter_type,
+                Chalani.fiscal_year == fy
+            ),
+            Chalani
+        ).order_by(Chalani.created_at.desc()).first()
+
+        if existing_chalani:
+            return {
+                **serialize_chalani(existing_chalani),
+                "isExisting": True,
+                "message": f"पहिल्यै चलानी नं. {existing_chalani.dispatch_no} कायम भइसकेको छ।"
+            }
+
+    # Allocate next dispatch number
+    existing_all = ctx.filter_query(db.query(Chalani).filter(Chalani.fiscal_year == fy), Chalani).all()
+    max_num = max([from_ne_digit(x.dispatch_no) for x in existing_all] + [0])
+    dispatch_no = to_ne_digit(max_num + 1)
+
+    new_id = str(uuid.uuid4())
+    v_code = f"PKP-C-{fy.replace('/', '-')}-{dispatch_no}"
+    dispatch_date = payload.get("dispatchDate") or payload.get("entryDateBs") or "२०८१-०४-०१"
+
+    db_chalani = Chalani(
+        id=new_id,
+        tenant_id=eff_tenant,
+        dispatch_no=str(dispatch_no),
+        fiscal_year=fy,
+        dispatch_date=dispatch_date,
+        dispatch_date_ad=payload.get("dispatchDateAd"),
+        dispatch_time=payload.get("dispatchTime"),
+        letter_ref_no=str(dispatch_no),
+        receiver_name=payload.get("receiverName") or payload.get("recipientOrganization") or "सम्बन्धित पक्ष",
+        receiver_address=payload.get("receiverAddress") or payload.get("recipientAddress"),
+        receiver_contact=payload.get("receiverContact"),
+        receiver_email=payload.get("receiverEmail"),
+        subject=payload.get("subject") or "आधिकारिक पत्र सम्बन्धमा",
+        department=payload.get("department") or "योजना तथा पूर्वाधार विकास शाखा",
+        signed_by=payload.get("signedBy") or "प्रमुख प्रशासकीय अधिकृत",
+        classification=payload.get("classification") or "साधारण",
+        priority=payload.get("priority") or "साधारण",
+        verification_code=v_code,
+        letter_body=payload.get("letterBody"),
+        delivery_method=payload.get("deliveryMethod") or "हातै / आधिकारिक पत्र",
+        postal_ticket_amount=float(payload.get("postalTicketAmount") or 0),
+        page_count=int(payload.get("pageCount") or 1),
+        carbon_copy=payload.get("carbonCopy"),
+        attachment_url=payload.get("attachmentUrl"),
+        status="चलानी भएको",
+        approval_status="approved",
+        source_module=source_mod,
+        source_record_id=source_id or None,
+        source_title=payload.get("sourceTitle") or payload.get("source_title"),
+        letter_type=letter_type,
+        metadata_json=str(payload.get("metadataJson") or payload.get("metadata_json") or "") or None,
+        remarks=payload.get("remarks") or f"एकिकृत प्रणाली ({source_mod}) बाट स्वतः चलानी कायम"
+    )
+    db.add(db_chalani)
+    db.commit()
+    db.refresh(db_chalani)
+
+    return {
+        **serialize_chalani(db_chalani),
+        "isExisting": False,
+        "message": f"नयाँ आधिकारिक चलानी नं. {dispatch_no} सफलतापूर्वक कायम भयो।"
+    }
 
 @router.get("/chalani/{id}")
 def get_chalani_by_id(id: str, db: Session = Depends(get_db)):
@@ -431,6 +540,11 @@ def update_chalani(id: str, payload: Dict[str, Any] = Body(...), db: Session = D
         "priority": "priority",
         "deliveryMethod": "delivery_method",
         "pageCount": "page_count",
+        "sourceModule": "source_module",
+        "sourceRecordId": "source_record_id",
+        "sourceTitle": "source_title",
+        "letterType": "letter_type",
+        "metadataJson": "metadata_json",
         "remarks": "remarks",
         "status": "status"
     }

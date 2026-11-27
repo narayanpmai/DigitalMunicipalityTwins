@@ -30,6 +30,10 @@ const DEFAULT_FISCAL_YEARS: FiscalYear[] = [
   { id: 'fy-80-81', name: '२०८०/०८१', code: '2080/081', isCurrent: false },
   { id: 'fy-79-80', name: '२०७९/०८०', code: '2079/080', isCurrent: false },
   { id: 'fy-78-79', name: '२०७८/०७९', code: '2078/079', isCurrent: false },
+  { id: 'fy-77-78', name: '२०७७/०७८', code: '2077/078', isCurrent: false },
+  { id: 'fy-76-77', name: '२०७६/०७७', code: '2076/077', isCurrent: false },
+  { id: 'fy-75-76', name: '२०७५/०७६', code: '2075/076', isCurrent: false },
+  { id: 'fy-74-75', name: '२०७४/०७५', code: '2074/075', isCurrent: false },
 ];
 
 function getInitialFiscalYears(): { list: FiscalYear[]; activeName: string } {

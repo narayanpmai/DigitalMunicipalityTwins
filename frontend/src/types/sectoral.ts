@@ -49,8 +49,8 @@ export interface Project {
   qrCode?: string;
   beneficiaryCount?: number;
   householdsCount?: number;
-  photos?: string[];
-  documents?: string[];
+  photos?: Array<ProjectPhoto | string>;
+  documents?: Array<ProjectDocument | string>;
   isPublic?: boolean;
   gisData?: Record<string, any>;
   remarks?: string;
@@ -89,7 +89,45 @@ export interface Project {
   committeePhone?: string;
   contingencyAmount?: number;
   virementDetails?: Record<string, any>;
-  installmentDetails?: Record<string, any>;
+
+  // आधिकारिक योजना सम्झौता फारमका थप क्षेत्रहरू
+  subProjectName?: string;
+  chalaniNo?: string;
+  wardRecommendationDateBs?: string;
+  objective?: string;
+  laborContribution?: number;
+  beneficiaryHouseholds?: number;
+  beneficiaryCommunity?: string;
+  beneficiaryOrganization?: number;
+  beneficiaryFemale?: number;
+  beneficiaryMale?: number;
+  committeeFormationDateBs?: string;
+  committeeFormationAttendees?: number;
+  committeeViceChair?: string;
+  monitoringCommitteeMembers?: Array<Record<string, any>>;
+  agreementTerms?: Array<Record<string, any>>;
+  signatories?: Record<string, any>;
+
+  installmentDetails?: {
+    payments?: Array<{
+      id?: string;
+      installmentPhase: string;
+      amount: number;
+      deductions?: Record<string, any>;
+      recordedBy?: string;
+      createdAt?: string;
+    }>;
+    lastPayment?: Record<string, any>;
+    [key: string]: any;
+  };
+  boqItems?: Array<Record<string, any>>;
+  approvalStage?: string;
+  approvalHistory?: ApprovalHistoryEntry[];
+  budgetId?: string;
+  procurementId?: string;
+  procurementNo?: string;
+  contractDetails?: Record<string, any>;
+  contractorPan?: string;
   workOrderNumber?: string;
   workOrderDateBs?: string;
   committeeBankDetails?: CommitteeBankDetails | Record<string, any>;
@@ -98,6 +136,8 @@ export interface Project {
   measurementBook?: MeasurementBookEntry[] | Array<Record<string, any>>;
   socialAudit?: SocialAuditRecord | Record<string, any>;
   farfarakDetails?: FarfarakDetails | Record<string, any>;
+  timeExtensions?: TimeExtensionRecord[];
+  smsLogs?: ProjectSmsLog[];
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -142,12 +182,70 @@ export interface MonitoringRecord {
   createdAt?: string;
 }
 
+export interface BoqItem {
+  id: string;
+  sn?: number;
+  itemDescription: string;
+  unit: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  completedQuantity?: number;
+  remarks?: string;
+}
+
+export interface ProjectPhoto {
+  id: string;
+  phase: 'before' | 'during' | 'after' | string;
+  url: string;
+  caption?: string;
+  latitude?: number;
+  longitude?: number;
+  capturedDateBs?: string;
+  uploadedBy?: string;
+  uploadedAt?: string;
+}
+
+export interface ProjectDocument {
+  id: string;
+  docType:
+    | 'assembly_minute'
+    | 'citizenship'
+    | 'estimate'
+    | 'agreement_order'
+    | 'bill_voucher'
+    | 'social_audit_minute'
+    | 'handover'
+    | 'other'
+    | string;
+  title: string;
+  fileUrl: string;
+  fileName?: string;
+  uploadedDateBs?: string;
+  uploadedBy?: string;
+  uploadedAt?: string;
+}
+
+export interface MeasurementBookItemEntry {
+  boqItemId?: string;
+  itemDescription: string;
+  unit: string;
+  nos?: number;
+  length?: number;
+  breadth?: number;
+  height?: number;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
 export interface MeasurementBookEntry {
   id: string;
   mbNumber: string;
   date: string;
   engineerName: string;
   workDescription?: string;
+  mbItems?: MeasurementBookItemEntry[];
   measuredAmount: number;
   cumulativeAmount: number;
   verifiedBy?: string;
@@ -180,6 +278,83 @@ export interface FarfarakDetails {
   remarks?: string;
   approvedBy?: string;
   updatedAt?: string;
+}
+
+export interface ApprovalHistoryEntry {
+  id: string;
+  fromStage: string;
+  toStage: string;
+  decision: 'approve' | 'return' | string;
+  actorEmail?: string;
+  actorName?: string;
+  actorRole?: string;
+  remarks?: string;
+  createdAt?: string;
+}
+
+export interface TimeExtensionRecord {
+  id: string;
+  extensionNo: number; // १, २, ३ (पटक)
+  applicationDateBs: string; // निवेदन मिति
+  applicantName: string; // निवेदक / समिति
+  reason: string; // म्याद थपको कारण
+  decisionLevel: 'ward' | 'palika_executive' | 'cao' | string;
+  decisionDateBs: string; // निर्णय मिति
+  decisionNumber: string; // निर्णय / बैठक नं.
+  chalaniNo?: string; // चलानी नं.
+  previousCompletionDateBs: string; // साविक सम्पन्न मिति
+  extendedCompletionDateBs: string; // थपिएको नयाँ म्याद मिति
+  extendedDays: number; // थप भएको दिन संख्या
+  physicalProgressAtRequest: number; // भौतिक प्रगति (%)
+  financialProgressAtRequest?: number; // वित्तीय प्रगति (रु.)
+  technicalRecommendation: string; // प्राविधिक सिफारिस
+  engineerName?: string; // प्राविधिक/इन्जिनियर
+  status: 'approved' | 'pending' | 'rejected' | string;
+  approvedBy?: string;
+  remarks?: string;
+  createdAt?: string;
+}
+
+export interface LinkableBudget {
+  id: string;
+  title: string;
+  fiscalYear: string;
+  type: string;
+  status: string;
+  sector?: string;
+  wardNumber?: number;
+  sourceOfFund?: string;
+  allocatedAmount: number;
+  releasedAmount: number;
+  spentAmount: number;
+  allocatedToProjects: number;
+  paidInProjects: number;
+  remainingForAllocation: number;
+}
+
+export interface LinkableProcurement {
+  id: string;
+  procurementNo: string;
+  title: string;
+  method?: string;
+  status: string;
+  fiscalYear: string;
+  sector?: string;
+  wardNo?: number;
+  estimatedAmount: number;
+  awardedAmount: number;
+  bidSecurityAmount: number;
+  performanceSecurityAmount: number;
+  awardedTo?: string;
+  awardedVendorPan?: string;
+  contractDateBs?: string;
+  completionDateBs?: string;
+  linkedProjectId?: string;
+}
+
+export interface LinkableSourcesResponse {
+  budgets: LinkableBudget[];
+  procurements: LinkableProcurement[];
 }
 
 export interface DisasterEvent {
@@ -218,3 +393,59 @@ export interface EmergencyContact {
   department?: string;
   isHotline?: boolean;
 }
+
+export interface BudgetSourceItem {
+  id: string;
+  sn: number;
+  name: string;
+  status: 'सक्रिय' | 'निष्क्रिय' | string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectSmsLog {
+  id: string;
+  sentAt: string;
+  sentDateBs: string;
+  recipientRole: string;
+  recipientName: string;
+  phone: string;
+  message: string;
+  templateKey: string;
+  status: 'DELIVERED' | 'PENDING' | 'FAILED' | string;
+  gateway: string;
+}
+
+export interface BudgetSubHeadItem {
+  id: string;
+  subHeadNo: string;
+  title: string;
+  allocatedAmount: number;
+  releasedAmount?: number;
+  spentAmount?: number;
+  sourceOfFund: string;
+  level: string; // वडा स्तरिय / नगर स्तरिय
+  expenseType: string; // पुँजीगत खर्च / चालु खर्च
+  status: string; // active, approved, etc.
+  approvalState?: string; // स्विकृत भएको
+  fiscalYear: string;
+  wardNumber?: number | null;
+  sector?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectSmsLog {
+  id: string;
+  sentAt: string;
+  sentDateBs: string;
+  recipientRole: string;
+  recipientName: string;
+  phone: string;
+  message: string;
+  templateKey: string;
+  status: 'DELIVERED' | 'PENDING' | 'FAILED' | string;
+  gateway: string;
+}
+

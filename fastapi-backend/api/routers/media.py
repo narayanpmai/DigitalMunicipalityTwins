@@ -16,14 +16,21 @@ router = APIRouter(
     tags=["Media & File Uploads"]
 )
 
-ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.pdf'}
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.pdf', '.xlsx', '.xls', '.csv', '.doc', '.docx'}
 ALLOWED_MIME_TYPES = {
     'image/jpeg',
     'image/png',
     'image/webp',
     'image/gif',
     'image/svg+xml',
-    'application/pdf'
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'text/csv',
+    'application/csv',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/octet-stream',
 }
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'uploads')
@@ -47,7 +54,7 @@ async def upload_file(file: UploadFile = File(...)):
     if ext_lower not in ALLOWED_EXTENSIONS or (file.content_type and file.content_type not in ALLOWED_MIME_TYPES):
         raise HTTPException(
             status_code=400,
-            detail="अमान्य फाइल प्रकार! केवल तस्बिर (.jpg, .png, .webp, .svg) र PDF फाइलहरू मात्र स्वीकार गरिन्छ।"
+            detail="अमान्य फाइल प्रकार! तस्बिर (.jpg, .png, .webp), PDF, Word (.docx) वा Excel/CSV मात्र स्वीकार गरिन्छ।"
         )
         
     contents = await file.read()

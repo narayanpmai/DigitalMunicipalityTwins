@@ -1,0 +1,3913 @@
+<!DOCTYPE html>
+<!-- saved from url=(0077)http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>योजना सम्झौता - सम्झौता थप्नुहोस्</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <!-- Bootstrap CSS-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/font-awesome.min.css" rel="stylesheet">
+    <!-- Fontastic Custom icon font-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/fontastic.css" rel="stylesheet">
+    <!-- Google fonts - Roboto -->
+    <!--<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">-->
+    <!-- jQuery Circle-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/grasp_mobile_progress_circle-1.0.0.min.css" rel="stylesheet">
+    <!-- Custom Scrollbar-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.mCustomScrollbar.css" rel="stylesheet">
+    <!-- theme stylesheet-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/style.default.css" rel="stylesheet" id="theme-stylesheet"><link id="new-stylesheet" rel="stylesheet">
+    <!-- Custom stylesheet - for your changes-->
+    <link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/custom.css" rel="stylesheet">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="http://118.91.164.88:55/Dashboard_Contents/img/favicon.png">
+    <!-- Tweaks for older IEs-->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+
+    <script type="text/javascript">
+        //Stops Form Submission of Enter Key Press
+        function stopRKey(evt) {
+            var evt = (evt) ? evt : ((event) ? event : null);
+            var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+            if ((evt.keyCode == 13) && (node.type == "text")) { return false; }
+        }
+        document.onkeypress = stopRKey;
+    </script>
+
+</head>
+<body style="">
+    
+
+
+
+
+
+<!-- Side Navbar -->
+<nav class="side-navbar mCustomScrollbar _mCS_1 mCS_no_scrollbar"><div id="mCSB_1" class="mCustomScrollBox mCS-light mCSB_vertical mCSB_inside" style="max-height: none;" tabindex="0"><div id="mCSB_1_container" class="mCSB_container mCS_y_hidden mCS_no_scrollbar_y" style="position:relative; top:0; left:0;" dir="ltr">
+    <div class="side-navbar-wrapper">
+        <div class="sidenav-header d-flex align-items-center justify-content-center">
+            <div class="sidenav-header-inner text-center">
+                <a href="http://118.91.164.88:55/Admin/AdminHome"><img src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/logo-nepal-sarkar.png" alt="Logo" class="img-fluid mCS_img_loaded"></a>
+            </div>
+            <div class="sidenav-header-logo"><a href="http://118.91.164.88:55/Admin/AdminHome" class="brand-small text-center"> <strong>योजना</strong></a></div>
+        </div>
+        <div class="main-menu">
+            <ul id="side-main-menu" class="side-menu list-unstyled">
+                <li><a href="http://118.91.164.88:55/Admin/AdminHome"> <i class="icon-home"></i> ड्यासबोर्ड</a></li>
+
+                    <li>
+                        <a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#masterSetupDropdown" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i> मास्टर सेटअप</a>
+                        <ul id="masterSetupDropdown" class="collapse list-unstyled ">
+                            <li><a href="http://118.91.164.88:55/Admin/PalikaSetup"><i class="fa fa-home"></i> पालिका सेटअप</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/FiscalYear"><i class="fa fa-calendar"></i> आर्थिक वर्ष</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/KaryaChhetraSetup"><i class="fa fa-area-chart"></i> कार्य क्षेत्र</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/WardSetup"><i class="fa fa-map-marker"></i> वडा</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/AayojanaThrough"><i class="fa fa-handshake-o"></i> मार्फत</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/AayojanaSarta"><i class="fa fa-file-text"></i> आयोजना शर्त</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#budgetSetupDropdown" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i> वजेट सेटअप</a>
+                        <ul id="budgetSetupDropdown" class="collapse list-unstyled ">
+                            <li><a href="http://118.91.164.88:55/Admin/BudgetSourceSetup"><i class="fa fa-map"></i> वजेट स्रोत</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/BudgetSourceFund"><i class="fa fa-inr fa-lg"></i> बजेट स्रोत रकम</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/BudgetUpaSirshak"><i class="fa fa-briefcase"></i>बजेट उप-शिर्षक रकम</a></li>
+                            
+                        </ul>
+                    </li>
+
+
+                <li><a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm"><i class="fa fa-file"></i> योजना सम्झौता फारम</a></li>
+
+                    <li>
+                        <a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#reportDropdown" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-bars"></i> रिपोर्ट</a>
+                        <ul id="reportDropdown" class="collapse list-unstyled ">
+                            <li><a href="http://118.91.164.88:55/Admin/YojanaBudgetBinyojan/BudgetBinyojanReport"><i class="fa fa-file"></i> बजेट बिनियोजन रिपोर्ट</a></li>
+                            <li><a href="http://118.91.164.88:55/Admin/SamjhautaReports/KulYojanaPragatiReport"><i class="fa fa-file"></i> योजना प्रगति रिपोर्ट</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="http://118.91.164.88:55/Admin/SamjhautaReports/YojanaPragatiPratibedanReport"><i class="fa fa-file-text"></i> योजना प्रगति प्रतिवेदन</a></li>
+                    <li><a href="http://118.91.164.88:55/Admin/TipanniAadesh/YojanaTipanniKistaReport"><i class="fa fa-file-text"></i>वित्तिय प्रगति विवरण</a></li>
+                    <li><a href="http://118.91.164.88:55/Admin/SamjhautaReports/YojanaPragatiReport"><i class="fa fa-file-text"></i>योजना प्रगति</a></li>
+                    <li>
+                        <a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#budgetAddLessDropdown" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-arrow-up"></i><i class="fa fa-arrow-down"></i> बजेट थप-घट</a>
+                        <ul id="budgetAddLessDropdown" class="collapse list-unstyled ">
+                            <li><a href="http://118.91.164.88:55/Admin/BudgetUpaSirshikRakamantar"><i class="fa fa-inr fa-lg"></i>बजेट रकमान्तर</a></li>
+                            
+                            <li><a href="http://118.91.164.88:55/Admin/AddYojanaBudget"><i class="fa fa-inr fa-lg"></i>योजना बजेट थप</a></li>
+                        </ul>
+                    </li>
+
+                    <li><a href="http://118.91.164.88:55/Admin/SamjhautaReports/YojanaPragatiPratibedanReportByUser"><i class="fa fa-file-text"></i> योजना प्रगति प्रतिवेदन(वडा अन्तरगत)</a></li>
+                    <li><a href="http://118.91.164.88:55/Admin/AdminAccount/RegisterWardLogin"><i class="fa fa-user fa-key"></i><i class="fa fa-lock fa-lg"></i>नयाँ प्रयोगकर्ता दर्ता</a></li>
+
+                    <li><a href="http://118.91.164.88:55/Admin/ContractAgreementForm"><i class="fa fa-file-text"></i> Contract Agreement</a></li>
+
+            </ul>
+        </div>
+
+    </div>
+</div><div id="mCSB_1_scrollbar_vertical" class="mCSB_scrollTools mCSB_1_scrollbar mCS-light mCSB_scrollTools_vertical" style="display: none;"><div class="mCSB_draggerContainer"><div id="mCSB_1_dragger_vertical" class="mCSB_dragger" style="position: absolute; min-height: 30px; height: 0px; top: 0px;"><div class="mCSB_dragger_bar" style="line-height: 30px;"></div></div><div class="mCSB_draggerRail"></div></div></div></div></nav>
+
+   
+    <div class="page">
+        
+        <!-- navbar-->
+        <header class="header">
+            <nav class="navbar">
+                <div class="container-fluid">
+                    <div class="navbar-holder d-flex align-items-center justify-content-between">
+                        <div class="navbar-header">
+                            <a id="toggle-btn" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#" class="menu-btn"><i class="fa fa-bars"> </i></a><a href="http://118.91.164.88:55/Admin/AdminHome" class="navbar-brand">
+                                <div class="brand-text d-none d-md-inline-block"><strong class="text-white">योजना सम्झौता </strong></div>
+                            </a>
+                        </div>
+
+                        <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
+                            
+                        </ul>
+
+                        <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
+
+
+    <li class="nav-item dropdown">
+        <a id="notifications" rel="nofollow" data-target="#" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link"><i class="fa fa-bell"></i><span class="badge badge-danger" style="border-radius:50px; height:20px; width:20px; text-align:center; padding-top:2px;"><strong style="font-size:12px; font-weight:bold; color:#fff;">३</strong></span></a>
+        <ul aria-labelledby="notifications" class="dropdown-menu">
+            <li>
+                <a rel="nofollow" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/NewYojanaSamjhautaByWard" class="dropdown-item">
+                    <div class="notification d-flex justify-content-between">
+                        <div class="notification-content"><i class="fa fa-bell"></i> तपाइँसँग <strong style="font-size:18px; font-weight:bold; color:red;">३</strong> नयाँ सूचनाहरू छन् </div>
+                        
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </li>
+                            
+                           
+                            <li><a rel="nofollow" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#" class="nav-link language"> <img src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/npflag.png" alt="Nepal" class="mr-2"><span style="margin-left:-5px;"> नेपाली </span></a></li>
+                            
+                            <li class="nav-item dropdown">
+  
+                                <a id="languages" rel="nofollow" data-target="#" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link language dropdown-toggle"><span class="d-none d-sm-inline-block">ito.panchpokharithangpalmun@gmail.com</span></a>
+                                
+                                <ul aria-labelledby="languages" class="dropdown-menu">
+                                    <li><a rel="nofollow" href="http://118.91.164.88:55/Admin/AdminAccount/ResetPassword" class="dropdown-item"> <i class="fa fa-user fa-key"></i><span> पासवर्ड परिवर्तन  </span></a></li>
+                                    <li><a rel="nofollow" href="http://118.91.164.88:55/Admin/AdminAccount/LogoutAccount" class="dropdown-item"> <i class="fa fa-lock fa-lg"></i><span> लगआउट  </span></a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+
+        
+
+
+
+        
+
+
+
+<script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery-1.10.2.min.js.download"></script>
+
+
+<script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/nepali.datepicker.v5.0.5.min.js.download"></script>
+<link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/nepali.datepicker.v5.0.5.min.css" rel="stylesheet">
+
+
+<script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/select2.full.min.js.download"></script>
+<link href="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/select2.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+<div class="breadcrumb-holder">
+    <div class="container-fluid">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm">योजना सम्झौता फारम </a></li>
+            <li class="breadcrumb-item active">नयाँ</li>
+        </ul>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+$("#success-alert").fadeTo(3000, 500).slideUp(500, function(){
+    $("#success-alert").slideUp(500);
+});
+$("#info-alert").fadeTo(3000, 500).slideUp(500, function () {
+    $("#success-alert").slideUp(500);
+});
+$("#warning-alert").fadeTo(3000, 500).slideUp(500, function () {
+    $("#success-alert").slideUp(500);
+});
+$("#danger-alert").fadeTo(3000, 500).slideUp(500, function () {
+    $("#success-alert").slideUp(500);
+});
+</script>
+
+
+
+
+<input type="text" class="form-control" id="samjhautadonebytype" hidden="">
+
+<div class="alert alert-success" id="hiddenDisplayStatus" style="display:none">
+    <strong id="DisplayStatus"></strong>
+</div>
+
+<section style="margin-top:20px;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4>नयाँ सम्झौता राख्नुहोस्</h4>
+                    </div>
+                    <div class="card-body">
+<form action="http://118.91.164.88:55/Admin/YojanaSamjhautaForm/PanchpokhariYojanaSamjhauta" class="form-horizontal" enctype="multipart/form-data" method="post">                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">आर्थिक वर्ष </label>
+                                                    <input class="form-control" id="Fiscal_Year" name="Fiscal_Year" placeholder="०८३/०८४" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Fiscal_Year" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">वडा/नगर स्तरिय <span style="color:red">*</span></label>
+                                                    <select onchange="getSelectedContent()" class="form-control" data-val="true" data-val-number="The field Oda_Nagar_Id must be a number." id="Oda_Nagar_Id" name="Oda_Nagar_Id"><option value="">---छान्नुहोस्---</option>
+<option value="1">वडा स्तरिय</option>
+<option value="2">नगर स्तरिय</option>
+</select>
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Oda_Nagar_Id" data-valmsg-replace="true"></span>
+                                                    <div class="odanagarvalidationMesage" style="display:none;">
+                                                        <span id="odanagarValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="checkWardNo" style="display: none;">
+                                                    <label class="form-control-label">वडा नं.<span style="color:red">*</span></label>
+                                                    <select class="form-control" data-val="true" data-val-number="The field Ward_Id must be a number." id="Ward_Id" name="Ward_Id"><option value="">---छान्नुहोस्---</option>
+<option value="1">१</option>
+<option value="2">२</option>
+<option value="3">३</option>
+<option value="1003">४</option>
+<option value="2003">५</option>
+<option value="4004">६</option>
+<option value="4005">७</option>
+<option value="4006">८</option>
+</select>
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Ward_Id" data-valmsg-replace="true"></span>
+                                                </div>
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="checkNagarSteriyaWardNo" style="display: none;">
+                                                    <label class="form-control-label">वडा नं.</label>
+                                                    <select class="form-control" id="NagarSteriyaWard" name="NagarSteriyaWard"><option value="">---छान्नुहोस्---</option>
+<option value="१">१</option>
+<option value="२">२</option>
+<option value="३">३</option>
+<option value="४">४</option>
+<option value="५">५</option>
+<option value="६">६</option>
+<option value="७">७</option>
+<option value="८">८</option>
+</select>
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="NagarSteriyaWard" data-valmsg-replace="true"></span>
+                                                </div>
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">योजना/कार्यक्रम</label>
+                                                    <select onchange="getRelatedDataFromUpasirshakName()" class="form-control select2-hidden-accessible" id="Karyakram_name" name="Karyakram_name" tabindex="-1" aria-hidden="true">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</select><span class="select2 select2-container select2-container--default" dir="ltr" style="width: 276px;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-Karyakram_name-container"><span class="select2-selection__rendered" id="select2-Karyakram_name-container"></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="checkKaryaChhetra" style="display: none;">
+                                                    <label class="form-control-label">कार्य क्षेत्र </label>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Karya_Chhetra_Id must be a number." id="Karya_Chhetra_Id" name="Karya_Chhetra_Id" style="display:none;" type="text" value="">
+                                                    <input class="form-control" id="Yojana_Samjhauta_Karya_Chhetra" name="Yojana_Samjhauta_Karya_Chhetra" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Karya_Chhetra_Id" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="checkKaryaChhetra">
+                                                    <label class="form-control-label">बजेट उप-शिर्षक नं. </label>
+                                                    <input class="form-control" id="Budget_UpaSirshak_No_Eng" name="Budget_UpaSirshak_No_Eng" style="display:none;" type="text" value="">
+                                                    <input class="form-control" id="Budget_UpaSirshak_No" name="Budget_UpaSirshak_No" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Budget_UpaSirshak_No" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="budgetShroat">
+                                                    <label class="form-control-label">बजेट स्रोत नाम </label>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Budget_Source_Id must be a number." id="Budget_Source_Id" name="Budget_Source_Id" style="display:none;" type="text" value="">
+                                                    <input class="form-control" id="Concat_Budget_Source_Id" name="Concat_Budget_Source_Id" style="display:none;" type="text" value="">
+                                                    <input class="form-control" id="Yojana_Samjhauta_Budget_Source" name="Yojana_Samjhauta_Budget_Source" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Budget_Source_Id" data-valmsg-replace="true"></span>
+                                                    <input class="newSource1" id="source" name="source" style="display:none;" type="text" value="">
+                                                    <input class="newSource2" id="newsource" name="newsource" style="display:none;" type="text" value="">
+                                                    <input class="newSourceName1" id="sourcename" name="sourcename" style="display:none;" type="text" value="">
+                                                    <input class="newSourceName2" id="newsourcename" name="newsourcename" style="display:none;" type="text" value="">
+                                                    <div class="budgetvalidationMesage" style="display:none;">
+                                                        <span id="budgetSourceValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+
+                                                
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label"> च.नं.</label>
+                                                    <input class="form-control" id="Yojana_Nirnaya_No" name="Yojana_Nirnaya_No" onkeyup="getnirnayanumber()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Nirnaya_No" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Nirnaya_No must be a number." id="Nirnaya_No" name="Nirnaya_No" style="display:none;" type="text" value="">
+                                                </div>
+
+                                                
+                                                <input class="form-control" id="IsSahaYojana" name="IsSahaYojana" style="display:none;" type="text" value="">
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">वडा सिफारिस मिति <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="OdaSifarish-Date" name="NepaliOdaSifarishMiti" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="NepaliOdaSifarishMiti" data-valmsg-replace="true"></span>
+                                                </div>
+
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <div class="card-title">१. सम्झौता गर्ने पक्ष र आयोजना :</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">
+                                                <span>को मार्फत <em style="color:red">*</em> :</span><br>
+<input data-val="true" data-val-number="The field Aayojana_Through_Id must be a number." id="Aayojana_Through_Id" name="Aayojana_Through_Id" style="margin-right:10px; margin-left:30px;" type="radio" value="3">उपभोक्ता समिति<input id="Aayojana_Through_Id" name="Aayojana_Through_Id" style="margin-right:10px; margin-left:30px;" type="radio" value="4">ठेक्का<input id="Aayojana_Through_Id" name="Aayojana_Through_Id" style="margin-right:10px; margin-left:30px;" type="radio" value="7">रोजगार सेवा केन्द्र<input id="Aayojana_Through_Id" name="Aayojana_Through_Id" style="margin-right:10px; margin-left:30px;" type="radio" value="1005">विद्यालय<input id="Aayojana_Through_Id" name="Aayojana_Through_Id" style="margin-right:10px; margin-left:30px;" type="radio" value="1006">टोल सुधार समिति                                                <div class="marfatvalidationMesage" style="display:none;">
+                                                    <span id="marfatValidationMessage" style="color:red; width:100%; position:relative; font-size:12px; float:right;"></span>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="card-title">क) विवरण :</div>
+                                            
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-4 col-md-6 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. नाम <span style="color:red">*</span></label>
+                                                    <input class="form-control" id="Samiti_Name" name="Samiti_Name" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Name" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="samitivalidationMesage" style="display:none;">
+                                                        <span id="samitiNameValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-6 col-sm-6 form-group">
+                                                    <label class="form-control-label">२. ठेगाना <span style="color:red">*</span></label>
+                                                    <input class="form-control" id="Samiti_Address" name="Samiti_Address" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Address" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="addressvalidationMesage" style="display:none;">
+                                                        <span id="samitiAddressValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">ख) आयोजनाको विवरण : </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. नाम <span style="color:red">*</span></label>
+                                                    <input class="form-control" id="Aayojana_name" name="Aayojana_name" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_name" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="ayojananamevalidationMesage" style="display:none;">
+                                                        <span id="aayojanaNameValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="sahayojananame" style="display: none;">
+                                                    <label class="form-control-label">सह आयोजनाको नाम</label>
+                                                    <input class="form-control" id="SahaAayojana_Name" name="SahaAayojana_Name" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">२. आयोजना स्थल <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="Aayojana_Address" name="Aayojana_Address" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_Address" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="ayojanaaddressvalidationMesage" style="display:none;">
+                                                        <span id="aayojanaAddressValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-5 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">३.	उद्देश्य </label>
+                                                    <input class="form-control" id="Aayojana_Objective" name="Aayojana_Objective" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_Objective" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">४. आयोजना सुरु हुने मिति <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="Start-Date" name="Aayojana_Bibaran_Aayojana_Start_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_Bibaran_Aayojana_Start_Date" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="ayojanastartvalidationMesage" style="display:none;">
+                                                        <span id="aayojanaStartValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">५. आयोजना सम्पन्न हुने मिति  <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="End-Date" name="Aayojana_Bibaran_Aayojana_End_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_Bibaran_Aayojana_End_Date" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="ayojanaendvalidationMesage" style="display:none;">
+                                                        <span id="aayojanaEndValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <div class="card-title">२. आयोजनाको लागत सम्बन्धि विवरण :</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">क) लागत अनुमान:</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-6 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. लागत अनुमान रु. <span style="color:red">*</span></label>
+                                                    <input class="form-control" id="Aayojana_Bibaran_Aayojana_Lagat_Anuman" name="Aayojana_Bibaran_Aayojana_Lagat_Anuman" onkeyup="getlagatanuman()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Aayojana_Bibaran_Aayojana_Lagat_Anuman" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Aayojana_Lagat_Anuman must be a number." id="Aayojana_Lagat_Anuman" name="Aayojana_Lagat_Anuman" style="display:none;" type="text" value="">
+                                                    
+                                                    <div class="ayojanalagatvalidationMesage" style="display:none;">
+                                                        <span id="aayojanaLagatValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">ख) लागत व्यहोर्ने स्रोतहरु: </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12 card-body" style="background-color: rgb(244, 247, 250); display: none;" id="karyalayayojanaamount">
+                                                    आयोजनाको कुल बजेट बाँकि : <span id="checksubyojanaamount"></span>
+                                                    <br>सह आयोजनाको लागि कार्यालयबाट छुट्टयाईएको रकम राख्नुहोस्
+                                                </div>
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. कार्यालय  <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="Lagat_Payable_Shroat_Karyalaya" name="Lagat_Payable_Shroat_Karyalaya" onkeyup="getkaryalayaamt()" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Lagat_Payable_Shroat_Karyalaya" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Karyalaya must be a number." id="Karyalaya" name="Karyalaya" style="display:none;" type="text" value="">
+                                                    
+                                                    <div class="karyalayalagatvalidationMesage" style="display:none;">
+                                                        <span id="karyalayaLagatAmtValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group" id="sahayojanarakambykaryalaya" style="display: none;">
+                                                    <label class="form-control-label"> सह आयोजनाको रकम </label>
+                                                    <input class="form-control" id="SahaAayojanaRakamByKaryalaya" name="SahaAayojanaRakamByKaryalaya" onkeyup="getSahaAayojanaRakam()" type="text" value="">
+                                                    <input class="form-control" data-val="true" data-val-number="The field SahaAayojanaKaryalaya must be a number." id="SahaAayojanaKaryalaya" name="SahaAayojanaKaryalaya" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">२. उपभोक्ता समिति  </label>
+                                                    <input class="form-control" id="Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat" name="Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat" onkeyup="getsamitiamt()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Upabhokta_Samiti must be a number." id="Upabhokta_Samiti" name="Upabhokta_Samiti" style="display:none;" type="text" value="">
+                                                    
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">३. उपभोक्ताको जन श्रमदान रकम </label>
+                                                    <input class="form-control" id="JanaShramdamAmount" name="JanaShramdamAmount" onkeyup="getshramdanAmount()" type="text" value="">
+                                                    <input class="form-control" data-val="true" data-val-number="The field Upabhikta_JanaShramDam_Amount must be a number." id="Upabhikta_JanaShramDam_Amount" name="Upabhikta_JanaShramDam_Amount" style="display:none;" type="text" value="">
+                                                </div>
+                                                
+
+                                                
+
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">४. कन्टिन्जेन्सी %  </label>
+                                                    <input class="form-control" id="ContinPerentage" name="ContinPerentage" onkeyup="getContingencyPercentage()" type="text" value="">
+                                                    <input class="form-control" data-val="true" data-val-number="The field Contigency_Percentage must be a number." id="Contigency_Percentage" name="Contigency_Percentage" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">४. कन्टिन्जेन्सी वापत कट्टिहुने रकम  </label>
+                                                    <input class="form-control" id="Lagat_Payable_Shroat_Contigency_Amount" name="Lagat_Payable_Shroat_Contigency_Amount" readonly="readonly" type="text" value="">
+                                                    <input class="form-control" data-val="true" data-val-number="The field Contigency_Amount must be a number." id="Contigency_Amount" name="Contigency_Amount" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">ग) आयोजनाबाट लाभान्वित हुने: </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. घरपरिवार संख्या  </label>
+                                                    <input class="form-control" id="Aayojana_Lavanbit_Total_House" name="Aayojana_Lavanbit_Total_House" onkeyup="gettotalhouse()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Total_House" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Total_House must be a number." id="Total_House" name="Total_House" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">२. समुदाय  </label>
+                                                    <input class="form-control" id="Lavanbit_Samudaya" name="Lavanbit_Samudaya" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Lavanbit_Samudaya" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">३. संगठित संस्था  </label>
+                                                    <input class="form-control" id="Sangathit_Sanstha" name="Sangathit_Sanstha" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Sangathit_Sanstha" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">४. अन्य  </label>
+                                                    <input class="form-control" id="Other_Lavanbit" name="Other_Lavanbit" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Other_Lavanbit" data-valmsg-replace="true"></span>
+                                                </div>
+
+                                                <div class="col-lg-12 col-md-12 col-sm-12 form-group">
+                                                    <label class="form-control-label">५. जनसंख्या </label>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">महिला  </label>
+                                                    <input class="form-control" id="Aayojana_Lavanbit_Total_Female" name="Aayojana_Lavanbit_Total_Female" onkeyup="gettotalfemale()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Total_Female" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Total_Female must be a number." id="Total_Female" name="Total_Female" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">पुरुष </label>
+                                                    <input class="form-control" id="Aayojana_Lavanbit_Total_Male" name="Aayojana_Lavanbit_Total_Male" onkeyup="gettotalmale()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Total_Male" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Total_Male must be a number." id="Total_Male" name="Total_Male" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">जम्मा  </label>
+                                                    <input class="form-control" id="Aayojana_Lavanbit_Total_Population" name="Aayojana_Lavanbit_Total_Population" readonly="readonly" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Total_Population" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Total_Population must be a number." id="Total_Population" name="Total_Population" style="display:none;" type="text" value="">
+                                                </div>
+
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <div class="card-title">३. उपभोक्ता समिति, गैर सरकारी संस्था वा समुदायमा आधारित संस्थाका पदाधिकारीको नामावली बिबरण:</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">क) गठन भएको मिति:</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">मिति <span style="color:red">*</span> </label>
+                                                    <input class="form-control" id="Gathan-Date" name="Upabhokta_Samiti_Bibaran_Samiti_Gathan_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Upabhokta_Samiti_Bibaran_Samiti_Gathan_Date" data-valmsg-replace="true"></span>
+                                                    
+                                                    <div class="samitigathanvalidationMesage" style="display:none;">
+                                                        <span id="samitiGathanDateValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">ख) पदाधिकारीको नाम र ठेगान: </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">१. अध्यक्ष  </label>
+                                                    <input class="form-control" id="President" name="President" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="President" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">२. उपाध्यक्ष  </label>
+                                                    <input class="form-control" id="Vice_Precident" name="Vice_Precident" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Vice_Precident" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">३. सचिव  </label>
+                                                    <input class="form-control" id="Secretary" name="Secretary" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Secretary" data-valmsg-replace="true"></span>
+                                                </div>
+                                                <div class="col-lg-3 col-md-4 col-sm-6 form-group">
+                                                    <label class="form-control-label">४. कोषाध्यक्ष  </label>
+                                                    <input class="form-control" id="Treasurer" name="Treasurer" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Treasurer" data-valmsg-replace="true"></span>
+                                                </div>
+
+
+                                                <div class="col-lg-8 col-md-12 col-sm-12 form-group">
+                                                    <label class="form-control-label"><strong>सदस्यहरु</strong>&nbsp;&nbsp; (नयाँ सदस्य थप गर्नका लागि दायाँ पट्टि राखिएको <span style="color:darkblue;">सदस्य थप्नुहोस्</span> बटनमा Click गर्नु होला । ) </label>
+                                                </div>
+                                                <div class="col-lg-4 col-md-12 col-sm-12 form-group">
+                                                    <button type="button" id="btn-AddUpabhoktaSamitiSadashya" class="btn btn-info btn-add pull-right"><i class="fa fa-plus"></i>&nbsp; सदस्य थप्नुहोस्</button>
+                                                </div>
+
+                                                
+                                                <div class="col-md-12 col-sm-12">
+                                                    <div id="getUpabhoktaSamitiSadashya" class="row">
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-8 col-md-12 col-sm-12 form-group">
+                                                    <label class="form-control-label"><strong>अनुगमन समिति</strong>&nbsp;&nbsp; (अनुगमन समिति सदस्य राख्नका लागि दायाँ पट्टि राखिएको <span style="color:darkblue;">अनुगमन समिति राख्नुहोस्</span> बटनमा Click गर्नु होला । ) </label>
+                                                </div>
+                                                <div class="col-lg-4 col-md-12 col-sm-12 form-group">
+                                                    <button type="button" id="btn-AddUpabhoktaAnugamanSamitiSadashya" class="btn btn-info btn-add pull-right"><i class="fa fa-plus"></i>&nbsp; अनुगमन समिति राख्नुहोस्</button>
+                                                </div>
+
+                                                <div class="col-md-12 col-sm-12">
+                                                    <div id="getUpabhoktaAnugamanSamitiSadashya" class="row">
+                                                    </div>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-title">ग) गठन गर्दा उपस्थित लाभान्वितको संख्या :</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                                    <input class="form-control" id="Upabhokta_Samiti_Bibaran_Total_Lavanbit_Member" name="Upabhokta_Samiti_Bibaran_Total_Lavanbit_Member" onkeyup="gettotallavanbit()" type="text" value="">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Total_Lavanbit_Member" data-valmsg-replace="true"></span>
+                                                    <input class="form-control" data-val="true" data-val-number="The field Total_Lavanbit_Member must be a number." id="Total_Lavanbit_Member" name="Total_Lavanbit_Member" style="display:none;" type="text" value="">
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <div class="card-title">४. उपभोक्ता समिति समुदायमा आधारित संस्था-गैह्रसरकारी संस्थाले प्राप्त गर्ने किस्ता विवरण :</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="form-group row" style="margin-bottom: 25px;">
+                                                <div class="col-md-2">किस्ताको क्रम</div>
+                                                <div class="col-md-2">मिति</div>
+                                                <div class="col-md-2">किस्ताको रकम</div>
+                                                <div class="col-md-3">निर्माण समाग्री परिमाण</div>
+                                                <div class="col-md-3">कैफियत</div>
+                                            </div>
+                                            <div class="line"></div>
+                                            <div id="UpabhoktaSamitiKistaBibaranFormgroup">
+                                                <div class="form-group">
+                                                    <div class="col-lg-12 col-md-12 inputGroupContainer">
+                                                        <div class="row">
+                                                            
+
+<script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.maskedinput.js.download"></script>
+
+<input type="hidden" name="UpabhoktaSamitiYojanaFirstKistaDetailsList.index" autocomplete="off" value="b4d73cd7-87c0-420a-ad95-631b1d527970">
+<input value="पहिलो" class="form-control" id="UpabhoktaSamitiYojanaFirstKistaDetailsList_b4d73cd7-87c0-420a-ad95-631b1d527970__Kista_Serial" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Kista_Serial" type="hidden">        <div class="col-md-2">पहिलो</div>
+        <div class="col-md-2" style="margin-bottom: 30px;"><input class="form-control" id="Kista_Date_First" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Upabhokta_Samiti_First_Kista_Bibaran_Kista_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false"></div>
+        <div class="col-md-2"><input class="form-control" id="Kista_Amount_First" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Upabhokta_Samiti_Kista_Bibaran_Kista_Amount" onkeyup="getkistafirstamt()" type="text" value=""></div>
+        <div class="col-md-3"><input class="form-control" id="Nirmarn_Samagri_First" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Upabhokta_Samiti_Kista_Bibaran_Nirman_Samagri_Quantity" onkeyup="getnirmansamagrifirst()" type="text" value=""></div>
+        <div class="col-md-3"><textarea class="form-control" cols="20" id="Remarks_First" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Remarks" rows="2"></textarea></div>
+<input class="form-control" data-val="true" data-val-number="The field Kista_Amount must be a number." id="firstkistaamt" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Kista_Amount" style="display:none;" type="text" value=""><input class="form-control" data-val="true" data-val-number="The field Nirman_Samagri_Quantity must be a number." id="firstnirmansamagri" name="UpabhoktaSamitiYojanaFirstKistaDetailsList[b4d73cd7-87c0-420a-ad95-631b1d527970].Nirman_Samagri_Quantity" style="display:none;" type="text" value="">
+
+
+<script>
+        $(document).ready(function () {
+            $('#Kista_Date_First').removeAttr('readonly');
+        })
+</script>
+
+<script>
+    $("#Kista_Date_First").nepaliDatePicker({
+        dateFormat: "%y-%m-%d",
+        closeOnDateSelect: true
+    });
+</script>
+
+<script>
+    function getkistafirstamt() {
+        
+        var kistafirstamt = $('#Kista_Amount_First').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: kistafirstamt
+            },
+            success: function (result) {
+                $('input[id=firstkistaamt]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+
+
+<script>
+    function getnirmansamagrifirst() {
+        
+        var nirmansamagrifirst = $('#Nirmarn_Samagri_First').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: nirmansamagrifirst
+            },
+            success: function (result) {
+                $('input[id=firstnirmansamagri]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+                                                            
+
+<input type="hidden" name="UpabhoktaSamitiYojanaSecondKistaDetailsList.index" autocomplete="off" value="61df7fa4-213b-4331-9ce2-17556511420e">
+<input value="दोस्रो" class="form-control" id="UpabhoktaSamitiYojanaSecondKistaDetailsList_61df7fa4-213b-4331-9ce2-17556511420e__Kista_Serial" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Kista_Serial" type="hidden">    <div class="col-md-2">दोस्रो</div>
+        <div class="col-md-2" style="margin-bottom: 30px;"><input class="form-control" id="Kista_Date_Second" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Upabhokta_Samiti_Second_Kista_Bibaran_Kista_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false"></div>
+        <div class="col-md-2"><input class="form-control" id="Kista_Amount_Second" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Upabhokta_Samiti_Kista_Bibaran_Kista_Amount" onkeyup="getkistasecondamt()" type="text" value=""></div>
+        <div class="col-md-3"><input class="form-control" id="Nirmarn_Samagri_Second" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Upabhokta_Samiti_Kista_Bibaran_Nirman_Samagri_Quantity" onkeyup="getnirmansamagrisecond()" type="text" value=""></div>
+        <div class="col-md-3"><textarea class="form-control" cols="20" id="Remarks_Second" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Remarks" rows="2"></textarea></div>
+<input class="form-control" data-val="true" data-val-number="The field Kista_Amount must be a number." id="secondkistaamt" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Kista_Amount" style="display:none;" type="text" value=""><input class="form-control" data-val="true" data-val-number="The field Nirman_Samagri_Quantity must be a number." id="secondnirmansamagri" name="UpabhoktaSamitiYojanaSecondKistaDetailsList[61df7fa4-213b-4331-9ce2-17556511420e].Nirman_Samagri_Quantity" style="display:none;" type="text" value="">
+
+
+<script>
+        $(document).ready(function () {
+            $('#Kista_Date_Second').removeAttr('readonly');
+        })
+</script>
+
+<script>
+    $("#Kista_Date_Second").nepaliDatePicker({
+        dateFormat: "%y-%m-%d",
+        closeOnDateSelect: true
+    });
+</script>
+
+
+<script>
+    function getkistasecondamt() {
+        var kistasecondamt = $('#Kista_Amount_Second').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: kistasecondamt
+            },
+            success: function (result) {
+                $('input[id=secondkistaamt]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+
+
+<script>
+    function getnirmansamagrisecond() {
+        var nirmansamagrisecond = $('#Nirmarn_Samagri_Second').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: nirmansamagrisecond
+            },
+            success: function (result) {
+                $('input[id=secondnirmansamagri]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+                                                            
+
+<input type="hidden" name="UpabhoktaSamitiYojanaThirdKistaDetailsList.index" autocomplete="off" value="c0d931a0-f66a-4570-abcf-279ec23f3ffc">
+<input value="तेस्रो" class="form-control" id="UpabhoktaSamitiYojanaThirdKistaDetailsList_c0d931a0-f66a-4570-abcf-279ec23f3ffc__Kista_Serial" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Kista_Serial" type="hidden">    <div class="col-md-2">तेस्रो</div>
+        <div class="col-md-2" style="margin-bottom: 30px;"><input class="form-control" id="Kista_Date_Third" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Upabhokta_Samiti_Third_Kista_Bibaran_Kista_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false"></div>
+        <div class="col-md-2"><input class="form-control" id="Kista_Amount_Third" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Upabhokta_Samiti_Kista_Bibaran_Kista_Amount" onkeyup="getkistathirdamt()" type="text" value=""></div>
+        <div class="col-md-3"><input class="form-control" id="Nirmarn_Samagri_Third" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Upabhokta_Samiti_Kista_Bibaran_Nirman_Samagri_Quantity" onkeyup="getnirmansamagrithird()" type="text" value=""></div>
+        <div class="col-md-3"><textarea class="form-control" cols="20" id="Remarks_Third" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Remarks" rows="2"></textarea></div>
+<input class="form-control" data-val="true" data-val-number="The field Kista_Amount must be a number." id="thirdkistaamt" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Kista_Amount" style="display:none;" type="text" value=""><input class="form-control" data-val="true" data-val-number="The field Nirman_Samagri_Quantity must be a number." id="thirdnirmansamagri" name="UpabhoktaSamitiYojanaThirdKistaDetailsList[c0d931a0-f66a-4570-abcf-279ec23f3ffc].Nirman_Samagri_Quantity" style="display:none;" type="text" value="">
+
+
+
+<script>
+        $(document).ready(function () {
+            $('#Kista_Date_Third').removeAttr('readonly');
+        })
+</script>
+
+<script>
+    $("#Kista_Date_Third").nepaliDatePicker({
+        dateFormat: "%y-%m-%d",
+        closeOnDateSelect: true
+    });
+</script>
+
+
+<script>
+    function getkistathirdamt() {
+        var kistathirdamt = $('#Kista_Amount_Third').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: kistathirdamt
+            },
+            success: function (result) {
+                $('input[id=thirdkistaamt]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+
+
+<script>
+    function getnirmansamagrithird() {
+        var nirmansamagrithird = $('#Nirmarn_Samagri_Third').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: nirmansamagrithird
+            },
+            success: function (result) {
+                $('input[id=thirdnirmansamagri]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+</script>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <div class="card-title">५. सम्झौताका शर्तहरु:</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="col-lg-12 col-md-12" style="font-size:14px;" id="Sarta">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light" id="SignatureForAll" style="display: none;">
+                                <div class="card-header">
+                                    <div class="card-title">उपभोक्ता समिति / गैर सरकारी संस्था वा समुदाय तर्फबाट:</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="form-group row ">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col-md-8">
+                                                            <label class="col-sm-12 form-control-label" style="text-decoration:underline;">उपभोक्ता समिति / गैर सरकारी संस्थाको तर्फबाट</label>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-3 form-control-label">अध्यक्ष</label>
+                                                                <div class="col-sm-9">
+                                                                    <input class="form-control" id="Samiti_Repregentative_Name" name="Samiti_Repregentative_Name" type="text" value="">
+                                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Name" data-valmsg-replace="true"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-3 form-control-label">सचिव</label>
+                                                                <div class="col-sm-9">
+                                                                    <input class="form-control" id="Samiti_Repregentative_Position" name="Samiti_Repregentative_Position" type="text" value="">
+                                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Position" data-valmsg-replace="true"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-3 form-control-label">कोषध्यक्ष</label>
+                                                                <div class="col-sm-9">
+                                                                    <input class="form-control" id="Samiti_Repregentative_Address" name="Samiti_Repregentative_Address" type="text" value="">
+                                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Address" data-valmsg-replace="true"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                                <div class="col-sm-9">
+                                                                    <input class="form-control" id="SManjuri-Date" name="Samjhauta_Manjuri_Samiti_Repregentative_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                                    <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Date" data-valmsg-replace="true"></span>
+                                                                </div>
+                                                                <div class="samitirepresentativevalidationMesage" style="display:none;">
+                                                                    <span id="samitiManjuriRepresentativeValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="col-sm-12 form-control-label">&nbsp;</label>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-4 form-control-label">सहि</label>
+                                                                <div class="col-sm-8">
+                                                                    <span>&nbsp;</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-4 form-control-label">सहि</label>
+                                                                <div class="col-sm-8">
+                                                                    <span>&nbsp;</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                            <div class="form-group row ">
+                                                                <label class="col-sm-4 form-control-label">सहि</label>
+                                                                <div class="col-sm-8">
+                                                                    <span>&nbsp;</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="line"></div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="col-sm-12 form-control-label" style="text-decoration:underline;">स्थानीय तहको तर्फबाट सिफारिस गर्ने</label>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">नाम</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="Karyalaya_Repregentative_Name" name="Karyalaya_Repregentative_Name" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Name" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">दर्जा</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="Karyalaya_Repregentative_Position" name="Karyalaya_Repregentative_Position" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Position" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">सहि</label>
+                                                        <div class="col-sm-9">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="KManjuri-Date" name="Samjhauta_Manjuri_Karyalaya_Repregentative_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Date" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                        <div class="karyalayarepresentativevalidationMesage" style="display:none;">
+                                                            <span id="karyalayaManjuriRepresentativeValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="col-sm-12 form-control-label" style="text-decoration:underline;">स्विकृत गर्ने</label>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">नाम</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="Karyalaya_Repregentative_Name1" name="Karyalaya_Repregentative_Name1" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Name1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">दर्जा</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="Karyalaya_Repregentative_Position1" name="Karyalaya_Repregentative_Position1" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Position1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">सहि</label>
+                                                        <div class="col-sm-9">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="SKManjuri-Date" name="Samjhauta_Manjuri_Karyalaya_Repregentative_Date1" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Date1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                        <div class="karyalayarepresentativevalidationMesage" style="display:none;">
+                                                            <span id="karyalayaManjuriRepresentativeValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-light" id="SignatureForRojgarSewa" style="display: none;">
+                                <div class="card-header">
+                                    <div class="card-title">सम्झौतामा हस्ताक्षर गर्ने:</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="form-group row ">
+                                                <div class="col-md-4">
+                                                    <label class="col-sm-12 form-control-label" style="text-decoration:underline;"> रोजगार उपभोक्ताको तर्फबाट : </label>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">हस्ताक्षर</label>
+                                                        <div class="col-sm-9">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">नाम थर</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="RogjarKaryalaya_Repregentative_Name" name="RogjarKaryalaya_Repregentative_Name" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Name" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">पद</label>
+                                                        <div class="col-sm-9">
+                                                            <input vlaue="प्रमुख प्रशासकीय अधिकृत" class="form-control" id="RogjarKaryalaya_Repregentative_Position" name="RogjarKaryalaya_Repregentative_Position" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Position" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="KKManjuri-Date" name="RogjarSamjhauta_Manjuri_Karyalaya_Repregentative_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Karyalaya_Repregentative_Date" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                        <div class="karyalayarepresentativevalidationMesage" style="display:none;">
+                                                            <span id="karyalayaManjuriRepresentativeValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-5 form-control-label">कार्यालयको छाप</label>
+                                                        <div class="col-sm-7">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="col-sm-12 form-control-label" style="text-decoration:underline;"> रोजगार सेवाको तर्फबाट :</label>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">हस्ताक्षर</label>
+                                                        <div class="col-sm-9">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">नाम थर</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="RogjarSamiti_Repregentative_Name" name="RogjarSamiti_Repregentative_Name" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Name" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">पद</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="RogjarSamiti_Repregentative_Position" name="RogjarSamiti_Repregentative_Position" type="text" value="">
+                                                            <span value="अध्यक्ष, रोजगार उपभोक्ता समिति" class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Position" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="SSManjuri-Date" name="RogjarSamjhauta_Manjuri_Samiti_Repregentative_Date" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="Samiti_Repregentative_Date" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                        <div class="samitirepresentativevalidationMesage" style="display:none;">
+                                                            <span id="samitiManjuriRepresentativeValidationMessage" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="col-sm-12 form-control-label" style="text-decoration:underline;"> स्विकृत गर्ने :</label>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">हस्ताक्षर</label>
+                                                        <div class="col-sm-9">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">नाम थर</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="RogjarKaryalaya_Repregentative_Name1" name="RogjarKaryalaya_Repregentative_Name1" type="text" value="">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="RogjarKaryalaya_Repregentative_Name1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">पद</label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="RogjarKaryalaya_Repregentative_Position1" name="RogjarKaryalaya_Repregentative_Position1" type="text" value="">
+                                                            <span value="रोजगार संयोजक" class="field-validation-valid text-danger" data-valmsg-for="RogjarKaryalaya_Repregentative_Position1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-3 form-control-label">मिति <span style="color:red">*</span></label>
+                                                        <div class="col-sm-9">
+                                                            <input class="form-control" id="KManjuri-Date1" name="RogjarSamjhauta_Manjuri_Karyalaya_Repregentative_Date1" placeholder="____-__-__" type="text" value="" aria-haspopup="true" aria-expanded="false">
+                                                            <span class="field-validation-valid text-danger" data-valmsg-for="RogjarSamjhauta_Manjuri_Karyalaya_Repregentative_Date1" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                        <div class="karyalayarepresentativevalidationMesage1" style="display:none;">
+                                                            <span id="karyalayaManjuriRepresentativeValidationMessage1" style="color:red; width:100%; position:relative; font-size:14px; float:right;"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="line"></div>
+                                                    <div class="form-group row ">
+                                                        <label class="col-sm-5 form-control-label">कार्यालयको छाप</label>
+                                                        <div class="col-sm-7">
+                                                            <span>&nbsp;</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="line"></div>
+                                <div class="form-group row ">
+                                    <label class="col-sm-2 form-control-label" style="font-size:14px; font-weight:bold; color:firebrick;">सम्झौता स्विकृत गर्नुहोस</label>
+                                    <div class="col-sm-1">
+                                        <input class="custom_check" data-val="true" data-val-required="The Is_Aayojana_Approval field is required." id="Is_Aayojana_Approval" name="Is_Aayojana_Approval" type="checkbox" value="true"><input name="Is_Aayojana_Approval" type="hidden" value="false">
+                                    </div>
+                                </div>
+                            <script>
+                                $('#Is_Aayojana_Approval').click(function () {
+                                    var checkbox = document.getElementById('Is_Aayojana_Approval');
+                                    if (checkbox.checked == true) {
+                                        return confirm('एक पटक स्विकृत गरिएको योजना सम्झौता फारम सम्पादन र मेटाउन मिल्दैन । के तपाँई सम्झौता स्विकृत गर्न चाहानुहुन्छ ?');
+                                    }
+                                    else {
+                                        return confirm('के तपाँई योजना सम्झौता फारम स्विकृत गर्न चाहानुहुन्न ? ');
+                                    }
+                                })
+                            </script>
+                            <div class="line"></div>
+                            <div class="form-group row">
+                                <div class="col-sm-4 offset-sm-2" style="margin-top: 20px;">
+                                    <a class="btn btn-secondary" href="http://118.91.164.88:55/Admin/YojanaSamjhautaForm">मुख्य मेनु</a>
+                                    <button type="submit" onclick="return FieldValidation()" class="btn btn-primary">सुरक्षित गर्नुहोस</button>
+                                </div>
+                            </div>
+</form>                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loader-wrapper" style="display: none;">
+        <div id="loader"></div>
+    </div>
+
+</section>
+
+
+<script>
+
+    $('input[type=radio][name=Aayojana_Through_Id]').on('change', function () {
+        var throughId = $("input[name='Aayojana_Through_Id']:checked").val();
+        //alert('Radio Box has been changed!' + selected_value);
+
+        $.ajax({
+            url: '/Admin/AayojanaSarta/_GetYojanaSarta',
+            type: 'GET',
+            data: {
+                throughId: throughId
+            },
+            success: function (data) {
+                $('#Sarta').empty();
+                $('#Sarta').html(data);
+            }
+        });
+
+        $.ajax({
+            url: '/Admin/CommonAjax/GetYojanaThroughById',
+            type: 'GET',
+            data: {
+                throughId: throughId,
+            },
+            success: function (result) {
+                var data = result;
+                var first = data.split(' ')[0]
+                if (first == "रोजगार")
+                {
+                    $('#SignatureForRojgarSewa').show();
+                    $('#SignatureForAll').hide();
+                    $('#samjhautadonebytype').val('hide');
+                }
+                else
+                {
+                    $('#SignatureForAll').show();
+                    $('#SignatureForRojgarSewa').hide();
+                    $('#samjhautadonebytype').val('show');
+                }
+            },
+            error: function () {
+            }
+        });
+
+    });
+
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#Karyakram_name').find('option').remove()
+        $("#sahayojananame").hide();
+        $("#karyalayayojanaamount").hide();
+        $("#sahayojanarakambykaryalaya").hide();
+
+        $('#SignatureForAll').hide();
+        $('#SignatureForRojgarSewa').hide();
+    })
+
+    $("#Oda_Nagar_Id").change(function () {
+
+        var id = this.value;
+        //if (id == "") {
+        //    id = "0";
+        //}
+
+        $('#Yojana_Samjhauta_Budget_Source').val("");
+        $('#Concat_Budget_Source_Id').val("");
+        $('#Budget_Source_Id').val("");
+        $('#Karya_Chhetra_Id').val("");
+        $('#Yojana_Samjhauta_Karya_Chhetra').val("");
+        $('#Budget_UpaSirshak_No').val("");
+        $('#Budget_UpaSirshak_No_Eng').val("");
+        $('#Aayojana_name').val("");
+        $('#Lagat_Payable_Shroat_Karyalaya').val("");
+        $('#Lagat_Payable_Shroat_Contigency_Amount').val("");
+
+        $.get('/CommonAjax/GetKaryakramNameByOdaNagarId/' + id,
+              function (data) {
+                  $('#Karyakram_name').find('option').remove()
+                  $(data).each(
+                      function (index, item) {
+                          $('#Karyakram_name').append('<option value="' + item.Value + '">' + item.Text + '</option>')
+                      });
+              }
+    );
+    });
+
+    $("#Ward_Id").change(function () {
+        var id = this.value;
+        //if (id == "") {
+        //    id = "0";
+        //}
+
+        $('#Yojana_Samjhauta_Budget_Source').val("");
+        $('#Concat_Budget_Source_Id').val("");
+        $('#Budget_Source_Id').val("");
+        $('#Karya_Chhetra_Id').val("");
+        $('#Yojana_Samjhauta_Karya_Chhetra').val("");
+        $('#Budget_UpaSirshak_No').val("");
+        $('#Budget_UpaSirshak_No_Eng').val("");
+        $('#Aayojana_name').val("");
+        $('#Lagat_Payable_Shroat_Karyalaya').val("");
+        $('#Lagat_Payable_Shroat_Contigency_Amount').val("");
+
+        $.ajax({
+            url: '/Admin/CommonAjax/GetKaryakramNameByOdaNagarAndWardId',
+            type: 'get',
+            data: {
+                wardId: id,
+                odaNagarId: $('#Oda_Nagar_Id').val(),
+            },
+            success: function (data) {
+                $('#Karyakram_name').find('option').remove()
+                $(data).each(
+                     function (index, item) {
+                         $('#Karyakram_name').append('<option value="' + item.Value + '">' + item.Text + '</option>')
+                     });
+            },
+            error: function () {
+            }
+        });
+    });
+
+    function getRelatedDataFromUpasirshakName()
+    {
+
+        $('#loader-wrapper').show();
+        var budgetupasirshakname = $('#Karyakram_name').val();
+        var wardSetupId = $('#Ward_Id').val();
+        $('input[id=Aayojana_name]').val(budgetupasirshakname);
+
+        if (budgetupasirshakname == "") {
+            $('#Yojana_Samjhauta_Budget_Source').val("");
+            $('#Concat_Budget_Source_Id').val("");
+            $('#Budget_Source_Id').val("");
+            $('#Karya_Chhetra_Id').val("");
+            $('#Yojana_Samjhauta_Karya_Chhetra').val("");
+            $('#Budget_UpaSirshak_No').val("");
+            $('#Budget_UpaSirshak_No_Eng').val("");
+            $('#Aayojana_name').val("");
+            $('#Lagat_Payable_Shroat_Karyalaya').val("");
+            $('#Lagat_Payable_Shroat_Contigency_Amount').val("");
+            $('#loader-wrapper').hide();
+        }
+
+
+        $.ajax({
+            url: "/CommonAjax/GetUpasirshikAmountByUpaSirshikName",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                upasirshakname: budgetupasirshakname,
+                wardSetupId: wardSetupId
+            },
+            //dataType: "json",
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_Amount]').val(result);
+                $('input[id=Karyalaya]').val(result);
+
+                getKaryaChhetraIdByUpasirshikName();
+                getBudgetUpasirshakNumberByUpasirshikName();
+                getBudgetShroatIdByUpasirshikName();
+                getKaryalayaAmountNepali();
+
+                getIsSahaYoyana();
+                getRemainingAmountOfSahaYojana();
+                //getContigencyAmount();
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+		alert(xhr.status);
+           	alert(xhr.responseText);
+           	alert(thrownError);
+            }
+        });
+    }
+
+    function getKaryaChhetraIdByUpasirshikName() {
+        var budgetupasirshakname = $('#Karyakram_name').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetKaryaChhetraIdByUpaSirshikName",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                upasirshakname: budgetupasirshakname
+            },
+            success: function (result) {
+                $('input[id=Karya_Chhetra_Id]').val(result);
+                getKaryaChhetraNameByUpasirshikName();
+            },
+            error: function () {
+            }
+        });
+    }
+    function getKaryaChhetraNameByUpasirshikName() {
+        var karyaChhetraId = $('#Karya_Chhetra_Id').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetKaryaChhetraByUpaSirshikNumber",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                karyaChhetraId: karyaChhetraId
+            },
+            success: function (result) {
+                $('input[id=Yojana_Samjhauta_Karya_Chhetra]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getBudgetUpasirshakNumberByUpasirshikName() {
+        var budgetupasirshakname = $('#Karyakram_name').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetUpaSirshikNumberByUpaSirshikName",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                upasirshakname: budgetupasirshakname
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_No]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getBudgetShroatIdByUpasirshikName() {
+
+        var budgetupasirshakname = $('#Karyakram_name').val();
+        $('#Budget_Source_Id').val("");
+        $('#Concat_Budget_Source_Id').val("");
+        $('#source').val("");
+        $('#newsource').val("");
+        $('#sourcename').val("");
+        $('#newsourcename').val("");
+        $('#Yojana_Samjhauta_Budget_Source').val("");
+        $.ajax({
+            url: "/CommonAjax/GetBudgetShroatIdByUpaSirshikName",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                upasirshakname: budgetupasirshakname
+            },
+            success: function (result) {
+
+                var data = result;
+                $('#source').val(data[0]);
+                $('#newsource').val(data[1]);
+
+                getBudgetShroatNameFirstByUpasirshakName();
+
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getBudgetShroatNameFirstByUpasirshakName() {
+        var budgetSourceId = $('#source').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetBudgetShroatByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                budgetSourceId: budgetSourceId
+            },
+            success: function (result) {
+                $('input[id=sourcename]').val(result);
+                getBudgetShroatNameSecondByUpasirshakName();
+
+            },
+            error: function () {
+            }
+        });
+    }
+    function getBudgetShroatNameSecondByUpasirshakName() {
+
+        var budgetSourceId = $('#newsource').val();
+        if (budgetSourceId != "") {
+            $.ajax({
+                url: "/CommonAjax/GetBudgetShroatByUpaSirshikNumber",
+                type: 'GET',
+                data: {
+                    budgetSourceId: budgetSourceId
+                },
+                success: function (result) {
+                    $('input[id=newsourcename]').val(result);
+                    getAllShroatNameByUpasirshakName();
+                },
+                error: function () {
+                }
+            });
+        }
+        else {
+            getAllShroatNameByUpasirshakName();
+        }
+    }
+    function getAllShroatNameByUpasirshakName() {
+
+        var source1Id = $("#source").val()
+        var source2Id = $("#newsource").val()
+        var source1 = $("#sourcename").val();
+        var source2 = $("#newsourcename").val();
+        if (source2 != "") {
+            var result = source1.concat(', ').concat(source2);
+            $('input[id=Yojana_Samjhauta_Budget_Source]').val(result);
+
+            var resultId = source1Id.concat(', ').concat(source2Id);
+            $('input[id=Concat_Budget_Source_Id]').val(resultId);
+            $('#loader-wrapper').hide();
+        }
+        else {
+            var result = source1;
+            $('input[id=Yojana_Samjhauta_Budget_Source]').val(result);
+
+            var resultId = source1Id;
+            $('input[id=Budget_Source_Id]').val(resultId);
+            $('#loader-wrapper').hide();
+        }
+    }
+
+    function getKaryalayaAmountNepali() {
+        var karyalayaAmount = $('#Karyalaya').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+            type: 'GET',
+            data: {
+                EnglishValue: karyalayaAmount
+            },
+            success: function (result) {
+                $('input[id=Lagat_Payable_Shroat_Karyalaya]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getIsSahaYoyana() {
+        debugger;
+        var karyakramname = $('#Karyakram_name').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetIsSahaYojana",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                karyakramname: karyakramname
+            },
+            success: function (result) {
+                debugger;
+                $('input[id=IsSahaYojana]').val(result);
+                if(result==true)
+                {
+                    $("#sahayojananame").show();
+                    $("#karyalayayojanaamount").show();
+                    $("#sahayojanarakambykaryalaya").show();
+                }
+                else if (result == false) {
+                    $("#SahaAayojana_Name").val("");
+                    $("#sahayojananame").hide();
+                    $("#karyalayayojanaamount").hide();
+                    $("#SahaAayojanaKaryalaya").val("");
+                    $("#sahayojanarakambykaryalaya").hide();
+                    $("#ContinPerentage").val("");
+                    $("#Contigency_Percentage").val("");
+                }
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getRemainingAmountOfSahaYojana()
+    {
+        var karyakramname = $('#Karyakram_name').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetRemainingAmountOfSahaYojana",
+            type: 'GET',
+            //type: 'POST',
+            data: {
+                karyakramname: karyakramname
+            },
+            success: function (result) {
+                var usedamt = result;
+                if (usedamt == null)
+                {
+                    usedamount = 0;
+                }
+                else {
+                    usedamount = usedamt;
+                }
+                var toalYojanaAount = $("#Karyalaya").val();
+                var amount = toalYojanaAount - usedamount;
+                $.ajax({
+                    url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+                    type: 'GET',
+                    data: {
+                        EnglishValue: amount
+                    },
+                    success: function (getresult) {
+                        $("#checksubyojanaamount").html(getresult);
+                    },
+                    error: function () {
+                    }
+                });
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getshramdanAmount() {
+        var shramdanAmount = $('#JanaShramdamAmount').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: shramdanAmount
+            },
+            success: function (result) {
+                $('input[id=Upabhikta_JanaShramDam_Amount]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //function getContigencyAmount() {
+    //    var karyalayaAmt = $('#Karyalaya').val();
+    //
+    //    var contiAmt = (3 / 100) * karyalayaAmt;
+    //    $('input[id=Contigency_Amount]').val(contiAmt);
+    //    getContigencyAmountNepali();
+    //}
+
+    //function getContigencyAmountNepali() {
+    //    var contigencyAmount = $('#Contigency_Amount').val();
+    //
+    //    $.ajax({
+    //        url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+    //        type: 'GET',
+    //        data: {
+    //            EnglishValue: contigencyAmount
+    //        },
+    //        success: function (result) {
+    //            $('input[id=Lagat_Payable_Shroat_Contigency_Amount]').val(result);
+    //        },
+    //        error: function () {
+    //        }
+    //    });
+    //}
+
+</script>
+
+
+
+
+
+<script>
+    function FieldValidation() {
+
+
+        if ($('#Yojana_Budget_UpaSirshak_No').val() == "") {
+
+            $("#budgetUpasirshakValidationMessage").html('उप-शिर्षक नं. छान्नुहोस्');
+            $('.budgetupasirshakvalidationMesage').show();
+            var scrollPos = $(".budgetupasirshakvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        //if ($('#Budget_Source_Id').val() == "") {
+        //
+        //    $("#budgetSourceValidationMessage").html('कृपयाँ बजेट स्रोत छान्नुहोस्');
+        //    $('.budgetvalidationMesage').show();
+        //    var scrollPos = $(".budgetvalidationMesage").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+
+        if ($('#Oda_Nagar_Id').val() == "") {
+
+            $("#odaNagarValidationMessage").html('कृपयाँ वडा/नगर स्तरिय छान्नुहोस्');
+            $('.odavalidationMesage').show();
+            var scrollPos = $(".odavalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+
+
+
+
+        if (!$("input[name='Aayojana_Through_Id']:checked").val()) {
+            $("#marfatValidationMessage").html('कृपयाँ को मार्फत छान्नुहोस्');
+            $('.marfatvalidationMesage').show();
+            var scrollPos = $(".marfatvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+
+
+        //if ($('input[type="checkbox"]').is(":not(:checked)")) {
+        //        $("#marfatValidationMessage").html('कृपयाँ को मार्फत छान्नुहोस्');
+        //        $('.marfatvalidationMesage').show();
+        //        var scrollPos = $(".marfatvalidationMesage").offset().top;
+        //        $(window).scrollTop(scrollPos);
+        //        return false;
+        //}
+
+
+
+        //if ($('input[name=Aayojana_Through_Id]').is(":not(:checked)")) {
+        //    $("#marfatValidationMessage").html('कृपयाँ को मार्फत छान्नुहोस्');
+        //    $('.marfatvalidationMesage').show();
+        //    var scrollPos = $(".marfatvalidationMesage").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+
+
+
+        if ($('#Samiti_Name').val() == "") {
+
+            $("#samitiNameValidationMessage").html('कृपयाँ उपभोक्ता समितिको नाम राख्नोहोस्');
+            $('.samitivalidationMesage').show();
+            var scrollPos = $(".samitivalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Samiti_Address').val() == "") {
+
+            $("#samitiAddressValidationMessage").html('कृपयाँ उपभोक्ता समितिको ठेगाना राख्नोहोस्');
+            $('.addressvalidationMesage').show();
+            var scrollPos = $(".addressvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Aayojana_name').val() == "") {
+
+            $("#aayojanaNameValidationMessage").html('कृपयाँ आयोजनाको नाम राख्नोहोस्');
+            $('.ayojananamevalidationMesage').show();
+            var scrollPos = $(".ayojananamevalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Aayojana_Address').val() == "") {
+
+            $("#aayojanaAddressValidationMessage").html('कृपयाँ आयोजना स्थल राख्नोहोस्');
+            $('.ayojanaaddressvalidationMesage').show();
+            var scrollPos = $(".ayojanaaddressvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Start-Date').val() == "") {
+
+            $("#aayojanaStartValidationMessage").html('कृपयाँ आयोजना सुरु मिति राख्नोहोस्');
+            $('.ayojanastartvalidationMesage').show();
+            var scrollPos = $(".ayojanastartvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#End-Date').val() == "") {
+
+            $("#aayojanaEndValidationMessage").html('कृपयाँ आयोजना सम्पन्न मिति राख्नोहोस्');
+            $('.ayojanaendvalidationMesage').show();
+            var scrollPos = $(".ayojanaendvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Aayojana_Bibaran_Aayojana_Lagat_Anuman').val() == "") {
+
+            $("#aayojanaLagatValidationMessage").html('कृपयाँ आयोजनाको लागत अनुमान राख्नोहोस्');
+            $('.ayojanalagatvalidationMesage').show();
+            var scrollPos = $(".ayojanalagatvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        if ($('#Lagat_Payable_Shroat_Karyalaya').val() == "") {
+
+            $("#karyalayaLagatAmtValidationMessage").html('कृपयाँ कार्यालयले व्यहोर्ने लागत राख्नोहोस्');
+            $('.karyalayalagatvalidationMesage').show();
+            var scrollPos = $(".karyalayalagatvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        //if ($('#Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat').val() == "") {
+        //
+        //    $("#samitiLagatAmtValidationMessage").html('कृपयाँ उपभोक्ता समितिले व्यहोर्ने लागत राख्नोहोस्');
+        //    $('.samitilagatvalidationMesage').show();
+        //    var scrollPos = $(".samitilagatvalidationMesage").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+
+        if ($('#Gathan-Date').val() == "") {
+
+            //$("#samitiGathanDateValidationMessage").html('कृपयाँ उपभोक्ता समिति गठन मिति राख्नोहोस्');
+            $("#samitiGathanDateValidationMessage").html('कृपयाँ गठन मिति राख्नोहोस्');
+            $('.samitigathanvalidationMesage').show();
+            var scrollPos = $(".samitigathanvalidationMesage").offset().top;
+            $(window).scrollTop(scrollPos);
+            return false;
+        }
+
+        //if ($('#SManjuri-Date').val() == "") {
+
+        //    $("#samitiManjuriRepresentativeValidationMessage").html('कृपयाँ समिति मन्जुरि मिति राख्नोहोस्');
+        //    $('.samitirepresentativevalidationMesage').show();
+        //    var scrollPos = $(".samitirepresentativevalidationMesage").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+
+        //if ($('#KManjuri-Date').val() == "") {
+
+        //    $("#karyalayaManjuriRepresentativeValidationMessage").html('कृपयाँ कार्यालय मन्जुरि मिति राख्नोहोस्');
+        //    $('.karyalayarepresentativevalidationMesage').show();
+        //    var scrollPos = $(".karyalayarepresentativevalidationMesage").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+        //if ($('#KManjuri-Date1').val() == "") {
+
+        //    $("#karyalayaManjuriRepresentativeValidationMessage1").html('कृपयाँ कार्यालय मन्जुरि मिति राख्नोहोस्');
+        //    $('.karyalayarepresentativevalidationMesage1').show();
+        //    var scrollPos = $(".karyalayarepresentativevalidationMesage1").offset().top;
+        //    $(window).scrollTop(scrollPos);
+        //    return false;
+        //}
+
+    }
+</script>
+
+<script>
+    function RemoveErrorMessage() {
+
+        var value = $('#Budget_Source_Id option:selected').val();
+        if (value != null || value != 0) {
+            $('.budgetvalidationMesage').hide();
+            return true;
+        }
+
+        var value1 = $('#Oda_Nagar_Id option:selected').val();
+        if (value1 != null || value1 != 0) {
+            $('.odavalidationMesage').hide();
+            return true;
+        }
+
+        var radioValue = $("input[name='Aayojana_Through_Id']:checked").val();
+        if (radioValue) {
+            $('.marfatvalidationMesage').hide();
+            return true;
+        }
+        //var radio = "";
+        //var selected = $("input[type='radio'][name='Aayojana_Through_Id']:checked");
+        //radio = selected.val();
+
+    }
+</script>
+
+<script>
+    $(function () {
+        $('#Yojana_Budget_UpaSirshak_No').on('change', function () {
+            $('.budgetupasirshakvalidationMesage').hide();
+        });
+
+
+        //$('#Yojana_Budget_UpaSirshak_No').change(function () {
+        //    $('.budgetupasirshakvalidationMesage').hide();
+        //});
+
+        $('input[type=radio]').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('.marfatvalidationMesage').hide();
+            } else {
+                $('.marfatvalidationMesage').show();
+            }
+        });
+
+
+        $('#Samiti_Name').on('keyup', function () {
+            $('.samitivalidationMesage').hide();
+        });
+        $('#Samiti_Address').on('keyup', function () {
+            $('.addressvalidationMesage').hide();
+        });
+        $('#Aayojana_name').on('keyup', function () {
+            $('.ayojananamevalidationMesage').hide();
+        });
+        $('#Aayojana_Address').on('keyup', function () {
+            $('.ayojanaaddressvalidationMesage').hide();
+        });
+        $('#Start-Date').on('click', function () {
+            $('.ayojanastartvalidationMesage').hide();
+        });
+        $('#End-Date').on('click', function () {
+            $('.ayojanaendvalidationMesage').hide();
+        });
+        $('#Aayojana_Bibaran_Aayojana_Lagat_Anuman').on('keyup', function () {
+            $('.ayojanalagatvalidationMesage').hide();
+        });
+        $('#Lagat_Payable_Shroat_Karyalaya').on('keyup', function () {
+            $('.karyalayalagatvalidationMesage').hide();
+        });
+        $('#Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat').on('keyup', function () {
+            $('.samitilagatvalidationMesage').hide();
+        });
+        $('#Gathan-Date').on('click', function () {
+            $('.samitigathanvalidationMesage').hide();
+        });
+        $('#SManjuri-Date').on('click', function () {
+            $('.samitirepresentativevalidationMesage').hide();
+        });
+        $('#KManjuri-Date').on('click', function () {
+            $('.karyalayarepresentativevalidationMesage').hide();
+        });
+        $('#KManjuri-Date1').on('click', function () {
+            $('.karyalayarepresentativevalidationMesage1').hide();
+        });
+    });
+</script>
+
+<script>
+    $('#btn-AddUpabhoktaSamitiSadashya').on('click', function () {
+        $.ajax({
+            url: '/Admin/YojanaSamjhautaForm/AddMore',
+            type: 'GET',
+            data: {
+            },
+            success: function (result) {
+                $('#getUpabhoktaSamitiSadashya').append(result);
+            },
+            error: function () {
+            }
+        });
+    });
+
+    $('#btn-AddUpabhoktaAnugamanSamitiSadashya').on('click', function () {
+        $.ajax({
+            url: '/Admin/YojanaSamjhautaForm/AddMoreAnugamanSamiti',
+            type: 'GET',
+            data: {
+            },
+            success: function (result) {
+                $('#getUpabhoktaAnugamanSamitiSadashya').append(result);
+            },
+            error: function () {
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#checkWardNo').hide();
+        $('#checkKaryaChhetra').hide();
+        $('#checkNagarSteriyaWardNo').hide();
+        $('#loader-wrapper').hide();
+
+    })
+    function getSelectedContent() {
+
+        var result = $('#Oda_Nagar_Id option:selected').val();
+        if (result == 1) {
+            $('#checkWardNo').show();
+            $('#checkKaryaChhetra').show();
+            $("#NagarSteriyaWard").val('');
+            $('#checkNagarSteriyaWardNo').hide();
+        }
+        else if (result == 2) {
+            $('#checkWardNo').hide();
+            $('#checkKaryaChhetra').hide();
+            $("#Ward_Setup_Id").val('');
+            $("#Karya_Chhetra_Id").val('');
+            $("#Ward_Id").val('');
+            $('#checkNagarSteriyaWardNo').show();
+        }
+
+        if (result != null || result != 0) {
+            $('.odavalidationMesage').hide();
+            return true;
+        }
+    }
+</script>
+
+
+<script>
+    function getlagatanuman() {
+        var lagatanuman = $('#Aayojana_Bibaran_Aayojana_Lagat_Anuman').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: lagatanuman
+            },
+            success: function (result) {
+                $('input[id=Aayojana_Lagat_Anuman]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getkaryalayaamt() {
+
+        var karyalayaamt = $('#Lagat_Payable_Shroat_Karyalaya').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: karyalayaamt
+            },
+            success: function (result) {
+                $('input[id=Karyalaya]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+
+    function getsamitiamt() {
+        var samitiamt = $('#Lagat_Payable_Shroat_Upabhokta_Samiti_Shroat').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: samitiamt
+            },
+            success: function (result) {
+                $('input[id=Upabhokta_Samiti]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getContingencyPercentage() {
+        var contipercent = $('#ContinPerentage').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: contipercent
+            },
+            success: function (result) {
+                debugger;
+                $('input[id=Contigency_Percentage]').val(result);
+                var karyalayaAmt = $('#Karyalaya').val();
+                var sahaaayojanakaryalaya = $('#SahaAayojanaKaryalaya').val();
+                if (sahaaayojanakaryalaya != "") {
+                    var contiAmt = (result / 100) * sahaaayojanakaryalaya;
+                    $('input[id=Contigency_Amount]').val(contiAmt);
+                }
+                else {
+                    var contiAmt = (result / 100) * karyalayaAmt;
+                    $('input[id=Contigency_Amount]').val(contiAmt);
+                }
+
+                var contigencyAmount = $('#Contigency_Amount').val();
+
+                $.ajax({
+                    url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+                    type: 'GET',
+                    data: {
+                        EnglishValue: contigencyAmount
+                    },
+                    success: function (result) {
+                        $('input[id=Lagat_Payable_Shroat_Contigency_Amount]').val(result);
+                    },
+                    error: function () {
+                    }
+                });
+
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getSahaAayojanaRakam() {
+        var sahayojanarakam = $('#SahaAayojanaRakamByKaryalaya').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: sahayojanarakam
+            },
+            success: function (result) {
+                $('input[id=SahaAayojanaKaryalaya]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getotheramt() {
+        var otheramt = $('#Lagat_Payable_Shroat_Other').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: otheramt
+            },
+            success: function (result) {
+                $('input[id=Other]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getOtherFinancialSource() {
+        var samitiamt = $('#LagatpayableOtherFinancialSource').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: samitiamt
+            },
+            success: function (result) {
+                $('input[id=OtherFinancialSource]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function gettotalhouse() {
+        var totalhouse = $('#Aayojana_Lavanbit_Total_House').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: totalhouse
+            },
+            success: function (result) {
+                $('input[id=Total_House]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function gettotalfemale() {
+        var totalfemale = $('#Aayojana_Lavanbit_Total_Female').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: totalfemale
+            },
+            success: function (result) {
+                $('input[id=Total_Female]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function gettotalmale() {
+        var totalmale = $('#Aayojana_Lavanbit_Total_Male').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: totalmale
+            },
+            success: function (result) {
+                $('input[id=Total_Male]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function gettotalpopulation() {
+        var totalpopulation = $('#Aayojana_Lavanbit_Total_Population').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: totalpopulation
+            },
+            success: function (result) {
+                $('input[id=Total_Population]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function gettotallavanbit() {
+        var totallavanbit = $('#Upabhokta_Samiti_Bibaran_Total_Lavanbit_Member').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: totallavanbit
+            },
+            success: function (result) {
+                $('input[id=Total_Lavanbit_Member]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getshrottotalamt() {
+        var shrottotalamt = $('#Lagat_Payable_Shroat_Total_Amount').val();
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: shrottotalamt
+            },
+            success: function (result) {
+                $('input[id=Total_Amount]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('input').change(function () {
+
+            var totalFemale = $('#Total_Female').val();
+            if (totalFemale == "") {
+                var totalFemale = "0";
+            }
+            else {
+                var totalFemale = totalFemale;
+            }
+            var totalMale = $('#Total_Male').val();
+            if (totalMale == "") {
+                var totalMale = "0";
+            }
+            else {
+                var totalMale = totalMale;
+            }
+            var male = parseInt(totalMale);
+            var female = parseInt(totalFemale);
+            var Total = parseInt(male + female);
+            $('#Total_Population').attr('value', Total);
+
+            getTotalPopulation();
+
+        });
+    });
+
+    function getTotalPopulation() {
+        var totalpopulation = $('#Total_Population').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+            type: 'GET',
+            data: {
+                EnglishValue: totalpopulation
+            },
+            success: function (result) {
+                $('input[id=Aayojana_Lavanbit_Total_Population]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getnirnayanumber() {
+        var nirnayanumber = $('#Yojana_Nirnaya_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: nirnayanumber
+            },
+            success: function (result) {
+                $('input[id=Nirnaya_No]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+
+    function getbudgetupasirshaknumber() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_No]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+
+    //For BudgetUpaSirshik --- get upasirshik number,name and amount
+    function getselectedbudgetupasirshaknumber() {
+
+        $('.budgetupasirshakvalidationMesage').hide();
+        $('#loader-wrapper').show();
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+        if (budgetupasirshaknumber == "") {
+            $('#Yojana_Samjhauta_Budget_Source').val("");
+            $('#Budget_UpaSirshak_No_Eng').val("");
+            $('#Budget_UpaSirshak_No').val("");
+            $('#Yojana_Samjhauta_Karya_Chhetra').val("");
+            $('#Aayojana_name').val("");
+            $('#Lagat_Payable_Shroat_Karyalaya').val("");
+            $('#Lagat_Payable_Shroat_Contigency_Amount').val("");
+            $('#loader-wrapper').hide();
+        }
+
+
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_No_Eng]').val(result);
+                getUpasirshikAmount();
+                getUpasirshikName();
+                getBudgetUpaSirshakNoNepali();
+                getBudgetShroatIdByUpasirshik();
+                getOdaNagarIdByUpasirshik();
+                getWardIdByUpasirshik();
+                getKaryaChhetraIdByUpasirshik();
+
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getBudgetUpaSirshakNoNepali() {
+        var budgetupasirshaknum = $('#Budget_UpaSirshak_No_Eng').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+            type: 'GET',
+            data: {
+                EnglishValue: budgetupasirshaknum
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_No]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getUpasirshikAmount() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetUpasirshikAmountByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_Amount]').val(result);
+
+                $('input[id=Karyalaya]').val(result);
+                getKaryalayaAmountNepali();
+
+                getContigencyAmount();
+            },
+            error: function () {
+            }
+        });
+    }
+
+    function getKaryalayaAmountNepali() {
+        var karyalayaAmount = $('#Karyalaya').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+            type: 'GET',
+            data: {
+                EnglishValue: karyalayaAmount
+            },
+            success: function (result) {
+                $('input[id=Lagat_Payable_Shroat_Karyalaya]').val(result);
+                //$("#checksubyojanaamount").html(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //function getContigencyAmount() {
+    //    var karyalayaAmt = $('#Karyalaya').val();
+    //
+    //    var contiAmt = (3 / 100) * karyalayaAmt;
+    //    $('input[id=Contigency_Amount]').val(contiAmt);
+    //    getContigencyAmountNepali();
+    //}
+
+    //function getContigencyAmountNepali() {
+    //    var contigencyAmount = $('#Contigency_Amount').val();
+    //
+    //    $.ajax({
+    //        url: "/CommonAjax/GetNepaliValueFromEnglishValue",
+    //        type: 'GET',
+    //        data: {
+    //            EnglishValue: contigencyAmount
+    //        },
+    //        success: function (result) {
+    //            $('input[id=Lagat_Payable_Shroat_Contigency_Amount]').val(result);
+    //        },
+    //        error: function () {
+    //        }
+    //    });
+    //}
+
+
+
+    function getUpasirshikName() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetUpasirshikNameByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Budget_UpaSirshak_Name]').val(result);
+
+                $('input[id=Aayojana_name]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //getBudgetShroatIdByUpasirshik
+    function getBudgetShroatIdByUpasirshik() {
+
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+        $('#Budget_Source_Id').val("");
+        $('#Concat_Budget_Source_Id').val("");
+        $('#source').val("");
+        $('#newsource').val("");
+        $('#sourcename').val("");
+        $('#newsourcename').val("");
+        $('#Yojana_Samjhauta_Budget_Source').val("");
+        $.ajax({
+            url: "/CommonAjax/GetBudgetShroatIdByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+
+                var data = result;
+                $('#source').val(data[0]);
+                $('#newsource').val(data[1]);
+
+                getBudgetShroatNameFirst();
+
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //updated 2019-09-25
+    function getBudgetShroatNameFirst() {
+        var budgetSourceId = $('#source').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetBudgetShroatByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                budgetSourceId: budgetSourceId
+            },
+            success: function (result) {
+                $('input[id=sourcename]').val(result);
+                getBudgetShroatNameSecond();
+            },
+            error: function () {
+            }
+        });
+    }
+    function getBudgetShroatNameSecond() {
+
+        var budgetSourceId = $('#newsource').val();
+        if (budgetSourceId != "") {
+            $.ajax({
+                url: "/CommonAjax/GetBudgetShroatByUpaSirshikNumber",
+                type: 'GET',
+                data: {
+                    budgetSourceId: budgetSourceId
+                },
+                success: function (result) {
+                    $('input[id=newsourcename]').val(result);
+                    getAllShroatName();
+                },
+                error: function () {
+                }
+            });
+        }
+        else {
+            getAllShroatName();
+        }
+    }
+    function getAllShroatName() {
+
+        var source1Id = $("#source").val()
+        var source2Id = $("#newsource").val()
+        var source1 = $("#sourcename").val();
+        var source2 = $("#newsourcename").val();
+        if (source2 != "") {
+            var result = source1.concat(', ').concat(source2);
+            $('input[id=Yojana_Samjhauta_Budget_Source]').val(result);
+
+            var resultId = source1Id.concat(', ').concat(source2Id);
+            $('input[id=Concat_Budget_Source_Id]').val(resultId);
+        }
+        else {
+            var result = source1;
+            $('input[id=Yojana_Samjhauta_Budget_Source]').val(result);
+
+            var resultId = source1Id;
+            $('input[id=Budget_Source_Id]').val(resultId);
+        }
+    }
+    //end
+
+    function getBudgetShroatNameByUpasirshik() {
+        var budgetSourceId = $('#Budget_Source_Id').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetBudgetShroatByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                budgetSourceId: budgetSourceId
+            },
+            success: function (result) {
+                $('input[id=Yojana_Samjhauta_Budget_Source]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //getOdaNagarIdByUpasirshik
+    function getOdaNagarIdByUpasirshik() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetOdaNagarIdByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Oda_Nagar_Id]').val(result);
+                getOdaNagarNameByUpasirshik();
+            },
+            error: function () {
+            }
+        });
+    }
+    function getOdaNagarNameByUpasirshik() {
+        var odaNagarId = $('#Oda_Nagar_Id').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetOdaNagarByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                odaNagarId: odaNagarId
+            },
+            success: function (result) {
+                $('input[id=Yojana_Samjhauta_Oda_Nagar]').val(result);
+                showHiddenContent();
+                $('#loader-wrapper').hide();
+            },
+            error: function () {
+            }
+        });
+    }
+    function showHiddenContent() {
+        var result = $('#Oda_Nagar_Id').val();
+        if (result == 1) {
+            $('#checkWardNo').show();
+            $('#checkKaryaChhetra').show();
+        }
+        else if (result == 2) {
+            $('#checkWardNo').hide();
+            $('#checkKaryaChhetra').hide();
+        }
+    }
+
+    //getKaryaChhetraIdByUpasirshik
+    function getKaryaChhetraIdByUpasirshik() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetKaryaChhetraIdByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Karya_Chhetra_Id]').val(result);
+                getKaryaChhetraNameByUpasirshik();
+            },
+            error: function () {
+            }
+        });
+    }
+    function getKaryaChhetraNameByUpasirshik() {
+        var karyaChhetraId = $('#Karya_Chhetra_Id').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetKaryaChhetraByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                karyaChhetraId: karyaChhetraId
+            },
+            success: function (result) {
+                $('input[id=Yojana_Samjhauta_Karya_Chhetra]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //getWardIdByUpasirshik
+    function getWardIdByUpasirshik() {
+        var budgetupasirshaknumber = $('#Yojana_Budget_UpaSirshak_No').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetWardIdByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                upasirshaknumber: budgetupasirshaknumber
+            },
+            success: function (result) {
+                $('input[id=Ward_Id]').val(result);
+                getWardNameByUpasirshik();
+            },
+            error: function () {
+            }
+        });
+    }
+    function getWardNameByUpasirshik() {
+        var wardId = $('#Ward_Id').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetWardByUpaSirshikNumber",
+            type: 'GET',
+            data: {
+                wardId: wardId
+            },
+            success: function (result) {
+                $('input[id=Yojana_Samjhauta_Ward]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+    //end
+
+    function getcontingencyamt() {
+        var contingencyamt = $('#Lagat_Payable_Shroat_Contigency_Amount').val();
+
+        $.ajax({
+            url: "/CommonAjax/GetEnglishValueFromNepaliValue",
+            type: 'GET',
+            data: {
+                NepaliValue: contingencyamt
+            },
+            success: function (result) {
+                $('input[id=Contigency_Amount]').val(result);
+            },
+            error: function () {
+            }
+        });
+    }
+
+</script>
+
+
+
+<script type="text/javascript">
+    window.onload = function () {
+        //var datePicker = document.getElementById("date-picker");
+        //datePicker.NepaliDatePicker({ "unicodeDate": true });
+        var startDate = document.getElementById("Start-Date");
+        startDate.NepaliDatePicker({ "unicodeDate": true });
+        var endDate = document.getElementById("End-Date");
+        endDate.NepaliDatePicker({ "unicodeDate": true });
+        var gathanDate = document.getElementById("Gathan-Date");
+        gathanDate.NepaliDatePicker({ "unicodeDate": true });
+        var sManjuriDate = document.getElementById("SManjuri-Date");
+        sManjuriDate.NepaliDatePicker({ "unicodeDate": true });
+        var kManjuriDate = document.getElementById("KManjuri-Date");
+        kManjuriDate.NepaliDatePicker({ "unicodeDate": true });
+        var kManjuriDate1 = document.getElementById("KManjuri-Date1");
+        kManjuriDate1.NepaliDatePicker({ "unicodeDate": true });
+        var odaSifarisDate = document.getElementById("OdaSifarish-Date");
+        odaSifarisDate.NepaliDatePicker({ "unicodeDate": true });
+        var sSManjuriDate = document.getElementById("SSManjuri-Date");
+        sSManjuriDate.NepaliDatePicker({ "unicodeDate": true });
+        var kKManjuriDate = document.getElementById("KKManjuri-Date");
+        kKManjuriDate.NepaliDatePicker({ "unicodeDate": true });
+        var sKManjuriDate = document.getElementById("SKManjuri-Date");
+        sKManjuriDate.NepaliDatePicker({ "unicodeDate": true });
+    };
+</script>
+
+
+<script type="text/javascript">
+    var kk = jQuery.noConflict();
+    kk(document).ready(function () {
+        kk("#Yojana_Budget_UpaSirshak_No").select2();
+
+        kk("#Karyakram_name").select2();
+    });
+</script>
+
+
+<script>
+    var b = jQuery.noConflict();
+    b('#President').keyup(function (e) {
+        debugger;
+        var name = b(this).val();
+        var type = $('#samjhautadonebytype').val();
+        if (type == "show") {
+            b('#Samiti_Repregentative_Name').val(name);
+        }
+    });
+    b('#Secretary').keyup(function (e) {
+        var name = b(this).val();
+        b('#Samiti_Repregentative_Position').val(name);
+    });
+    b('#Treasurer').keyup(function (e) {
+        var name = b(this).val();
+        b('#Samiti_Repregentative_Address').val(name);
+    });
+</script>
+
+
+        <!-- Footer Section -->
+        
+    </div>
+
+
+    <!-- JavaScript files-->
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/popper.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/bootstrap.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/grasp_mobile_progress_circle-1.0.0.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.cookie.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.validate.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/jquery.mCustomScrollbar.concat.min.js.download"></script>
+    <script src="./योजना सम्झौता - सम्झौता थप्नुहोस्_files/front.js.download"></script>
+    
+
+
+
+
+
+</body></html>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Project, CommitteeMember, CommitteeBankDetails } from '../../../types/sectoral';
+import React, { useState, useEffect } from 'react';
+import { Project, CommitteeMember } from '../../../types/sectoral';
 import {
   X,
   Users,
@@ -10,8 +10,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileText,
-  Printer,
-  Phone,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -35,80 +33,73 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
   onSave,
   onOpenLetter,
 }) => {
+  const [committeeName, setCommitteeName] = useState('');
+  const [committeeChair, setCommitteeChair] = useState('');
+  const [committeeSecretary, setCommitteeSecretary] = useState('');
+  const [committeeTreasurer, setCommitteeTreasurer] = useState('');
+  const [committeePhone, setCommitteePhone] = useState('');
+  const [members, setMembers] = useState<CommitteeMember[]>([]);
+  const [bankName, setBankName] = useState('राष्ट्रिय वाणिज्य बैंक लिमिटेड');
+  const [bankBranch, setBankBranch] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountType, setAccountType] = useState('चल्ती खाता (Current Account)');
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !project) return;
+    setCommitteeName(project.committeeName || `${project.name} उपभोक्ता समिति`);
+    setCommitteeChair(project.committeeChair || '');
+    setCommitteeSecretary(project.committeeSecretary || '');
+    setCommitteeTreasurer(project.committeeTreasurer || '');
+    setCommitteePhone(project.committeePhone || '');
+
+    if (Array.isArray(project.committeeMembers) && project.committeeMembers.length > 0) {
+      setMembers(project.committeeMembers as CommitteeMember[]);
+    } else {
+      const initialMembers: CommitteeMember[] = [];
+      if (project.committeeChair) {
+        initialMembers.push({
+          name: project.committeeChair,
+          role: 'अध्यक्ष',
+          gender: 'पुरुष',
+          wardNumber: project.wardNumber,
+          phone: project.committeePhone || '',
+          category: 'खुला',
+        });
+      }
+      if (project.committeeSecretary) {
+        initialMembers.push({
+          name: project.committeeSecretary,
+          role: 'सचिव',
+          gender: 'पुरुष',
+          wardNumber: project.wardNumber,
+          phone: '',
+          category: 'खुला',
+        });
+      }
+      if (project.committeeTreasurer) {
+        initialMembers.push({
+          name: project.committeeTreasurer,
+          role: 'कोषाध्यक्ष',
+          gender: 'महिला',
+          wardNumber: project.wardNumber,
+          phone: '',
+          category: 'महिला',
+        });
+      }
+      setMembers(initialMembers);
+    }
+
+    setBankName(project.committeeBankDetails?.bankName || 'राष्ट्रिय वाणिज्य बैंक लिमिटेड');
+    setBankBranch(project.committeeBankDetails?.branch || '');
+    setAccountNumber(project.committeeBankDetails?.accountNumber || '');
+    setAccountType(project.committeeBankDetails?.accountType || 'चल्ती खाता (Current Account)');
+    setFormError(null);
+  }, [isOpen, project]);
+
   if (!isOpen || !project) return null;
 
-  const [committeeName, setCommitteeName] = useState(
-    project.committeeName || `${project.name} उपभोक्ता समिति`,
-  );
-  const [committeeChair, setCommitteeChair] = useState(project.committeeChair || '');
-  const [committeeSecretary, setCommitteeSecretary] = useState(project.committeeSecretary || '');
-  const [committeeTreasurer, setCommitteeTreasurer] = useState(project.committeeTreasurer || '');
-  const [committeePhone, setCommitteePhone] = useState(project.committeePhone || '');
-
-  // Members
-  const [members, setMembers] = useState<CommitteeMember[]>(
-    project.committeeMembers && project.committeeMembers.length > 0
-      ? (project.committeeMembers as CommitteeMember[])
-      : [
-          {
-            name: project.committeeChair || 'दावा दोर्जे तामाङ',
-            role: 'अध्यक्ष',
-            gender: 'पुरुष',
-            wardNumber: project.wardNumber,
-            phone: project.committeePhone || '९८४१५२६३७१',
-            category: 'आदिवासी/जनजाति',
-          },
-          {
-            name: project.committeeSecretary || 'निमा लामा',
-            role: 'सचिव',
-            gender: 'पुरुष',
-            wardNumber: project.wardNumber,
-            phone: '९८५१०००००१',
-            category: 'खुला',
-          },
-          {
-            name: project.committeeTreasurer || 'पासाङ ल्हामु शेर्पा',
-            role: 'कोषाध्यक्ष',
-            gender: 'महिला',
-            wardNumber: project.wardNumber,
-            phone: '९८४१०००००२',
-            category: 'महिला',
-          },
-          {
-            name: 'डोल्मा शेर्पा',
-            role: 'सदस्य',
-            gender: 'महिला',
-            wardNumber: project.wardNumber,
-            phone: '९८६१०००००३',
-            category: 'महिला',
-          },
-          {
-            name: 'सुब्बा बिक',
-            role: 'सदस्य',
-            gender: 'पुरुष',
-            wardNumber: project.wardNumber,
-            phone: '९८४२०००००४',
-            category: 'दलित',
-          },
-        ],
-  );
-
-  // Bank details
-  const [bankName, setBankName] = useState(
-    project.committeeBankDetails?.bankName || 'राष्ट्रिय वाणिज्य बैंक लिमिटेड',
-  );
-  const [bankBranch, setBankBranch] = useState(
-    project.committeeBankDetails?.branch || 'मेलम्ची / थाङपाल शाखा',
-  );
-  const [accountNumber, setAccountNumber] = useState(
-    project.committeeBankDetails?.accountNumber || '११६००२३४५६७८९',
-  );
-  const [accountType, setAccountType] = useState(
-    project.committeeBankDetails?.accountType || 'चल्ती खाता (Current Account)',
-  );
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Calculate inclusion stats
   const totalCount = members.length;
   const femaleCount = members.filter((m) => m.gender === 'महिला').length;
   const femalePercentage = totalCount > 0 ? Math.round((femaleCount / totalCount) * 100) : 0;
@@ -140,21 +131,26 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
   };
 
   const handleSave = async () => {
+    if (!committeeName.trim() || !committeeChair.trim()) {
+      setFormError('कृपया उपभोक्ता समितिको नाम र अध्यक्षको नाम अनिवार्य भर्नुहोस्।');
+      return;
+    }
+    setFormError(null);
     setIsSaving(true);
     try {
       await onSave({
-        committeeName,
-        committeeChair,
-        committeeSecretary,
-        committeeTreasurer,
-        committeePhone,
-        committeeMembers: members,
+        committeeName: committeeName.trim(),
+        committeeChair: committeeChair.trim(),
+        committeeSecretary: committeeSecretary.trim(),
+        committeeTreasurer: committeeTreasurer.trim(),
+        committeePhone: committeePhone.trim(),
+        committeeMembers: members.filter((m) => m.name && m.name.trim() !== ''),
         committeeBankDetails: {
           bankName,
-          branch: bankBranch,
-          accountNumber,
+          branch: bankBranch.trim(),
+          accountNumber: accountNumber.trim(),
           accountType,
-          signatories: `${committeeChair}, ${committeeTreasurer}`,
+          signatories: `${committeeChair.trim()}${committeeTreasurer.trim() ? `, ${committeeTreasurer.trim()}` : ''}`,
         },
       });
       onClose();
@@ -164,10 +160,54 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-6 flex flex-col max-h-[92vh] overflow-hidden border border-slate-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        overflowY: 'auto',
+      }}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-6 flex flex-col max-h-[92vh] overflow-hidden border border-slate-200"
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '920px',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          overflow: 'hidden',
+          border: '1px solid #cbd5e1',
+          margin: 'auto',
+        }}
+      >
         {/* Header */}
-        <div className="bg-gradient-to-r from-teal-800 to-teal-950 text-white px-6 py-4 flex items-center justify-between border-b border-teal-700">
+        <div
+          className="bg-gradient-to-r from-teal-800 to-teal-950 text-white px-6 py-4 flex items-center justify-between border-b border-teal-700"
+          style={{
+            background: 'linear-gradient(135deg, #0f766e 0%, #042f2e 100%)',
+            color: '#ffffff',
+            padding: '1.2rem 1.5rem',
+            borderBottom: '1px solid #0f766e',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-teal-600/50 flex items-center justify-center text-white border border-teal-400/30">
               <Users className="w-5 h-5" />
@@ -189,6 +229,14 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm bg-slate-50">
+          {/* Error Alert */}
+          {formError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Top Statutory Inclusion Status Bar */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -224,10 +272,7 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenLetter('bank_rec');
-                }}
+                onClick={() => onOpenLetter('bank_rec')}
                 className="px-3 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-300 rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
               >
                 <Building className="w-3.5 h-3.5" />
@@ -235,10 +280,7 @@ export const ConsumerCommitteeModal: React.FC<ConsumerCommitteeModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenLetter('committee_reg');
-                }}
+                onClick={() => onOpenLetter('committee_reg')}
                 className="px-3 py-1.5 bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-300 rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
               >
                 <FileText className="w-3.5 h-3.5" />

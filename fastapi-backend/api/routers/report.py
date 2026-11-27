@@ -17,6 +17,7 @@ def query_records(
     db: Session,
     ward_number: Optional[int] = None,
     module_key: Optional[int] = None,
+    fiscal_year: Optional[str] = None,
     condition: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 50,
@@ -28,6 +29,8 @@ def query_records(
         query = query.filter(ProgressIndicatorRecord.ward_number == ward_number)
     if module_key is not None and module_key > 0:
         query = query.filter(ProgressIndicatorRecord.module_key == module_key)
+    if fiscal_year and fiscal_year != "all":
+        query = query.filter(ProgressIndicatorRecord.fiscal_year == fiscal_year)
     if condition and condition != "all":
         if condition in ["good", "excellent"]:
             query = query.filter(ProgressIndicatorRecord.condition.in_(["good", "excellent"]))
@@ -53,13 +56,14 @@ def query_records(
 def get_reports(
     ward_number: Optional[int] = None,
     module_key: Optional[int] = None,
+    fiscal_year: Optional[str] = None,
     condition: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = Query(100, ge=1, le=500),
     skip: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
-    total, items = query_records(db, ward_number, module_key, condition, search, limit, skip)
+    total, items = query_records(db, ward_number, module_key, fiscal_year, condition, search, limit, skip)
     return {
         "total": total,
         "items": items
@@ -71,6 +75,8 @@ def get_thematic_records(
     ward_number: Optional[int] = None,
     moduleKey: Optional[int] = None,
     module_key: Optional[int] = None,
+    fiscalYear: Optional[str] = None,
+    fiscal_year: Optional[str] = None,
     condition: Optional[str] = None,
     search: Optional[str] = None,
     page: int = Query(1, ge=1),
@@ -79,8 +85,9 @@ def get_thematic_records(
 ):
     w = ward if ward is not None else ward_number
     mk = moduleKey if moduleKey is not None else module_key
+    fy = fiscalYear or fiscal_year
     skip = (page - 1) * limit
-    total, items = query_records(db, w, mk, condition, search, limit, skip)
+    total, items = query_records(db, w, mk, fy, condition, search, limit, skip)
     total_pages = max(1, math.ceil(total / limit)) if total > 0 else 1
     return {
         "items": items,

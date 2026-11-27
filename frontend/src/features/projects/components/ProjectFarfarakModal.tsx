@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Project, FarfarakDetails } from '../../../types/sectoral';
+import { NepaliDatePicker } from '../../../components/common/NepaliDatePicker';
+import { adToBs } from '../../../utils/nepaliCalendar';
 import {
   X,
   CheckCircle2,
   Award,
-  FileText,
   ShieldCheck,
   Printer,
   DollarSign,
   AlertCircle,
-  Building,
 } from 'lucide-react';
 
 interface ProjectFarfarakModalProps {
@@ -32,49 +32,69 @@ export const ProjectFarfarakModal: React.FC<ProjectFarfarakModalProps> = ({
   onProcessFarfarak,
   onOpenLetter,
 }) => {
-  if (!isOpen || !project) return null;
+  const todayBs = adToBs(new Date().toISOString().split('T')[0]) || '';
 
-  const totalCost = Number(project.officeCost || project.budget || 0);
-  const defaultMaintenance = Math.round(totalCost * 0.03); // 3%
-  const defaultSecurity = Math.round(totalCost * 0.05); // 5%
+  const [farfarakDate, setFarfarakDate] = useState<string>('');
+  const [finalAuditedCost, setFinalAuditedCost] = useState<number>(0);
+  const [maintenanceFund, setMaintenanceFund] = useState<number>(0);
+  const [securityDeposit, setSecurityDeposit] = useState<number>(0);
+  const [completionCertNo, setCompletionCertNo] = useState<string>('');
+  const [handoverTo, setHandoverTo] = useState<string>('');
+  const [remarks, setRemarks] = useState<string>('');
 
-  const [farfarakDate, setFarfarakDate] = useState<string>(
-    project.farfarakDetails?.farfarakDate || 'मिति उपलब्ध छैन',
-  );
-  const [finalAuditedCost, setFinalAuditedCost] = useState<number>(
-    project.farfarakDetails?.finalAuditedCost || totalCost,
-  );
-  const [maintenanceFund, setMaintenanceFund] = useState<number>(
-    project.farfarakDetails?.maintenanceFundRetained !== undefined
-      ? project.farfarakDetails.maintenanceFundRetained
-      : defaultMaintenance,
-  );
-  const [securityDeposit, setSecurityDeposit] = useState<number>(
-    project.farfarakDetails?.securityDepositRefunded !== undefined
-      ? project.farfarakDetails.securityDepositRefunded
-      : defaultSecurity,
-  );
-  const [completionCertNo, setCompletionCertNo] = useState<string>(
-    project.farfarakDetails?.completionCertificateNo ||
-      `PPK-CMP-${project.projectCode.slice(-7)}`,
-  );
-  const [handoverTo, setHandoverTo] = useState<string>(
-    project.farfarakDetails?.handoverTo ||
-      `पाँचपोखरी थाङपाल गाउँपालिका वडा नं. ${project.wardNumber} कार्यालय तथा उपभोक्ता समुदाय`,
-  );
-  const [remarks, setRemarks] = useState<string>(
-    project.farfarakDetails?.remarks ||
-      'सम्पूर्ण कार्य सन्तोषजनक रूपमा सम्पन्न भई आयोजना समुदायलाई हस्तान्तरण तथा फरफारक स्वीकृत।',
-  );
-
-  // Mandatory checklist toggles
-  const [checkWorkDone, setCheckWorkDone] = useState(true);
-  const [checkMBVerified, setCheckMBVerified] = useState(true);
-  const [checkSocialAudit, setCheckSocialAudit] = useState(true);
-  const [checkWardRec, setCheckWardRec] = useState(true);
-  const [checkMaintenanceFund, setCheckMaintenanceFund] = useState(true);
-
+  // Mandatory checklist toggles — checked dynamically only if already verified or manually confirmed
+  const [checkWorkDone, setCheckWorkDone] = useState(false);
+  const [checkMBVerified, setCheckMBVerified] = useState(false);
+  const [checkSocialAudit, setCheckSocialAudit] = useState(false);
+  const [checkWardRec, setCheckWardRec] = useState(false);
+  const [checkMaintenanceFund, setCheckMaintenanceFund] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !project) return;
+    const totalCost = Number(project.officeCost || project.budget || 0);
+    const maintRate = Number(project.maintenanceFundPercent ?? 3) / 100;
+    const defaultMaintenance = Math.round(totalCost * maintRate);
+    const defaultSecurity = project.marfat === 'ठेक्का / बोलपत्र' ? Math.round(totalCost * 0.05) : 0;
+
+    setFarfarakDate(project.farfarakDetails?.farfarakDate || todayBs);
+    setFinalAuditedCost(project.farfarakDetails?.finalAuditedCost ?? totalCost);
+    setMaintenanceFund(
+      project.farfarakDetails?.maintenanceFundRetained !== undefined
+        ? project.farfarakDetails.maintenanceFundRetained
+        : defaultMaintenance,
+    );
+    setSecurityDeposit(
+      project.farfarakDetails?.securityDepositRefunded !== undefined
+        ? project.farfarakDetails.securityDepositRefunded
+        : defaultSecurity,
+    );
+    setCompletionCertNo(
+      project.farfarakDetails?.completionCertificateNo ||
+        `PPK-CMP-${(project.projectCode || project.id || '').slice(-7)}`,
+    );
+    setHandoverTo(
+      project.farfarakDetails?.handoverTo ||
+        `पाँचपोखरी थाङपाल गाउँपालिका वडा नं. ${project.wardNumber} कार्यालय तथा उपभोक्ता समुदाय`,
+    );
+    setRemarks(
+      project.farfarakDetails?.remarks ||
+        'सम्पूर्ण कार्य सन्तोषजनक रूपमा सम्पन्न भई आयोजना समुदायलाई हस्तान्तरण तथा फरफारक स्वीकृत।',
+    );
+
+    const alreadyCleared = Boolean(project.farfarakDetails?.isFarfarakDone);
+    const hasMB = Array.isArray(project.measurementBook) && project.measurementBook.length > 0;
+    const hasSocialAudit = Boolean(project.socialAudit?.date || project.socialAudit?.decisionsSummary);
+    const isPhysComplete = Number(project.progressPercentage ?? project.physicalProgressPercent ?? 0) >= 100;
+
+    setCheckWorkDone(alreadyCleared || isPhysComplete);
+    setCheckMBVerified(alreadyCleared || hasMB);
+    setCheckSocialAudit(alreadyCleared || hasSocialAudit);
+    setCheckWardRec(alreadyCleared || project.monitoringRecommendation === 'approved_for_installment');
+    setCheckMaintenanceFund(alreadyCleared || defaultMaintenance >= 0);
+  }, [isOpen, project, todayBs]);
+
+  if (!isOpen || !project) return null;
 
   const allChecked =
     checkWorkDone &&
@@ -106,10 +126,54 @@ export const ProjectFarfarakModal: React.FC<ProjectFarfarakModalProps> = ({
   const isAlreadyFarfarak = Boolean(project.farfarakDetails?.isFarfarakDone);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-6 flex flex-col max-h-[92vh] overflow-hidden border border-slate-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        overflowY: 'auto',
+      }}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-6 flex flex-col max-h-[92vh] overflow-hidden border border-slate-200"
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '920px',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          overflow: 'hidden',
+          border: '1px solid #cbd5e1',
+          margin: 'auto',
+        }}
+      >
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-800 to-teal-950 text-white px-6 py-4 flex items-center justify-between border-b border-emerald-700">
+        <div
+          className="bg-gradient-to-r from-emerald-800 to-teal-950 text-white px-6 py-4 flex items-center justify-between border-b border-emerald-700"
+          style={{
+            background: 'linear-gradient(135deg, #065f46 0%, #042f2e 100%)',
+            color: '#ffffff',
+            padding: '1.2rem 1.5rem',
+            borderBottom: '1px solid #047857',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-600/50 flex items-center justify-center text-white border border-emerald-400/30">
               <Award className="w-5 h-5" />
@@ -163,10 +227,7 @@ export const ProjectFarfarakModal: React.FC<ProjectFarfarakModalProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                onClose();
-                onOpenLetter('completion_farfarak');
-              }}
+              onClick={() => onOpenLetter('completion_farfarak')}
               className="px-3 py-1.5 bg-white text-emerald-800 border border-emerald-400 hover:bg-emerald-100 rounded-lg font-semibold flex items-center gap-1.5 transition shadow-sm"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -176,10 +237,23 @@ export const ProjectFarfarakModal: React.FC<ProjectFarfarakModalProps> = ({
 
           {/* Section 1: Mandatory Checklist */}
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2 border-b pb-2 text-teal-900">
-              <ShieldCheck className="w-4 h-4 text-teal-600" />
-              १. स्थानीय तह योजना फरफारक पूर्वशर्त जाँचसूची (Mandatory Checklist)
-            </h3>
+            <div className="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2 text-teal-900">
+                <ShieldCheck className="w-4 h-4 text-teal-600" />
+                १. स्थानीय तह योजना फरफारक पूर्वशर्त जाँचसूची (Mandatory Checklist)
+              </h3>
+              <div className="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                <span className={`px-2 py-0.5 rounded-full border ${Array.isArray(project.measurementBook) && project.measurementBook.length > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                  MB: {toNepaliNum(Array.isArray(project.measurementBook) ? project.measurementBook.length : 0)}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full border ${Array.isArray(project.photos) && project.photos.length > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                  फोटो: {toNepaliNum(Array.isArray(project.photos) ? project.photos.length : 0)}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full border ${Array.isArray(project.documents) && project.documents.length > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                  कागजात: {toNepaliNum(Array.isArray(project.documents) ? project.documents.length : 0)}
+                </span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
               <label className="flex items-start gap-2.5 p-2.5 border rounded-lg hover:bg-slate-50 cursor-pointer">
@@ -301,12 +375,11 @@ export const ProjectFarfarakModal: React.FC<ProjectFarfarakModalProps> = ({
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">फरफारक मिति (वि.सं.)</label>
-                <input
-                  type="text"
+                <NepaliDatePicker
+                  label="फरफारक मिति (वि.सं.)"
                   value={farfarakDate}
-                  onChange={(e) => setFarfarakDate(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  onChange={(bs) => setFarfarakDate(bs)}
+                  inputStyle={{ padding: '0.45rem 0.65rem', fontSize: '0.75rem' }}
                 />
               </div>
 

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any, Dict
 from core.database import get_db
 from core.tenant import get_tenant_context, TenantContext
 from models.project import Project
 import uuid
+import re
 from datetime import datetime
 
 router = APIRouter(
@@ -452,6 +453,8 @@ def _to_camel_project(p: Any) -> Dict[str, Any]:
             "measurementBook": getattr(p, "measurement_book", None),
             "socialAudit": getattr(p, "social_audit", None),
             "farfarakDetails": getattr(p, "farfarak_details", None),
+            "timeExtensions": getattr(p, "time_extensions", None) or [],
+            "smsLogs": getattr(p, "sms_logs", None) or [],
             "createdAt": getattr(p, "created_at", datetime.utcnow()).isoformat() if hasattr(getattr(p, "created_at", None), "isoformat") else str(getattr(p, "created_at", "")),
         }
 
@@ -756,6 +759,9 @@ def update_project(
             if "measurementBook" in data: p.measurement_book = data["measurementBook"]
             if "socialAudit" in data: p.social_audit = data["socialAudit"]
             if "farfarakDetails" in data: p.farfarak_details = data["farfarakDetails"]
+            if "timeExtensions" in data: p.time_extensions = data["timeExtensions"]
+            if "smsLogs" in data: p.sms_logs = data["smsLogs"]
+            if "completionDateBs" in data: p.completion_date_bs = data["completionDateBs"]
             db.commit()
             return _to_camel_project(p)
     except Exception:
@@ -765,6 +771,141 @@ def update_project(
         for p in INITIAL_PROJECTS:
             if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
                 p.update(data)
+                return _to_camel_project(p)
+
+    raise HTTPException(status_code=404, detail="Project not found")
+
+
+@router.post("/{id}/time-extensions")
+def add_project_time_extension(
+    id: str,
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """Add a formal time extension to a project"""
+    new_date = payload.get("extendedCompletionDateBs") or payload.get("newCompletionDateBs")
+    if not new_date:
+        raise HTTPException(status_code=400, detail="थप गरिएको नयाँ म्याद मिति अनिवार्य छ।")
+
+    try:
+        query = db.query(Project).filter((Project.id == id) | (Project.project_code == id))
+        query = ctx.filter_query(query, Project)
+        p = query.first()
+        if p:
+            exts = list(p.time_extensions or [])
+            record = {
+                "id": f"ext-{uuid.uuid4().hex[:8]}",
+                "extensionNo": len(exts) + 1,
+                "applicationDateBs": payload.get("applicationDateBs", ""),
+                "applicantName": payload.get("applicantName", p.committee_name or "उपभोक्ता समिति"),
+                "reason": payload.get("reason", "प्रतिकूल मौसम तथा प्राविधिक कारण"),
+                "decisionLevel": payload.get("decisionLevel", "palika_executive"),
+                "decisionDateBs": payload.get("decisionDateBs", ""),
+                "decisionNumber": payload.get("decisionNumber", ""),
+                "chalaniNo": payload.get("chalaniNo", ""),
+                "previousCompletionDateBs": p.completion_date_bs or payload.get("previousCompletionDateBs", ""),
+                "extendedCompletionDateBs": new_date,
+                "extendedDays": int(payload.get("extendedDays") or 0),
+                "physicalProgressAtRequest": float(payload.get("physicalProgressAtRequest") or (p.progress_percentage or 0)),
+                "financialProgressAtRequest": float(payload.get("financialProgressAtRequest") or (p.paid_amount or 0)),
+                "technicalRecommendation": payload.get("technicalRecommendation", "प्राविधिक शाखाबाट काम सम्पन्न गर्न म्याद थप उपयुक्त देखिएको सिफारिस"),
+                "engineerName": payload.get("engineerName", p.responsible_engineer or ""),
+                "status": payload.get("status", "approved"),
+                "approvedBy": payload.get("approvedBy", ""),
+                "remarks": payload.get("remarks", ""),
+                "createdAt": datetime.utcnow().isoformat(),
+            }
+            exts.append(record)
+            p.time_extensions = exts
+            p.completion_date_bs = new_date
+            db.commit()
+            return _to_camel_project(p)
+    except Exception:
+        pass
+
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        for p in INITIAL_PROJECTS:
+            if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
+                exts = list(p.get("timeExtensions") or [])
+                record = {
+                    "id": f"ext-{uuid.uuid4().hex[:8]}",
+                    "extensionNo": len(exts) + 1,
+                    "applicationDateBs": payload.get("applicationDateBs", ""),
+                    "applicantName": payload.get("applicantName", p.get("committeeName") or "उपभोक्ता समिति"),
+                    "reason": payload.get("reason", "प्रतिकूल मौसम तथा प्राविधिक कारण"),
+                    "decisionLevel": payload.get("decisionLevel", "palika_executive"),
+                    "decisionDateBs": payload.get("decisionDateBs", ""),
+                    "decisionNumber": payload.get("decisionNumber", ""),
+                    "chalaniNo": payload.get("chalaniNo", ""),
+                    "previousCompletionDateBs": p.get("completionDateBs", ""),
+                    "extendedCompletionDateBs": new_date,
+                    "extendedDays": int(payload.get("extendedDays") or 0),
+                    "physicalProgressAtRequest": float(payload.get("physicalProgressAtRequest") or (p.get("progressPercentage") or 0)),
+                    "financialProgressAtRequest": float(payload.get("financialProgressAtRequest") or (p.get("paidAmount") or 0)),
+                    "technicalRecommendation": payload.get("technicalRecommendation", "प्राविधिक शाखाबाट काम सम्पन्न गर्न म्याद थप उपयुक्त देखिएको सिफारिस"),
+                    "engineerName": payload.get("engineerName", p.get("responsibleEngineer", "")),
+                    "status": payload.get("status", "approved"),
+                    "approvedBy": payload.get("approvedBy", ""),
+                    "remarks": payload.get("remarks", ""),
+                    "createdAt": datetime.utcnow().isoformat(),
+                }
+                exts.append(record)
+                p["timeExtensions"] = exts
+                p["completionDateBs"] = new_date
+                return _to_camel_project(p)
+
+    raise HTTPException(status_code=404, detail="Project not found")
+
+
+@router.post("/{id}/sms")
+def send_project_sms(
+    id: str, 
+    payload: dict = Body(...), 
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """Dispatch simulated Nepal Telecom / Sparrow SMS to committee or engineer and record audit log."""
+    phone = str(payload.get("phone", "")).strip()
+    message = str(payload.get("message", "")).strip()
+    if not phone or not message:
+        raise HTTPException(status_code=400, detail="Phone number and message are required")
+
+    clean_phone = re.sub(r'[^0-9]', '', phone)
+    if len(clean_phone) < 10:
+        raise HTTPException(status_code=400, detail="Invalid Nepali mobile number (must be at least 10 digits)")
+
+    sms_record = {
+        "id": f"sms-{uuid.uuid4().hex[:8]}",
+        "phone": clean_phone[-10:],
+        "message": message,
+        "recipientRole": payload.get("recipientRole", "पदाधिकारी"),
+        "recipientName": payload.get("recipientName", "उपभोक्ता"),
+        "templateKey": payload.get("templateKey", "general"),
+        "status": "DELIVERED",
+        "gateway": "Nepal Telecom (NTC) & Sparrow SMS Gateway",
+        "sentAt": datetime.utcnow().isoformat(),
+        "sentDateBs": payload.get("sentDateBs", "२०८१-०८-१०"),
+    }
+
+    try:
+        p = db.query(Project).filter(Project.id == id).first()
+        if p:
+            current_logs = list(p.sms_logs or [])
+            current_logs.append(sms_record)
+            p.sms_logs = current_logs
+            db.commit()
+            db.refresh(p)
+            return _to_camel_project(p)
+    except Exception:
+        pass
+
+    if "panchpokhari" in ctx.allowed_tenant_ids or ctx.is_all:
+        for p in INITIAL_PROJECTS:
+            if p["id"] == id or p.get("projectCode") == id or p.get("project_code") == id:
+                current_logs = list(p.get("smsLogs") or [])
+                current_logs.append(sms_record)
+                p["smsLogs"] = current_logs
                 return _to_camel_project(p)
 
     raise HTTPException(status_code=404, detail="Project not found")

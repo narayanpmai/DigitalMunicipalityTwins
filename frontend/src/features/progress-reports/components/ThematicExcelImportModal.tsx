@@ -13,7 +13,7 @@ import {
   FileText,
   Table,
 } from 'lucide-react';
-import { THEMATIC_MODULE_SCHEMAS, type ThematicModuleDef } from '../thematicModuleSchemas';
+import { THEMATIC_MODULE_SCHEMAS, TEN_YEAR_FISCAL_YEARS, type ThematicModuleDef } from '../thematicModuleSchemas';
 import { reportsApi, type ThematicRecordItem } from '../../../api/reports';
 
 interface ThematicExcelImportModalProps {
@@ -33,7 +33,7 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
 }) => {
   const [selectedModuleKey, setSelectedModuleKey] = useState<number>(initialModuleKey || 1);
   const [selectedWard, setSelectedWard] = useState<number>(initialWard || 1);
-  const [fiscalYear, setFiscalYear] = useState<string>('२०८०/०८१');
+  const [fiscalYear, setFiscalYear] = useState<string>('२०८१/०८२');
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [parsedRecords, setParsedRecords] = useState<Partial<ThematicRecordItem>[]>([]);
@@ -51,6 +51,7 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
     // Standard Base Headers
     const baseHeaders = [
       'योजना/सम्पत्तिको नाम [assetName] *',
+      'आर्थिक वर्ष [fiscalYear] (उदा: २०८०/०८१) *',
       'टोल वा बस्ती [toleBasti]',
       'वडा नं [wardNumber] (१-८) *',
       'कुल लागत रु [constructionCost]',
@@ -69,6 +70,7 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
     // Sample Row 1
     const sampleRow1: any[] = [
       `${currentModule.title.split('(')[0].trim()} नमुना योजना १`,
+      fiscalYear || '२०८१/०८२',
       'थाङपाल टोल',
       selectedWard > 0 ? selectedWard : 1,
       1500000,
@@ -91,9 +93,10 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
       }
     });
 
-    // Sample Row 2
+    // Sample Row 2 (Previous Historical Year Example)
     const sampleRow2: any[] = [
       `${currentModule.title.split('(')[0].trim()} नमुना योजना २`,
+      '२०७९/०८०',
       'गुन्सा बस्ती',
       selectedWard > 0 ? selectedWard : 2,
       2800000,
@@ -192,10 +195,13 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
             }
           });
 
+          const rowFiscalYear =
+            String(getValue(['fiscalYear', 'आर्थिक वर्ष', 'fiscal_year', 'वर्ष']) || '').trim() || fiscalYear;
+
           return {
             moduleKey: selectedModuleKey,
             moduleTitleNepali: currentModule.title,
-            fiscalYear: fiscalYear,
+            fiscalYear: rowFiscalYear,
             periodType: 'annual',
             assetName,
             toleBasti,
@@ -435,10 +441,11 @@ export const ThematicExcelImportModal: React.FC<ThematicExcelImportModalProps> =
                   cursor: 'pointer',
                 }}
               >
-                <option value="२०८०/०८१">२०८०/०८१</option>
-                <option value="२०८१/०८२">२०८१/०८२</option>
-                <option value="२०७९/०८०">२०७९/०८०</option>
-                <option value="२०७८/०७९">२०७८/०७९</option>
+                {TEN_YEAR_FISCAL_YEARS.map((fy) => (
+                  <option key={fy} value={fy}>
+                    {fy} {fy === '२०८१/०८२' ? '(चालु)' : ''}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

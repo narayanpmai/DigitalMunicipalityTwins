@@ -49,7 +49,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { reportsApi, type ThematicRecordItem } from '../../api/reports';
-import { THEMATIC_MODULE_SCHEMAS, type ThematicModuleDef } from './thematicModuleSchemas';
+import { THEMATIC_MODULE_SCHEMAS, TEN_YEAR_FISCAL_YEARS, type ThematicModuleDef } from './thematicModuleSchemas';
 import { ThematicDynamicFormModal } from './components/ThematicDynamicFormModal';
 import { ThematicExcelImportModal } from './components/ThematicExcelImportModal';
 import { useTenant } from '../../context/TenantContext';
@@ -195,6 +195,7 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCondition, setSelectedCondition] = useState<string>('all');
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState<string>('all');
 
   React.useEffect(() => {
     if (locationState?.selectedModuleKey) {
@@ -207,7 +208,7 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
 
   // Report Generator State
   const [reportType, setReportType] = useState<'1_year' | '5_year' | '10_year'>('1_year');
-  const [reportFiscalYear, setReportFiscalYear] = useState<string>('२०८०/०८१');
+  const [reportFiscalYear, setReportFiscalYear] = useState<string>('२०८१/०८२');
 
   // Modal State for New Record Entry & Excel Import & Image Preview
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -222,11 +223,12 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
   });
 
   const { data: recordsData, isLoading: isRecordsLoading } = useQuery({
-    queryKey: ['progress-records', selectedModuleKey, selectedWard, searchTerm, selectedCondition],
+    queryKey: ['progress-records', selectedModuleKey, selectedWard, selectedFiscalYear, searchTerm, selectedCondition],
     queryFn: () =>
       reportsApi.getThematicRecords({
         moduleKey: selectedModuleKey || undefined,
         ward: selectedWard || undefined,
+        fiscalYear: selectedFiscalYear !== 'all' ? selectedFiscalYear : undefined,
         condition: selectedCondition !== 'all' ? selectedCondition : undefined,
         search: searchTerm || undefined,
         limit: 50,
@@ -956,6 +958,30 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
 
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <select
+                  value={selectedFiscalYear}
+                  onChange={(e) => setSelectedFiscalYear(e.target.value)}
+                  style={{
+                    padding: '0.5rem 0.85rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #0F4C81',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F4C81',
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                  title="आर्थिक वर्ष (५/१० वर्षे दायरा) अनुसार फिल्टर गर्नुहोस्"
+                >
+                  <option value="all">सबै आर्थिक वर्ष (All Fiscal Years)</option>
+                  {TEN_YEAR_FISCAL_YEARS.map((fy) => (
+                    <option key={fy} value={fy}>
+                      आ.व. {fy} {fy === '२०८१/०८२' ? '(चालु)' : fy === '२०७४/०७५' ? '(बेसलाइन)' : ''}
+                    </option>
+                  ))}
+                </select>
+
+                <select
                   value={selectedCondition}
                   onChange={(e) => setSelectedCondition(e.target.value)}
                   style={{
@@ -1028,6 +1054,7 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
                     <thead>
                       <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
                         <th style={{ padding: '0.7rem 0.85rem' }}>Unique ID / कोड</th>
+                        <th style={{ padding: '0.7rem 0.85rem' }}>आर्थिक वर्ष</th>
                         <th style={{ padding: '0.7rem 0.85rem' }}>सम्पत्ति / योजनाको नाम</th>
                         <th style={{ padding: '0.7rem 0.85rem' }}>वडा / टोल</th>
                         <th style={{ padding: '0.7rem 0.85rem' }}>GPS Coords (नक्सा)</th>
@@ -1048,6 +1075,12 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
                             {rec.planCode && (
                               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{rec.planCode}</div>
                             )}
+                          </td>
+
+                          <td style={{ padding: '0.7rem 0.85rem', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F4C81', backgroundColor: '#F0F9FF', border: '1px solid #BAE6FD', padding: '0.2rem 0.55rem', borderRadius: '5px' }}>
+                              {rec.fiscalYear || 'N/A'}
+                            </span>
                           </td>
 
                           <td style={{ padding: '0.7rem 0.85rem', fontWeight: 600 }}>
@@ -1885,9 +1918,11 @@ export const ProgressReportsPage: React.FC<ProgressReportsPageProps> = ({ isRead
                       outline: 'none',
                     }}
                   >
-                    <option value="२०८०/०८१">आ.व. २०८०/०८१</option>
-                    <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
-                    <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                    {TEN_YEAR_FISCAL_YEARS.map((fy) => (
+                      <option key={fy} value={fy}>
+                        आ.व. {fy} {fy === '२०८१/०८२' ? '(चालु)' : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}

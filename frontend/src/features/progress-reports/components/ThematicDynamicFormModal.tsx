@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, MapPin, Camera, Sparkles, CheckCircle2 } from 'lucide-react';
-import { THEMATIC_MODULE_SCHEMAS, type ThematicModuleDef } from '../thematicModuleSchemas';
+import { THEMATIC_MODULE_SCHEMAS, TEN_YEAR_FISCAL_YEARS, type ThematicModuleDef } from '../thematicModuleSchemas';
 
 interface ThematicDynamicFormModalProps {
   initialModuleKey: number;
@@ -23,7 +23,7 @@ export const ThematicDynamicFormModal: React.FC<ThematicDynamicFormModalProps> =
   const [universalData, setUniversalData] = useState({
     assetUniqueId: '',
     planCode: '',
-    fiscalYear: '२०८०/०८१',
+    fiscalYear: '२०८१/०८२',
     wardNumber: 3,
     toleBasti: '',
     startDate: '२०८०/०१/१५',
@@ -267,9 +267,11 @@ export const ThematicDynamicFormModal: React.FC<ThematicDynamicFormModalProps> =
                   onChange={(e) => handleUniversalChange('fiscalYear', e.target.value)}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
                 >
-                  <option value="२०८०/०८१">आ.व. २०८०/०८१</option>
-                  <option value="२०८१/०८२">आ.व. २०८१/०८२</option>
-                  <option value="२०७९/०८०">आ.व. २०७९/०८०</option>
+                  {TEN_YEAR_FISCAL_YEARS.map((fy) => (
+                    <option key={fy} value={fy}>
+                      आ.व. {fy} {fy === '२०८१/०८२' ? '(चालु)' : fy === '२०७४/०७५' ? '(१० वर्षे बेसलाइन)' : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 

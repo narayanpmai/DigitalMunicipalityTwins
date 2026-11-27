@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './styles/app.css';
 import './gov-design-system.css';
+import './styles/tailwind-compat.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

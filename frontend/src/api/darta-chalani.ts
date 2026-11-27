@@ -7,9 +7,36 @@ export const dartaChalaniApi = {
     return Array.isArray(res) ? res : res?.data || [];
   },
 
-  getChalaniList: async (): Promise<any[]> => {
-    const res: any = await api.get('/darta-chalani/chalani');
+  getChalaniList: async (params?: {
+    fiscalYear?: string;
+    department?: string;
+    status?: string;
+    sourceModule?: string;
+    letterType?: string;
+    search?: string;
+  }): Promise<any[]> => {
+    const res: any = await api.get('/darta-chalani/chalani', { params });
     return Array.isArray(res) ? res : res?.data || [];
+  },
+
+  autoDispatchChalani: async (data: {
+    sourceModule: string;
+    sourceRecordId: string;
+    sourceTitle?: string;
+    letterType: string;
+    fiscalYear?: string;
+    dispatchDate?: string;
+    subject: string;
+    receiverName: string;
+    receiverAddress?: string;
+    receiverContact?: string;
+    department?: string;
+    signedBy?: string;
+    letterBody?: string;
+    metadataJson?: any;
+    forceNew?: boolean;
+  }): Promise<any> => {
+    return api.post('/darta-chalani/chalani/auto-dispatch', data);
   },
 
   setDartaApproval: async (id: string, approvalStatus: string, reason?: string) => {

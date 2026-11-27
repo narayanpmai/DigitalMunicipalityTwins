@@ -30,28 +30,32 @@ export const ProjectsDashboardTab: React.FC<ProjectsDashboardTabProps> = ({ proj
     let totalPhysicalProgress = 0;
     let projectsWithProgress = 0;
 
+    let committeeTotal = 0;
+
     projects.forEach(p => {
       const budget = Number(p.officeCost || p.budget || 0);
+      const comm = Number(p.committeeCost || p.communityContribution || 0);
       const paid = Number(p.paidAmount || 0);
-      const progress = Number(p.physicalProgress || 0);
-      
+      const progress = Number(p.progressPercentage ?? p.physicalProgressPercent ?? p.physicalProgress ?? 0);
+
       totalBudget += budget;
+      committeeTotal += comm;
       totalPaid += paid;
-      
+
       if (progress > 0) {
         totalPhysicalProgress += progress;
         projectsWithProgress++;
       }
 
       if (p.status === 'completed') completed++;
-      else if (p.status === 'in_progress') inProgress++;
+      else if (p.status === 'ongoing' || p.status === 'in_progress' || p.status === 'approved') inProgress++;
       else notStarted++;
     });
 
     const avgPhysicalProgress = projectsWithProgress ? Math.round(totalPhysicalProgress / projectsWithProgress) : 0;
     const avgFinancialProgress = totalBudget ? Math.round((totalPaid / totalBudget) * 100) : 0;
 
-    return { totalBudget, totalPaid, completed, inProgress, notStarted, avgPhysicalProgress, avgFinancialProgress };
+    return { totalBudget, committeeTotal, totalPaid, completed, inProgress, notStarted, avgPhysicalProgress, avgFinancialProgress };
   }, [projects]);
 
   const formatter = new Intl.NumberFormat('ne-NP', {
@@ -72,13 +76,13 @@ export const ProjectsDashboardTab: React.FC<ProjectsDashboardTabProps> = ({ proj
             <Coins size={120} />
           </div>
           <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <Coins size={18} color="#0f766e" /> कुल विनियोजित बजेट
+            <Coins size={18} color="#0f766e" /> कुल विनियोजित कार्यालय लागत
           </div>
           <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a' }}>
             {formatter.format(stats.totalBudget)}
           </div>
-          <div style={{ fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '0.5rem' }}>
-            <TrendingUp size={14} /> अघिल्लो वर्षभन्दा १५% वृद्धि
+          <div style={{ fontSize: '0.8rem', color: '#0f766e', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '0.5rem' }}>
+            <TrendingUp size={14} /> जनसहभागिता लागत: {formatter.format(stats.committeeTotal)}
           </div>
         </div>
 
@@ -172,11 +176,11 @@ export const ProjectsDashboardTab: React.FC<ProjectsDashboardTabProps> = ({ proj
               </div>
               
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: p.status === 'completed' ? '#10b981' : (p.status === 'in_progress' ? '#3b82f6' : '#94a3b8') }}>
-                  {p.status === 'completed' ? 'सम्पन्न' : (p.status === 'in_progress' ? 'चालु' : 'सुरु नभएको')}
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: p.status === 'completed' ? '#10b981' : (p.status === 'ongoing' || p.status === 'in_progress' || p.status === 'approved' ? '#3b82f6' : '#64748b') }}>
+                  {p.status === 'completed' ? 'सम्पन्न' : (p.status === 'ongoing' || p.status === 'in_progress' ? 'सञ्चालनमा' : p.status === 'approved' ? 'सम्झौता स्वीकृत' : 'योजना चरण')}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
-                  भौतिक प्रगति: {p.physicalProgress || 0}%
+                  भौतिक प्रगति: {Number(p.progressPercentage ?? p.physicalProgressPercent ?? p.physicalProgress ?? 0)}%
                 </div>
               </div>
             </div>

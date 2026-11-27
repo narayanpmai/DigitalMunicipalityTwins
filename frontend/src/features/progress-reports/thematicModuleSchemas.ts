@@ -18,6 +18,21 @@ export interface ThematicModuleDef {
   fields: ThematicFieldDef[];
 }
 
+// १० वर्षे आवधिक तथा दीर्घकालीन आर्थिक वर्षहरूको मानक सूची (२०७४ देखि २०८४)
+export const TEN_YEAR_FISCAL_YEARS = [
+  '२०८४/०८५',
+  '२०८३/०८४',
+  '२०८२/०८३',
+  '२०८१/०८२',
+  '२०८०/०८१',
+  '२०७९/०८०',
+  '२०७८/०७९',
+  '२०७७/०७८',
+  '२०७६/०७७',
+  '२०७५/०७६',
+  '२०७४/०७५',
+] as const;
+
 export const THEMATIC_MODULE_SCHEMAS: ThematicModuleDef[] = [
   // १. पालिकाको समग्र परिचय
   {

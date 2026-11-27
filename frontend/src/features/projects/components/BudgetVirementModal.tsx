@@ -62,7 +62,7 @@ export const BudgetVirementModal: React.FC<BudgetVirementModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setErrorMessage(err?.response?.data?.message || 'रकमान्तर प्रक्रियामा त्रुटि देखापर्यो।');
+      setErrorMessage(err?.response?.data?.detail || err?.response?.data?.message || 'रकमान्तर प्रक्रियामा त्रुटि देखापर्यो।');
     } finally {
       setIsSubmitting(false);
     }

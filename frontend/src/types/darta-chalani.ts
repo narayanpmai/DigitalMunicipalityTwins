@@ -19,13 +19,22 @@ export interface DartaRecord {
 export interface ChalaniRecord {
   id: string;
   chalaniNo: number;
+  dispatchNo?: string;
   chalaniDateBs: string;
+  dispatchDate?: string;
   recipientOrganization: string;
+  receiverName?: string;
   subject: string;
   department: string;
   senderOfficial: string;
+  signedBy?: string;
   fiscalYear: string;
   documentUrl?: string;
   remarks?: string;
-  status: 'dispatched' | 'delivered';
+  status: 'dispatched' | 'delivered' | 'चलानी भएको';
+  sourceModule?: string;
+  sourceRecordId?: string;
+  sourceTitle?: string;
+  letterType?: string;
+  verificationCode?: string;
 }
