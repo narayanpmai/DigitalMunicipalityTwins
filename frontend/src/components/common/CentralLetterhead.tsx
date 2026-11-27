@@ -30,6 +30,7 @@ export interface LetterheadConfigProps {
   showFooterQr?: boolean;
   dateBs?: string;
   dateAd?: string;
+  dateLabel?: string;
   branchTitle?: string;
   branchPlacement?: 'left' | 'below-title';
   documentTitle?: string;
@@ -190,6 +191,7 @@ export const useLetterheadConfig = (overrides?: Partial<LetterheadConfigProps>) 
         }
       })(),
       dateAd: overrides?.dateAd || new Date().toISOString().split('T')[0],
+      dateLabel: overrides?.dateLabel || '',
       branchTitle: overrides?.branchTitle || '',
       branchPlacement: overrides?.branchPlacement || 'left',
       documentTitle: overrides?.documentTitle || '',
@@ -281,7 +283,8 @@ export const CentralLetterheadHeader: React.FC<LetterheadConfigProps> = (props) 
         </div>
         <div className="central-lh-date-right">
           <div>
-            मिति: <span style={{ fontWeight: 800 }}>{config.dateBs}</span>
+            {config.dateLabel ? <span style={{ fontWeight: 700 }}>{config.dateLabel}: </span> : 'मिति: '}
+            <span style={{ fontWeight: 800 }}>{config.dateBs}</span>
             {config.dateAd && <span style={{ fontSize: '0.8rem', color: '#64748b', marginLeft: '4px' }}>({config.dateAd})</span>}
           </div>
           {config.showNepalSambat && (

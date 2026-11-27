@@ -1622,6 +1622,8 @@ def verify_job_application(
 
     # If approved, ensure admit card details and chalani are populated
     if "स्वीकृत" in data.status:
+        if not app.approved_at:
+            app.approved_at = datetime.datetime.utcnow()
         vac = db.query(VacancyAnnouncement).filter(
             or_(
                 VacancyAnnouncement.id == app.vacancy_id,

@@ -70,6 +70,7 @@ class JobApplication(Base):
     chalani_no = Column(String, nullable=True)
     exam_center = Column(String, nullable=True)
     exam_date_time = Column(String, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
     
     # Document URLs
     photo_url = Column(String, nullable=True)

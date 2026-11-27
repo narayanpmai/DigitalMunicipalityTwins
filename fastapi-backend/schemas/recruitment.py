@@ -90,6 +90,7 @@ class JobApplicationSchema(BaseModel):
     chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
+    approved_at: Optional[datetime] = Field(None, alias="approvedAt")
     
     # Uploads
     photo_url: Optional[str] = Field(None, alias="photoUrl")
@@ -157,6 +158,7 @@ class ApplicationVerificationUpdate(BaseModel):
     chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
+    approved_at: Optional[datetime] = Field(None, alias="approvedAt")
     confirm_payment: Optional[bool] = Field(False, alias="confirmPayment")
 
     class Config:
@@ -222,6 +224,7 @@ class JobApplicationUpdate(BaseModel):
     chalani_no: Optional[str] = Field(None, alias="chalaniNo")
     exam_center: Optional[str] = Field(None, alias="examCenter")
     exam_date_time: Optional[str] = Field(None, alias="examDateTime")
+    approved_at: Optional[datetime] = Field(None, alias="approvedAt")
     photo_url: Optional[str] = Field(None, alias="photoUrl")
     signature_url: Optional[str] = Field(None, alias="signatureUrl")
     citizenship_doc_url: Optional[str] = Field(None, alias="citizenshipDocUrl")

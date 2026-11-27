@@ -193,6 +193,8 @@ interface Application {
   onboarded_employee_id?: string;
   onboardedAt?: string;
   onboarded_at?: string;
+  approvedAt?: string;
+  approved_at?: string;
   createdAt?: string;
 }
 
@@ -6080,74 +6082,80 @@ return (
               title="आवेदन स्वीकृति पत्र (Application Acceptance Letter) - A4"
               targetElementId="printable-approval-letter-sheet"
             >
-              {selectedApprovalApp && (
-                <CentralDocumentSheet
-                  id="printable-approval-letter-sheet"
-                  palikaName={dynamicPalikaName}
-                  palikaNameEn={dynamicPalikaNameEn}
-                  localGovType="स्थानीय सरकार"
-                  officeTitle={dynamicOfficeTitle}
-                  location={dynamicAddress}
-                  provinceCountry={dynamicProvinceCountry}
-                  establishedYear="२०७३"
-                  activeFiscalYear="२०८३/०८४"
-                  patraSankhya="२०८३/०८४"
-                  chalaniNo={selectedApprovalApp.chalaniNo || selectedApprovalApp.chalani_no || '३५२'}
-                  branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
-                  documentTitle="दरखास्त फारम स्वीकृति पत्र (APPLICATION ACCEPTANCE LETTER)"
-                  slogan={dynamicSlogan}
-                  website={dynamicWebsite}
-                  email={dynamicEmail}
-                  phone={dynamicPhone}
-                  logoUrl={dynamicPalikaLogo}
-                  emblemUrl={dynamicEmblemUrl}
-                  dateBs={getDynamicDocDates(selectedApprovalApp.verifiedAt || selectedApprovalApp.verified_at).dateBs}
-                  dateAd={getDynamicDocDates(selectedApprovalApp.verifiedAt || selectedApprovalApp.verified_at).dateAd}
-                  showWatermark={true}
-                  showFooter={true}
-                >
-                  <div style={{ padding: '1.25rem 0.5rem', minHeight: '360px' }}>
-                    <div style={{ marginBottom: '1rem', lineHeight: 1.6, fontSize: '0.92rem', color: '#1e293b' }}>
-                      <div>श्री <strong>{selectedApprovalApp.fullNameNp || selectedApprovalApp.full_name_np}</strong></div>
-                      <div>ठेगाना: {selectedApprovalApp.permanentAddress || selectedApprovalApp.permanent_address}</div>
-                      <div>नागरिकता नं: {selectedApprovalApp.citizenshipNo || selectedApprovalApp.citizenship_no}</div>
-                    </div>
+              {selectedApprovalApp && (() => {
+                const approvalDateSource = selectedApprovalApp.approvedAt || selectedApprovalApp.approved_at || selectedApprovalApp.verifiedAt || selectedApprovalApp.verified_at || selectedApprovalApp.paidAt || selectedApprovalApp.paid_at || selectedApprovalApp.createdAt || selectedApprovalApp.created_at;
+                const approvalDates = getDynamicDocDates(approvalDateSource);
 
-                    <p style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem', marginBottom: '1rem', textAlign: 'center' }}>
-                      विषय: <span style={{ textDecoration: 'underline' }}>दरखास्त फारम स्वीकृत भएको तथा परीक्षामा सम्मिलित हुने सम्बन्धी।</span>
-                    </p>
+                return (
+                  <CentralDocumentSheet
+                    id="printable-approval-letter-sheet"
+                    palikaName={dynamicPalikaName}
+                    palikaNameEn={dynamicPalikaNameEn}
+                    localGovType="स्थानीय सरकार"
+                    officeTitle={dynamicOfficeTitle}
+                    location={dynamicAddress}
+                    provinceCountry={dynamicProvinceCountry}
+                    establishedYear="२०७३"
+                    activeFiscalYear="२०८३/०८४"
+                    patraSankhya="२०८३/०८४"
+                    chalaniNo={selectedApprovalApp.chalaniNo || selectedApprovalApp.chalani_no || '३५२'}
+                    branchTitle="कर्मचारी पदपूर्ति तथा आन्तरिक परीक्षा सञ्चालन समिति"
+                    documentTitle="दरखास्त फारम स्वीकृति पत्र (APPLICATION ACCEPTANCE LETTER)"
+                    slogan={dynamicSlogan}
+                    website={dynamicWebsite}
+                    email={dynamicEmail}
+                    phone={dynamicPhone}
+                    logoUrl={dynamicPalikaLogo}
+                    emblemUrl={dynamicEmblemUrl}
+                    dateLabel="दरखास्त फारम स्वीकृति मिति"
+                    dateBs={approvalDates.dateBs}
+                    dateAd={approvalDates.dateAd}
+                    showWatermark={true}
+                    showFooter={true}
+                  >
+                    <div style={{ padding: '1.25rem 0.5rem', minHeight: '360px' }}>
+                      <div style={{ marginBottom: '1rem', lineHeight: 1.6, fontSize: '0.92rem', color: '#1e293b' }}>
+                        <div>श्री <strong>{selectedApprovalApp.fullNameNp || selectedApprovalApp.full_name_np}</strong></div>
+                        <div>ठेगाना: {selectedApprovalApp.permanentAddress || selectedApprovalApp.permanent_address}</div>
+                        <div>नागरिकता नं: {selectedApprovalApp.citizenshipNo || selectedApprovalApp.citizenship_no}</div>
+                      </div>
 
-                    <p style={{ fontSize: '0.9rem', lineHeight: '1.75', color: '#1e293b', textAlign: 'justify', marginBottom: '1rem' }}>
-                      महोदय / महोदया,<br />
-                      यस <strong>{dynamicPalikaName}</strong>द्वारा प्रकाशित विज्ञापन नं. <strong>{selectedApprovalApp.vacancyNo || selectedApprovalApp.vacancy_no}</strong>,
-                      पद: <strong>{selectedApprovalApp.postTitle || selectedApprovalApp.post_title}</strong> को लागि तपाईंले पेस गर्नुभएको
-                      अनलाइन दरखास्त फारम (दरखास्त नं: {selectedApprovalApp.applicationNo || selectedApprovalApp.application_no}) तथा संलग्न आवश्यक शैक्षिक योग्यता र कागजातहरू
-                      प्रारम्भिक रुजु गर्दा रीतपूर्वक प्राप्त भएकोले यो <strong>स्वीकृति पत्र</strong> जारी गरिएको छ।
-                    </p>
+                      <p style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem', marginBottom: '1rem', textAlign: 'center' }}>
+                        विषय: <span style={{ textDecoration: 'underline' }}>दरखास्त फारम स्वीकृत भएको तथा परीक्षामा सम्मिलित हुने सम्बन्धी।</span>
+                      </p>
 
-                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.86rem' }}>
-                        <div><strong>रोल नम्बर:</strong> <span style={{ fontFamily: 'monospace', color: '#1d4ed8', fontWeight: 800 }}>{selectedApprovalApp.admitCardRollNo || selectedApprovalApp.admit_card_roll_no || '2083-ROLL-352'}</span></div>
-                        <div><strong>राजस्व स्थिति:</strong> <span style={{ color: '#059669', fontWeight: 800 }}>भुक्तानी सम्पन्न (PAID)</span></div>
-                        <div><strong>परीक्षा केन्द्र:</strong> {selectedApprovalApp.examCenter || selectedApprovalApp.exam_center || 'पाँचपोखरी थाङपाल गाउँपालिकाको कार्यालय'}</div>
-                        <div>
-                          <strong>परीक्षा मिति (BS):</strong>{' '}
-                          {selectedApprovalApp.examDateTime?.trim() || selectedApprovalApp.exam_date_time?.trim() ? (
-                            <span style={{ fontWeight: 800 }}>
-                              {selectedApprovalApp.examDateTime || selectedApprovalApp.exam_date_time}
-                            </span>
-                          ) : (
-                            <span style={{ color: '#b45309', fontWeight: 800, background: '#fef3c7', padding: '0.12rem 0.5rem', borderRadius: '4px', border: '1px solid #fde68a' }}>
-                              परिक्षाको मिति पछि तय गरिने छ
-                            </span>
-                          )}
+                      <p style={{ fontSize: '0.9rem', lineHeight: '1.75', color: '#1e293b', textAlign: 'justify', marginBottom: '1rem' }}>
+                        महोदय / महोदया,<br />
+                        यस <strong>{dynamicPalikaName}</strong>द्वारा प्रकाशित विज्ञापन नं. <strong>{selectedApprovalApp.vacancyNo || selectedApprovalApp.vacancy_no}</strong>,
+                        पद: <strong>{selectedApprovalApp.postTitle || selectedApprovalApp.post_title}</strong> को लागि तपाईंले पेस गर्नुभएको
+                        अनलाइन दरखास्त फारम (दरखास्त नं: {selectedApprovalApp.applicationNo || selectedApprovalApp.application_no}) तथा संलग्न आवश्यक शैक्षिक योग्यता र कागजातहरू
+                        प्रारम्भिक रुजु गर्दा रीतपूर्वक प्राप्त भएकोले यो <strong>स्वीकृति पत्र</strong> जारी गरिएको छ।
+                      </p>
+
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.86rem' }}>
+                          <div><strong>रोल नम्बर:</strong> <span style={{ fontFamily: 'monospace', color: '#1d4ed8', fontWeight: 800 }}>{selectedApprovalApp.admitCardRollNo || selectedApprovalApp.admit_card_roll_no || '2083-ROLL-352'}</span></div>
+                          <div><strong>राजस्व स्थिति:</strong> <span style={{ color: '#059669', fontWeight: 800 }}>भुक्तानी सम्पन्न (PAID)</span></div>
+                          <div><strong>स्वीकृति मिति:</strong> <span style={{ fontWeight: 800, color: '#1e3a8a' }}>{approvalDates.dateBs}</span> <span style={{ fontSize: '0.78rem', color: '#64748b' }}>({approvalDates.dateAd})</span></div>
+                          <div><strong>परीक्षा केन्द्र:</strong> {selectedApprovalApp.examCenter || selectedApprovalApp.exam_center || 'पाँचपोखरी थाङपाल गाउँपालिकाको कार्यालय'}</div>
+                          <div style={{ gridColumn: 'span 2' }}>
+                            <strong>परीक्षा मिति (BS):</strong>{' '}
+                            {selectedApprovalApp.examDateTime?.trim() || selectedApprovalApp.exam_date_time?.trim() ? (
+                              <span style={{ fontWeight: 800 }}>
+                                {selectedApprovalApp.examDateTime || selectedApprovalApp.exam_date_time}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#b45309', fontWeight: 800, background: '#fef3c7', padding: '0.12rem 0.5rem', borderRadius: '4px', border: '1px solid #fde68a' }}>
+                                परिक्षाको मिति पछि तय गरिने छ
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <p style={{ fontSize: '0.88rem', lineHeight: '1.7', color: '#1e293b', textAlign: 'justify' }}>
-                      तपाईंले पोर्टलमा लगइन गरी वा नागरिकता नम्बर प्रविष्ट गरी आधिकारिक प्रवेश पत्र (Admit Card) डाउनलोड तथा प्रिन्ट गरी तोकिएको मिति र समयमा परीक्षा केन्द्रमा उपस्थित हुन सूचित गरिन्छ।
-                    </p>
+                      <p style={{ fontSize: '0.88rem', lineHeight: '1.7', color: '#1e293b', textAlign: 'justify' }}>
+                        तपाईंले पोर्टलमा लगइन गरी वा नागरिकता नम्बर प्रविष्ट गरी आधिकारिक प्रवेश पत्र (Admit Card) डाउनलोड तथा प्रिन्ट गरी तोकिएको मिति र समयमा परीक्षा केन्द्रमा उपस्थित हुन सूचित गरिन्छ।
+                      </p>
 
                     <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
@@ -6162,8 +6170,9 @@ return (
                     </div>
                   </div>
                 </CentralDocumentSheet>
-              )}
-            </CentralPrintPreviewModal>
+              );
+            })()}
+          </CentralPrintPreviewModal>
 
             {/* ─── MODAL 3: OFFICIAL EXAM NOTICE PREVIEW ─── */}
             <CentralPrintPreviewModal
