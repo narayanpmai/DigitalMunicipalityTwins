@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { NepaliDatePicker } from '../../components/common/NepaliDatePicker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  CentralDocumentSheet,
+  CentralPrintPreviewModal,
+} from '../../components/common/CentralLetterhead';
+import { useTenant } from '../../context/TenantContext';
+import { toNepaliDigits } from '../../utils/nepaliCalendar';
 import { 
   judicialApi, 
   type JudicialCase, 
@@ -59,6 +65,11 @@ const CASE_STATUSES = [
 
 export const JudicialCommitteePage: React.FC = () => {
   const queryClient = useQueryClient();
+  let tenantSettings: any = null;
+  try {
+    const tenantCtx = useTenant();
+    tenantSettings = tenantCtx?.settings;
+  } catch {}
   const [activeTab, setActiveTab] = useState<'registry' | 'bench' | 'mediators' | 'verdicts'>('registry');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
@@ -1376,77 +1387,87 @@ export const JudicialCommitteePage: React.FC = () => {
       )}
 
       {/* Modal 6: Print Official Cause List */}
-      {showCauseListPrint && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15,23,42,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '780px', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
-            <div style={{ background: '#1e293b', color: '#fff', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontWeight: 700 }}>दैनिक इजलास पेशी सूची (Daily Cause List Print)</div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={() => window.print()} style={{ background: '#059669', border: 'none', color: '#fff', borderRadius: '6px', padding: '0.4rem 0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', fontWeight: 600 }}>
-                  <Printer size={15} /> प्रिन्ट गर्नुहोस्
-                </button>
-                <button onClick={() => setShowCauseListPrint(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: '50%', padding: '0.35rem', cursor: 'pointer' }}>
-                  <X size={18} />
-                </button>
-              </div>
+      <CentralPrintPreviewModal
+        isOpen={showCauseListPrint}
+        onClose={() => setShowCauseListPrint(false)}
+        title="दैनिक इजलास पेशी सूची (Daily Judicial Cause List Print) - A4"
+        targetElementId="printable-judicial-cause-list"
+        paperFormat="A4"
+      >
+        <CentralDocumentSheet
+          id="printable-judicial-cause-list"
+          palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
+          palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
+          localGovType="स्थानीय सरकार"
+          officeTitle="न्यायिक समितिको कार्यालय"
+          location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
+          provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
+          activeFiscalYear="२०८३/०८४"
+          patraSankhya="२०८३/०८४"
+          chalaniNo="इजलास-पेशी-०१"
+          branchTitle="न्यायिक समिति तथा इजलास व्यवस्थापन फाँट"
+          branchPlacement="left"
+          documentTitle="दैनिक इजलास पेशी सूची (DAILY BENCH CAUSE LIST)"
+          dateLabel="इजलास मिति"
+          dateBs="२०८३/०८/१२"
+          slogan={tenantSettings?.slogan || 'सुलभ, निष्पक्ष र छिटो छरितो न्याय सम्पादन'}
+          website={tenantSettings?.website || 'panchpokharimun.gov.np'}
+          email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
+          phone={tenantSettings?.phone || '०११-६९०२०२'}
+          logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
+          emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
+          showWatermark={true}
+          showFooter={true}
+          showNepalSambat={true}
+        >
+          <div style={{ padding: '0.75rem 0.25rem', minHeight: '380px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: '1.25rem', color: '#1e293b', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div><strong>इजलास समय:</strong> बिहान ११:०० बजेदेखि</div>
+              <div><strong>इजलास संयोजक:</strong> उपाध्यक्ष तथा न्यायिक समिति संयोजक</div>
             </div>
 
-            <div style={{ padding: '2rem', overflowY: 'auto' }}>
-              <div style={{ textAlign: 'center', borderBottom: '2px solid #0f172a', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
-                <div style={{ fontSize: '0.9rem', color: '#475569' }}>नेपाल सरकार / बागमती प्रदेश</div>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#701a75' }}>पाँचपोखरी थाङपाल गाउँपालिका</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>न्यायिक समितिको कार्यालय</div>
-                <div style={{ fontSize: '0.85rem', color: '#64748b' }}>थाङपालधाप, सिन्धुपाल्चोक</div>
-                <div style={{ display: 'inline-block', marginTop: '0.5rem', padding: '0.2rem 1rem', background: '#fdf4ff', border: '1px solid #f5d0fe', borderRadius: '20px', fontWeight: 700, color: '#701a75', fontSize: '0.95rem' }}>
-                  दैनिक इजलास पेशी सूची (Cause List)
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '1rem', color: '#334155' }}>
-                <div><strong>इजलास मिति:</strong> २०८१-०६-०५ (दिउँसो ०१:०० बजेदेखि)</div>
-                <div><strong>इजलास संयोजक:</strong> सुनिता अधिकारी (उपाध्यक्ष)</div>
-              </div>
-
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="dt-responsive-table-wrapper">
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
                 <thead>
                   <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>क्र.सं.</th>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>मुद्दा नं.</th>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>वादी विरुद्ध प्रतिवादी</th>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>विवादको विषय</th>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>पेशीको अवस्था</th>
-                    <th style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>इजलासको आदेश / कैफियत</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>क्र.सं.</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>मुद्दा नं.</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>वादी विरुद्ध प्रतिवादी</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>विवादको विषय</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>पेशीको अवस्था</th>
+                    <th style={{ padding: '0.65rem 0.75rem', border: '1px solid #cbd5e1' }}>इजलासको आदेश / कैफियत</th>
                   </tr>
                 </thead>
                 <tbody>
                   {causeList.map((item, idx) => (
                     <tr key={idx}>
-                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', textAlign: 'center' }}>{idx + 1}</td>
-                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', fontWeight: 600 }}>{item.caseNo}</td>
+                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 600 }}>{toNepaliDigits(idx + 1)}</td>
+                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', fontWeight: 700, color: '#1e3a8a' }}>{item.caseNo}</td>
                       <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>{item.parties}</td>
                       <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>{item.disputeType}</td>
-                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1' }}>{item.stage}</td>
-                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', color: '#64748b' }}>सुनुवाइ प्रक्रियामा</td>
+                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', fontWeight: 600, color: '#0369a1' }}>{item.stage}</td>
+                      <td style={{ padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', color: '#475569' }}>सुनुवाइ प्रक्रियामा</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
 
-              <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'space-between', padding: '0 2rem' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ borderTop: '1px dotted #334155', width: '150px', marginBottom: '4px' }}></div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>फाँटवाला / कर्मचारी</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ borderTop: '1px dotted #334155', width: '180px', marginBottom: '4px' }}></div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>सुनिता अधिकारी</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>उपाध्यक्ष तथा संयोजक, न्यायिक समिति</div>
-                </div>
+            <div style={{ marginTop: '4rem', display: 'flex', justifyContent: 'space-between', padding: '0 1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ borderTop: '1px dotted #334155', width: '160px', marginBottom: '4px' }}></div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>फाँटवाला / कर्मचारी</div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b' }}>न्यायिक समिति फाँट</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ borderTop: '1px dotted #334155', width: '200px', marginBottom: '4px' }}></div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a' }}>सुनिता अधिकारी</div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b' }}>उपाध्यक्ष तथा संयोजक, न्यायिक समिति</div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </CentralDocumentSheet>
+      </CentralPrintPreviewModal>
 
     </div>
   );

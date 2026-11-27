@@ -47,6 +47,12 @@ import {
   ANNUAL_FEE_SCHEDULE,
   calculateAnnualFee,
 } from '../../api/business';
+import {
+  CentralDocumentSheet,
+  CentralPrintPreviewModal,
+} from '../../components/common/CentralLetterhead';
+import { useTenant } from '../../context/TenantContext';
+import { toNepaliDigits } from '../../utils/nepaliCalendar';
 import './business.css';
 
 type TabKey = 'registry' | 'renewals' | 'inspections' | 'analytics';
@@ -59,6 +65,11 @@ export const BusinessRegistrationPage: React.FC<BusinessRegistrationPageProps> =
   const location = useLocation();
   const isAdmin = !isReadOnly && location.pathname.startsWith('/app');
   const queryClient = useQueryClient();
+  let tenantSettings: any = null;
+  try {
+    const tenantCtx = useTenant();
+    tenantSettings = tenantCtx?.settings;
+  } catch {}
 
   // State
   const [activeTab, setActiveTab] = useState<TabKey>('registry');
@@ -995,90 +1006,105 @@ export const BusinessRegistrationPage: React.FC<BusinessRegistrationPageProps> =
       )}
 
       {/* MODAL 3: DIGITAL BUSINESS CERTIFICATE */}
-      {certModalData && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.65)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '600px',
-            padding: '1.75rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#1e3a8a' }}>
-                ई-व्यापार दर्ता प्रमाणपत्र (Digital Business Certificate)
-              </h3>
-              <button onClick={() => setCertModalData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                <X size={20} />
-              </button>
-            </div>
+      <CentralPrintPreviewModal
+        isOpen={Boolean(certModalData)}
+        onClose={() => setCertModalData(null)}
+        title="ई-व्यापार दर्ता प्रमाणपत्र (Digital Business Registration Certificate) - A4"
+        targetElementId="printable-business-certificate"
+        paperFormat="A4"
+      >
+        {certModalData && (
+          <CentralDocumentSheet
+            id="printable-business-certificate"
+            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
+            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
+            localGovType="स्थानीय सरकार"
+            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
+            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
+            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
+            activeFiscalYear="२०८३/०८४"
+            patraSankhya="२०८३/०८४"
+            chalaniNo={toNepaliDigits(certModalData.registrationNo) || '-'}
+            branchTitle="राजस्व तथा व्यवसाय दर्ता प्रशासन शाखा"
+            branchPlacement="left"
+            documentTitle="ई-व्यापार दर्ता प्रमाणपत्र (DIGITAL BUSINESS REGISTRATION CERTIFICATE)"
+            dateLabel="दर्ता मिति"
+            dateBs={toNepaliDigits(certModalData.registrationDateBs) || ''}
+            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
+            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
+            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
+            phone={tenantSettings?.phone || '०११-६९०२०२'}
+            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
+            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
+            showWatermark={true}
+            showFooter={true}
+            showNepalSambat={true}
+          >
+            <div style={{ padding: '1rem 0.5rem', minHeight: '380px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.25rem', fontSize: '0.92rem', color: '#334155', lineHeight: 1.6 }}>
+                स्थानीय सरकार सञ्चालन ऐन, २०७४ तथा व्यवसाय दर्ता तथा नियमन कार्यविधि अनुसार रीतपूर्वक निवेदन प्राप्त भई निम्नानुसारको व्यवसाय दर्ता गरी यो प्रमाणपत्र प्रदान गरिएको छ।
+              </div>
 
-            {/* Printable Certificate */}
-            <div style={{
-              border: '2px solid #1e3a8a', borderRadius: '12px', padding: '1.5rem',
-              background: 'linear-gradient(180deg, #fffbeb 0%, #f0f7ff 100%)',
-            }}>
-              <div style={{ textAlign: 'center', marginBottom: '1rem', borderBottom: '1.5px solid #1e3a8a', paddingBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 800 }}>नेपाल सरकार | स्थानीय सरकार</div>
-                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#1e3a8a', margin: '0.15rem 0' }}>
-                  पाँचपोखरी थाङपाल गाउँ कार्यपालिकाको कार्यालय
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#475569' }}>राजस्व तथा व्यवसाय दर्ता शाखा, थाङपालधाप, सिन्धुपाल्चोक</div>
-                <div style={{
-                  display: 'inline-block', background: '#1e3a8a', color: '#fff',
-                  fontSize: '0.78rem', fontWeight: 800, padding: '0.2rem 1rem', borderRadius: '20px', marginTop: '0.4rem',
-                }}>
-                  ई-व्यापार दर्ता प्रमाणपत्र (e-Business Registration Certificate)
+              <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem', fontSize: '0.9rem', lineHeight: 1.8 }}>
+                  <div><strong>दर्ता नम्बर:</strong> <span style={{ fontFamily: 'monospace', color: '#1d4ed8', fontWeight: 800, fontSize: '1rem' }}>{toNepaliDigits(certModalData.registrationNo)}</span></div>
+                  <div><strong>व्यवसायको स्थिति:</strong> <span style={{ color: certModalData.status === 'नवीकृत' ? '#047857' : '#b45309', fontWeight: 800, background: '#f0fdf4', padding: '2px 8px', borderRadius: '4px' }}>{certModalData.status}</span></div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <strong>व्यवसायको नाम:</strong> <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>{certModalData.businessName}</span>
+                    {certModalData.businessNameEn && <span style={{ fontSize: '0.82rem', color: '#64748b', marginLeft: '8px', textTransform: 'uppercase' }}>({certModalData.businessNameEn})</span>}
+                  </div>
+                  <div><strong>व्यवसाय स्वामी (प्रोप्राइटर):</strong> <strong>{certModalData.proprietorName}</strong></div>
+                  <div><strong>सम्पर्क नम्बर:</strong> {toNepaliDigits(certModalData.proprietorPhone || '-')}</div>
+                  <div><strong>नागरिकता प्रमाणपत्र नं.:</strong> {toNepaliDigits(certModalData.proprietorCitizenshipNo || '-')}</div>
+                  <div><strong>स्थायी लेखा नम्बर (PAN):</strong> <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1e3a8a' }}>{certModalData.panNumber || '-'}</span></div>
+                  <div><strong>व्यवसायको प्रकृति / वर्ग:</strong> <span style={{ color: '#0369a1', fontWeight: 700 }}>{certModalData.category}</span></div>
+                  <div><strong>व्यापारिक ठेगाना:</strong> वडा नं. {toNepaliDigits(certModalData.wardNumber)}, {certModalData.tole || 'गाउँ क्षेत्र'}</div>
+                  <div><strong>कुल पूँजी लगानी:</strong> रु. {toNepaliDigits(Number(certModalData.capitaInvestmentNPR).toLocaleString('ne-NP'))}</div>
+                  <div><strong>कर्मचारी संख्या:</strong> {toNepaliDigits(certModalData.employeeCount || 1)} जना</div>
+                  <div><strong>नवीकरण म्याद (Expiry):</strong> <strong style={{ color: '#b91c1c' }}>{toNepaliDigits(certModalData.renewalDueDateBs)} सम्म</strong></div>
+                  <div><strong>पछिल्लो राजस्व रसिद नं.:</strong> {certModalData.lastReceiptNo || '-'}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px', gap: '1rem' }}>
-                <div style={{ fontSize: '0.875rem', lineHeight: '1.75', color: '#1e293b' }}>
-                  <div><strong>दर्ता नम्बर:</strong> <span style={{ color: '#1e40af', fontWeight: 800 }}>{certModalData.registrationNo}</span></div>
-                  <div><strong>व्यवसायको नाम:</strong> {certModalData.businessName}</div>
-                  {certModalData.businessNameEn && <div style={{ fontSize: '0.78rem', color: '#475569' }}>{certModalData.businessNameEn}</div>}
-                  <div><strong>व्यवसाय स्वामी:</strong> {certModalData.proprietorName}</div>
-                  <div><strong>नागरिकता नं.:</strong> {certModalData.proprietorCitizenshipNo || '-'}</div>
-                  {certModalData.panNumber && <div><strong>PAN:</strong> {certModalData.panNumber}</div>}
-                  <div><strong>व्यवसायको वर्ग:</strong> <span style={{ color: '#0369a1', fontWeight: 700 }}>{certModalData.category}</span></div>
-                  <div><strong>स्थान:</strong> वडा नं. {certModalData.wardNumber}, {certModalData.tole || 'पाँचपोखरी थाङपाल'}</div>
-                  <div><strong>पूँजी लगानी:</strong> रु. {Number(certModalData.capitaInvestmentNPR).toLocaleString('ne-NP')}</div>
-                  <div><strong>दर्ता मिति:</strong> {certModalData.registrationDateBs}</div>
-                  <div><strong>म्याद सम्म:</strong> {certModalData.renewalDueDateBs}</div>
+              {/* QR and Security Authentication Strip */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.9rem 1.25rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', marginBottom: '2.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
+                      `${window.location.origin}/app/business?verify=${certModalData.registrationNo}`
+                    )}`}
+                    style={{ width: '64px', height: '64px', borderRadius: '4px', border: '1px solid #94a3b8' }}
+                    alt="Certificate QR"
+                  />
+                  <div style={{ fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
+                    <div style={{ fontWeight: 800, color: '#0f172a' }}>डिजिटल क्युआर प्रमाणीकरण (Digital Verification)</div>
+                    <div>प्रमाणीकरण कोड: <strong style={{ color: '#1e3a8a', fontFamily: 'monospace' }}>{certModalData.registrationNo}</strong></div>
+                    <div style={{ color: '#64748b' }}>यो प्रमाणपत्र राष्ट्रिय व्यवसाय अभिलेख प्रणालीमा सुरक्षित छ।</div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '0.5rem' }}>
-                  <QrCode size={72} color="#1e3a8a" />
-                  <span style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '0.25rem', textAlign: 'center', fontWeight: 700 }}>
-                    Digital QR Verified
-                  </span>
+                <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#059669', fontWeight: 700 }}>
+                  ✓ राजस्व दाखिला सम्पन्न<br />
+                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>सञ्चालन अनुमति प्राप्त</span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed #cbd5e1', fontSize: '0.78rem' }}>
-                <div>
-                  अवस्था: <strong style={{ color: certModalData.status === 'नवीकृत' ? '#047857' : '#b45309' }}>{certModalData.status}</strong><br />
-                  {certModalData.lastReceiptNo && `रसिद नं.: ${certModalData.lastReceiptNo}`}
+              {/* Signatures */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '2rem' }}>
+                <div style={{ textAlign: 'center', minWidth: '180px' }}>
+                  <div style={{ width: '140px', borderBottom: '1px dashed #64748b', margin: '0 auto 4px auto' }}></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>तयार गर्ने (फाँटवाला)</div>
+                  <div style={{ fontSize: '0.74rem', color: '#64748b' }}>राजस्व तथा व्यवसाय शाखा</div>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ borderBottom: '1px solid #475569', width: '130px', marginBottom: '0.2rem' }} />
-                  प्रमुख प्रशासकीय अधिकृत
+                <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                  <div style={{ width: '160px', borderBottom: '1px dashed #64748b', margin: '0 auto 4px auto' }}></div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>प्रमुख प्रशासकीय अधिकृत / अधिकृत</div>
+                  <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}</div>
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
-              <button onClick={() => setCertModalData(null)}
-                style={{ padding: '0.55rem 1.25rem', background: '#f1f5f9', border: '1.5px solid #cbd5e1', borderRadius: '8px', color: '#475569', fontWeight: 600, cursor: 'pointer' }}>
-                बन्द गर्नुहोस्
-              </button>
-              <button onClick={() => window.print()}
-                style={{ padding: '0.55rem 1.5rem', background: '#1e3a8a', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Printer size={15} /> प्रमाणपत्र प्रिन्ट
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </CentralDocumentSheet>
+        )}
+      </CentralPrintPreviewModal>
 
       {/* MODAL 4: INSPECTION RECORD */}
       {showInspectionModal && (

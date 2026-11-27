@@ -20,6 +20,7 @@ import { branchesApi } from '../../../api/branches';
 import { dartaChalaniApi } from '../../../api/darta-chalani';
 import { NepaliDatePicker } from '../../../components/common/NepaliDatePicker';
 import { adToBs } from '../../../utils/nepaliCalendar';
+import { CentralDocumentSheet } from '../../../components/common/CentralLetterhead';
 
 type LetterType =
   | 'committee_reg'
@@ -451,58 +452,33 @@ export const OfficialLettersGeneratorModal: React.FC<OfficialLettersGeneratorMod
 
         {/* Printable Document Sheet */}
         <div className="flex-1 overflow-y-auto p-8 bg-slate-50 flex justify-center">
-          <div className="bg-white p-10 max-w-4xl w-full border border-slate-300 rounded shadow-sm text-slate-800 font-serif leading-relaxed text-sm print:border-none print:shadow-none print:p-4">
-            {/* Nepal Emblem & Official Municipality Letterhead */}
-            <div className="text-center border-b-2 border-red-700 pb-4 mb-6">
-              <div className="flex justify-between items-start">
-                <div className="w-16 h-16 flex items-center justify-center">
-                  <img
-                    src={tenantSettings?.emblem_url || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png"}
-                    alt="नेपाल सरकार"
-                    className="w-14 h-14 object-contain"
-                  />
-                </div>
-                <div className="flex-1 px-4">
-                  <p className="text-red-700 font-bold text-sm">अनुसूची तथा स्थानीय सरकार सञ्चालन ऐन, २०७४</p>
-                  <h1 className="text-2xl font-black text-red-800 tracking-wide mt-1">
-                    {tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-                  </h1>
-                  <h2 className="text-base font-bold text-slate-700 mt-0.5">
-                    {tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
-                  </h2>
-                  <p className="text-xs text-slate-600 font-sans mt-0.5">
-                    {tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}, {tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल
-                  </p>
-                  <p className="text-xs text-teal-800 font-sans font-semibold mt-1">
-                    योजना, पूर्वाधार विकास तथा अनुगमन शाखा
-                  </p>
-                </div>
-                <div className="w-16 flex flex-col items-center justify-center text-right">
-                  <img
-                    src={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-                    alt="Palika Logo"
-                    className="w-14 h-14 object-contain rounded-full border border-slate-200"
-                    onError={(e: any) => {
-                      e.target.src = '/panchpokhari-logo.png';
-                    }}
-                  />
-                  <div className="text-[10px] font-sans text-slate-500 mt-1">
-                    आ.व. {toNepaliNum(project.fiscalYear || '')}
-                  </div>
-                </div>
-              </div>
-
-              {/* Reference Number & Date Line */}
-              <div className="flex justify-between text-xs text-slate-700 font-sans font-semibold mt-4 pt-2 border-t border-slate-200">
-                <div className="flex items-center gap-4">
-                  <span>पत्र संख्या: {toNepaliNum(patraSankhya)}</span>
-                  <span>चलानी नं.: {chalaniNo ? toNepaliNum(chalaniNo) : 'दर्ता बाँकी'}</span>
-                </div>
-                <div>
-                  <span>मिति: वि.सं. {toNepaliNum(issueDateBs)}</span>
-                </div>
-              </div>
-            </div>
+          <CentralDocumentSheet
+            id="printable-project-official-letter"
+            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
+            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
+            localGovType="स्थानीय सरकार"
+            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
+            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
+            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
+            activeFiscalYear={toNepaliNum(project.fiscalYear || '२०८१/०८२')}
+            patraSankhya={toNepaliNum(patraSankhya)}
+            chalaniNo={chalaniNo ? toNepaliNum(chalaniNo) : 'दर्ता बाँकी'}
+            branchTitle="योजना, पूर्वाधार विकास तथा अनुगमन शाखा"
+            branchPlacement="left"
+            documentTitle={LETTER_SUBJECTS[selectedLetter]}
+            dateLabel="चलानी मिति"
+            dateBs={toNepaliNum(issueDateBs)}
+            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
+            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
+            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
+            phone={tenantSettings?.phone || '०११-६९०२०२'}
+            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
+            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
+            showWatermark={true}
+            showFooter={true}
+            showNepalSambat={true}
+            style={{ maxWidth: '850px', width: '100%' }}
+          >
 
             {/* Letter Body based on selected letter */}
             {selectedLetter === 'work_order' && (
@@ -805,7 +781,7 @@ export const OfficialLettersGeneratorModal: React.FC<OfficialLettersGeneratorMod
               <span>पाँचपोखरी थाङपाल गाउँपालिका - डिजिटल ट्विन योजना व्यवस्थापन प्रणाली</span>
               <span>कम्प्युटर सिर्जित आधिकारिक पत्र</span>
             </div>
-          </div>
+          </CentralDocumentSheet>
         </div>
       </div>
     </div>
