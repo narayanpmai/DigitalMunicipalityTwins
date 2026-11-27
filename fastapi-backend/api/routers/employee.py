@@ -16,7 +16,8 @@ router = APIRouter(
     tags=["Employees"]
 )
 
-UPLOAD_DIR = "/app/uploads/employees"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads", "employees")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("", response_model=List[EmployeeSchema])

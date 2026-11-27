@@ -808,17 +808,36 @@ export const EmployeeManagementPage: React.FC = () => {
                 return (
                   <tr key={emp.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.15s' }}>
                     <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                      {photoSrc ? (
+                      {photoSrc && (
                         <img
                           src={photoSrc}
                           alt={emp.fullName}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            const fallback = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
                           style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0' }}
                         />
-                      ) : (
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.15rem', fontWeight: 700, color: '#0284c7', margin: '0 auto', border: '2px solid #bae6fd' }}>
-                          {emp.fullName?.trim().charAt(0) || 'क'}
-                        </div>
                       )}
+                      <div
+                        style={{
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '50%',
+                          backgroundColor: '#e0f2fe',
+                          display: photoSrc ? 'none' : 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.15rem',
+                          fontWeight: 700,
+                          color: '#0284c7',
+                          margin: '0 auto',
+                          border: '2px solid #bae6fd',
+                        }}
+                      >
+                        {emp.fullName?.trim().charAt(0) || 'क'}
+                      </div>
                     </td>
                     <td style={{ padding: '0.75rem 1rem', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>
                       <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px' }}>{emp.employeeId}</span>
@@ -892,10 +911,15 @@ export const EmployeeManagementPage: React.FC = () => {
                 {/* Top header */}
                 <div style={{ padding: '1.25rem 1.4rem', borderBottom: '1px solid #f1f5f9', background: '#fafbfc', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'center' }}>
-                    {photoSrc ? (
+                    {photoSrc && (
                       <img
                         src={photoSrc}
                         alt={emp.fullName}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                          const fallback = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
                         style={{
                           width: '54px',
                           height: '54px',
@@ -905,25 +929,24 @@ export const EmployeeManagementPage: React.FC = () => {
                           boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
                         }}
                       />
-                    ) : (
-                      <div
-                        style={{
-                          width: '54px',
-                          height: '54px',
-                          borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#0284c7',
-                          fontSize: '1.4rem',
-                          fontWeight: 800,
-                          border: '2px solid #bae6fd',
-                        }}
-                      >
-                        {emp.fullName?.trim().charAt(0) || 'क'}
-                      </div>
                     )}
+                    <div
+                      style={{
+                        width: '54px',
+                        height: '54px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+                        display: photoSrc ? 'none' : 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#0284c7',
+                        fontSize: '1.4rem',
+                        fontWeight: 800,
+                        border: '2px solid #bae6fd',
+                      }}
+                    >
+                      {emp.fullName?.trim().charAt(0) || 'क'}
+                    </div>
                     <div>
                       <h3 style={{ margin: '0 0 0.2rem 0', fontSize: '1.12rem', fontWeight: 800, color: '#0f172a' }}>
                         {emp.fullName}
