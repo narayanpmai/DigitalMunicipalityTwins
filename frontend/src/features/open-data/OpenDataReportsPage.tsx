@@ -533,42 +533,81 @@ export const OpenDataReportsPage: React.FC<OpenDataReportsPageProps> = ({ isRead
         </div>
       </div>
 
-      {/* ─── STREAMLINED 4-PILLAR PRIMARY NAVIGATION TABS ─── */}
-      <div className="od-primary-tabs-wrapper">
-        <div className="od-primary-tabs">
+      {/* ─── 4-PILLAR PRIMARY NAVIGATION TABS (दुई लाईनमा राखिएको आधुनिक इन्टरप्राइज डिजाइन) ─── */}
+      <div className="od-primary-tabs-wrapper" role="tablist">
+        {/* Row 1: खुला तथ्याङ्क तथा पालिका सूचकहरू (२ वटा ट्याब) */}
+        <div className="od-tabs-row">
+          {/* Tab 1: Catalog */}
           <button
             onClick={() => setPrimaryTab('catalog')}
-            className={`od-tab-btn ${primaryTab === 'catalog' ? 'active' : ''}`}
+            className={`od-tab-card theme-blue ${primaryTab === 'catalog' ? 'active' : ''}`}
           >
-            <Database size={17} />
-            <span>खुला तथ्याङ्क भण्डार (Open Data Catalog)</span>
-            <span className="od-tab-pill">{baseRecords.length}</span>
+            <div className="od-tab-icon-box">
+              <Database size={22} />
+            </div>
+            <div className="od-tab-text-box">
+              <div className="od-tab-title-line">
+                <span className="od-tab-main-title">खुला तथ्याङ्क भण्डार</span>
+                <span className="od-tab-badge-pill">{baseRecords.length} डेटासेट</span>
+              </div>
+              <span className="od-tab-subtitle">Open Data Catalog & Repository</span>
+            </div>
           </button>
 
+          {/* Tab 2: Municipal Indicators */}
           <button
             onClick={() => setPrimaryTab('indicators')}
-            className={`od-tab-btn ${primaryTab === 'indicators' ? 'active' : ''}`}
+            className={`od-tab-card theme-teal ${primaryTab === 'indicators' ? 'active' : ''}`}
           >
-            <TrendingUp size={17} />
-            <span>पालिका सूचक तथा दिगो विकास लक्ष्य (SDG)</span>
-            <span className="od-tab-pill">{stats?.activeIndicatorsCount ?? 12}</span>
+            <div className="od-tab-icon-box">
+              <TrendingUp size={22} />
+            </div>
+            <div className="od-tab-text-box">
+              <div className="od-tab-title-line">
+                <span className="od-tab-main-title">पालिका सूचक तथा SDGs</span>
+                <span className="od-tab-badge-pill">{stats?.activeIndicatorsCount ?? 12} सूचक</span>
+              </div>
+              <span className="od-tab-subtitle">Municipal Indicators & SDG Goals</span>
+            </div>
           </button>
+        </div>
 
+        {/* Row 2: सार्वजनिक पारदर्शिता तथा नागरिक/प्राविधिक API (२ वटा ट्याब) */}
+        <div className="od-tabs-row">
+          {/* Tab 3: Transparency */}
           <button
             onClick={() => setPrimaryTab('transparency')}
-            className={`od-tab-btn ${primaryTab === 'transparency' ? 'active' : ''}`}
+            className={`od-tab-card theme-emerald ${primaryTab === 'transparency' ? 'active' : ''}`}
           >
-            <ShieldCheck size={17} />
-            <span>सार्वजनिक पारदर्शिता तथा RTI</span>
+            <div className="od-tab-icon-box">
+              <ShieldCheck size={22} />
+            </div>
+            <div className="od-tab-text-box">
+              <div className="od-tab-title-line">
+                <span className="od-tab-main-title">सार्वजनिक पारदर्शिता तथा RTI</span>
+                <span className="od-tab-badge-pill">स्कोर: {stats?.transparencyScore ?? 88.5}%</span>
+              </div>
+              <span className="od-tab-subtitle">Proactive Disclosure & Transparency</span>
+            </div>
           </button>
 
+          {/* Tab 4: Developer & Citizen Requests */}
           <button
             onClick={() => setPrimaryTab('developer_and_requests')}
-            className={`od-tab-btn ${primaryTab === 'developer_and_requests' ? 'active' : ''}`}
+            className={`od-tab-card theme-purple ${primaryTab === 'developer_and_requests' ? 'active' : ''}`}
           >
-            <Terminal size={17} />
-            <span>नागरिक डेटा माग तथा प्राविधिक API</span>
-            {stats?.pendingRequestsCount ? <span className="od-tab-pill">{stats.pendingRequestsCount}</span> : null}
+            <div className="od-tab-icon-box">
+              <Terminal size={22} />
+            </div>
+            <div className="od-tab-text-box">
+              <div className="od-tab-title-line">
+                <span className="od-tab-main-title">नागरिक डेटा माग तथा API</span>
+                <span className="od-tab-badge-pill">
+                  {stats?.pendingRequestsCount ? `${stats.pendingRequestsCount} नयाँ माग` : 'Live API'}
+                </span>
+              </div>
+              <span className="od-tab-subtitle">Citizen Requests & Developer REST API</span>
+            </div>
           </button>
         </div>
       </div>

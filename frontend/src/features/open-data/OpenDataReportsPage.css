@@ -245,63 +245,168 @@
   color: #64748b;
 }
 
-/* ─── Primary 4-Pillar Navigation Tabs (Consolidated) ─── */
+/* ─── Primary 4-Pillar Navigation Tabs (Two-Row Balanced Enterprise Design) ─── */
 .od-primary-tabs-wrapper {
-  background: #ffffff;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 0.45rem;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-}
-
-.od-primary-tabs {
+  border-radius: 20px;
+  padding: 0.85rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
   display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
 }
 
-.od-tab-btn {
+.od-tabs-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .od-tabs-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.od-tab-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.od-tab-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.08);
+}
+
+.od-tab-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  transition: all 0.28s ease;
+}
+
+.od-tab-text-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.od-tab-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.od-tab-main-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.od-tab-subtitle {
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.od-tab-badge-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.15rem;
-  border-radius: 10px;
-  border: none;
-  font-weight: 700;
-  font-size: 0.88rem;
-  cursor: pointer;
-  background: transparent;
-  color: #475569;
-  transition: all 0.2s ease;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: 8px;
   white-space: nowrap;
 }
 
-.od-tab-btn:hover {
-  color: #0f172a;
-  background: #f1f5f9;
+/* ── Individual Theme Styles ── */
+/* Blue: Open Data Catalog */
+.od-tab-card.theme-blue .od-tab-icon-box { background: #eff6ff; color: #2563eb; }
+.od-tab-card.theme-blue .od-tab-main-title { color: #1e3a8a; }
+.od-tab-card.theme-blue .od-tab-subtitle { color: #64748b; }
+.od-tab-card.theme-blue .od-tab-badge-pill { background: #dbeafe; color: #1d4ed8; }
+.od-tab-card.theme-blue.active {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 55%, #3b82f6 100%);
+  border-color: #2563eb;
+  box-shadow: 0 8px 20px -3px rgba(37, 99, 235, 0.4);
 }
+.od-tab-card.theme-blue.active .od-tab-icon-box { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.od-tab-card.theme-blue.active .od-tab-main-title { color: #fff; }
+.od-tab-card.theme-blue.active .od-tab-subtitle { color: #bfdbfe; }
+.od-tab-card.theme-blue.active .od-tab-badge-pill { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
-.od-tab-btn.active {
-  background: linear-gradient(135deg, #0f4c81 0%, #1e3a8a 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.25);
+/* Teal: Municipal Indicators */
+.od-tab-card.theme-teal .od-tab-icon-box { background: #f0fdfa; color: #0d9488; }
+.od-tab-card.theme-teal .od-tab-main-title { color: #134e4a; }
+.od-tab-card.theme-teal .od-tab-subtitle { color: #64748b; }
+.od-tab-card.theme-teal .od-tab-badge-pill { background: #ccfbf1; color: #0f766e; }
+.od-tab-card.theme-teal.active {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+  border-color: #0d9488;
+  box-shadow: 0 8px 20px -3px rgba(13, 148, 136, 0.4);
 }
+.od-tab-card.theme-teal.active .od-tab-icon-box { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.od-tab-card.theme-teal.active .od-tab-main-title { color: #fff; }
+.od-tab-card.theme-teal.active .od-tab-subtitle { color: #99f6e4; }
+.od-tab-card.theme-teal.active .od-tab-badge-pill { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
-.od-tab-pill {
-  margin-left: 0.4rem;
-  background: #e2e8f0;
-  color: #475569;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  transition: all 0.2s;
+/* Emerald: Public Transparency */
+.od-tab-card.theme-emerald .od-tab-icon-box { background: #ecfdf5; color: #059669; }
+.od-tab-card.theme-emerald .od-tab-main-title { color: #064e3b; }
+.od-tab-card.theme-emerald .od-tab-subtitle { color: #64748b; }
+.od-tab-card.theme-emerald .od-tab-badge-pill { background: #d1fae5; color: #047857; }
+.od-tab-card.theme-emerald.active {
+  background: linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%);
+  border-color: #059669;
+  box-shadow: 0 8px 20px -3px rgba(16, 185, 129, 0.4);
 }
+.od-tab-card.theme-emerald.active .od-tab-icon-box { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.od-tab-card.theme-emerald.active .od-tab-main-title { color: #fff; }
+.od-tab-card.theme-emerald.active .od-tab-subtitle { color: #a7f3d0; }
+.od-tab-card.theme-emerald.active .od-tab-badge-pill { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
-.od-tab-btn.active .od-tab-pill {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+/* Purple: Developer & Citizen Requests */
+.od-tab-card.theme-purple .od-tab-icon-box { background: #faf5ff; color: #7c3aed; }
+.od-tab-card.theme-purple .od-tab-main-title { color: #4c1d95; }
+.od-tab-card.theme-purple .od-tab-subtitle { color: #64748b; }
+.od-tab-card.theme-purple .od-tab-badge-pill { background: #f3e8ff; color: #6b21a8; }
+.od-tab-card.theme-purple.active {
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #8b5cf6 100%);
+  border-color: #7c3aed;
+  box-shadow: 0 8px 20px -3px rgba(124, 58, 237, 0.4);
 }
+.od-tab-card.theme-purple.active .od-tab-icon-box { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.od-tab-card.theme-purple.active .od-tab-main-title { color: #fff; }
+.od-tab-card.theme-purple.active .od-tab-subtitle { color: #ddd6fe; }
+.od-tab-card.theme-purple.active .od-tab-badge-pill { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
 /* ─── Integrated Category Filter Pills (Zero Visual Clutter) ─── */
 .od-filter-pills {
