@@ -1572,34 +1572,145 @@ export const ITBranchPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── TABS */}
-      <div className="it-tabs" role="tablist">
-        {[
-          { id: 'overview', label: 'अवलोकन', icon: <BarChart2 size={16} />, badge: null },
-          { id: 'assets', label: 'IT उपकरण', icon: <HardDrive size={16} />, badge: assets.length },
-          { id: 'licenses', label: 'सफ्टवेयर इजाजत', icon: <Key size={16} />, badge: licenses.length },
-          { id: 'tickets', label: 'Helpdesk टिकेट', icon: <AlertCircle size={16} />, badge: tickets.filter(t => !t.status.includes('समाधान')).length, badgeWarn: true },
-          { id: 'network', label: 'नेटवर्क', icon: <Network size={16} />, badge: networkDevices.length },
-          { id: 'services', label: 'डिजिटल सेवाहरू', icon: <Globe size={16} />, badge: services.length },
-          { id: 'cyber', label: 'साइबर लग', icon: <Shield size={16} />, badge: cyberLogs.filter(c => !c.resolved).length, badgeWarn: true },
-          { id: 'budget', label: 'IT बजेट', icon: <DollarSign size={16} />, badge: null },
-          { id: 'staff', label: 'कर्मचारी', icon: <Users size={16} />, badge: staff.length },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            id={`it-tab-${tab.id}`}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            className={`it-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => { setActiveTab(tab.id as TabType); setSearchTerm(''); setStatusFilter('all'); setCategoryFilter('all'); setPriorityFilter('all'); }}
-          >
-            {tab.icon}
-            {tab.label}
-            {tab.badge !== null && tab.badge !== undefined && (
-              <span className={`it-tab-badge ${tab.badgeWarn && (tab.badge as number) > 0 ? 'it-tab-badge-warn' : ''}`}>{tab.badge}</span>
-            )}
-          </button>
-        ))}
+      {/* ── TABS (दुई लाईनमा राखिएको आधुनिक इन्टरप्राइज डिजाइन) */}
+      <div className="it-tabs-container" role="tablist">
+        {/* Line 1: कोर सञ्चालन तथा डिजिटल सेवा (५ वटा ट्याब) */}
+        <div className="it-tabs-row-1">
+          {[
+            {
+              id: 'overview',
+              label: 'अवलोकन ड्यासबोर्ड',
+              subtitle: 'Executive IT Overview',
+              icon: <BarChart2 size={20} />,
+              badge: 'BI & Ops',
+              theme: 'theme-blue',
+            },
+            {
+              id: 'assets',
+              label: 'IT उपकरण लगत',
+              subtitle: 'Hardware Assets',
+              icon: <HardDrive size={20} />,
+              badge: `${summary?.assets.total ?? assets.length} उपकरण`,
+              theme: 'theme-cyan',
+            },
+            {
+              id: 'licenses',
+              label: 'सफ्टवेयर इजाजत',
+              subtitle: 'Software Licenses',
+              icon: <Key size={20} />,
+              badge: `${licenses.length} इजाजत`,
+              theme: 'theme-indigo',
+            },
+            {
+              id: 'tickets',
+              label: 'Helpdesk टिकेट',
+              subtitle: 'Support & Tickets',
+              icon: <AlertCircle size={20} />,
+              badge: `${tickets.filter(t => !t.status.includes('समाधान')).length} खुला`,
+              badgeWarn: tickets.filter(t => !t.status.includes('समाधान')).length > 0,
+              theme: 'theme-amber',
+            },
+            {
+              id: 'services',
+              label: 'डिजिटल सेवाहरू',
+              subtitle: 'Digital Systems & Apps',
+              icon: <Globe size={20} />,
+              badge: `${services.length} प्रणाली`,
+              theme: 'theme-emerald',
+            },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              id={`it-tab-${tab.id}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`it-tab-card ${tab.theme} ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(tab.id as TabType);
+                setSearchTerm('');
+                setStatusFilter('all');
+                setCategoryFilter('all');
+                setPriorityFilter('all');
+              }}
+            >
+              <div className="it-tab-icon-box">{tab.icon}</div>
+              <div className="it-tab-text-box">
+                <div className="it-tab-title-line">
+                  <span className="it-tab-title">{tab.label}</span>
+                  {tab.badge && (
+                    <span className={`it-tab-badge-pill ${tab.badgeWarn ? 'warn' : ''}`}>{tab.badge}</span>
+                  )}
+                </div>
+                <span className="it-tab-subtitle">{tab.subtitle}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Line 2: पूर्वाधार, सुरक्षा र व्यवस्थापन (४ वटा ट्याब) */}
+        <div className="it-tabs-row-2">
+          {[
+            {
+              id: 'network',
+              label: 'नेटवर्क पूर्वाधार',
+              subtitle: 'Network & Devices',
+              icon: <Network size={20} />,
+              badge: `${networkDevices.length} डिभाइस`,
+              theme: 'theme-teal',
+            },
+            {
+              id: 'cyber',
+              label: 'साइबर सुरक्षा लग',
+              subtitle: 'Threats & Incidents',
+              icon: <Shield size={20} />,
+              badge: `${cyberLogs.filter(c => !c.resolved).length} विचाराधीन`,
+              badgeWarn: cyberLogs.filter(c => !c.resolved).length > 0,
+              theme: 'theme-rose',
+            },
+            {
+              id: 'budget',
+              label: 'IT बजेट तथा खर्च',
+              subtitle: 'Budget & Procurement',
+              icon: <DollarSign size={20} />,
+              badge: `${summary?.budget.utilization_percent ?? 0}% उपयोग`,
+              theme: 'theme-violet',
+            },
+            {
+              id: 'staff',
+              label: 'प्राविधिक जनशक्ति',
+              subtitle: 'IT Officers & Staff',
+              icon: <Users size={20} />,
+              badge: `${staff.length} कर्मचारी`,
+              theme: 'theme-slate',
+            },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              id={`it-tab-${tab.id}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`it-tab-card ${tab.theme} ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(tab.id as TabType);
+                setSearchTerm('');
+                setStatusFilter('all');
+                setCategoryFilter('all');
+                setPriorityFilter('all');
+              }}
+            >
+              <div className="it-tab-icon-box">{tab.icon}</div>
+              <div className="it-tab-text-box">
+                <div className="it-tab-title-line">
+                  <span className="it-tab-title">{tab.label}</span>
+                  {tab.badge && (
+                    <span className={`it-tab-badge-pill ${tab.badgeWarn ? 'warn' : ''}`}>{tab.badge}</span>
+                  )}
+                </div>
+                <span className="it-tab-subtitle">{tab.subtitle}</span>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── TAB CONTENT */}
