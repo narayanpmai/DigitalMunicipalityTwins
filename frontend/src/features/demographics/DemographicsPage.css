@@ -1,102 +1,249 @@
 /* ═══════════════════════════════════════════════════════════════════════════
  * MUNICIPAL DIGITAL TWINS — DYNAMIC SURVEY ENGINE & DEMOGRAPHICS TABS
+ * PREMIUM ENTERPRISE TAB GRID DESIGN
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 .demo-tabs-container {
-  display: flex;
-  gap: 0.85rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
   padding: 0.85rem;
-  background: #ffffff;
-  border-radius: 18px;
+  background: #f8fafc;
+  border-radius: 20px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
-  flex-wrap: wrap;
-  align-items: center;
-  transition: all 0.25s ease;
+  margin-bottom: 1.5rem;
 }
 
-.demo-tab-btn {
-  display: inline-flex;
+@media (max-width: 1200px) {
+  .demo-tabs-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .demo-tabs-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.demo-tab-card {
+  display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.8rem 1.4rem;
-  border-radius: 12px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  border: 1px solid transparent;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #f8fafc;
-  color: #475569;
+  text-align: left;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
-.demo-tab-btn:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+.demo-tab-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.08);
 }
 
-.demo-tab-badge {
-  display: inline-flex;
+.demo-tab-icon-wrapper {
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 7px;
-  font-size: 0.72rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.demo-tab-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-tab-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.demo-tab-main-title {
+  font-size: 0.95rem;
   font-weight: 800;
-  border-radius: 10px;
-  margin-left: 4px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Active Blue: Analytics */
-.demo-tab-btn.active-blue {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+.demo-tab-sub-title {
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-tab-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── Blue Theme: Analytics Dashboard ─── */
+.demo-tab-card.theme-blue .demo-tab-icon-wrapper {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.demo-tab-card.theme-blue .demo-tab-main-title {
+  color: #1e3a8a;
+}
+.demo-tab-card.theme-blue .demo-tab-sub-title {
+  color: #64748b;
+}
+.demo-tab-card.theme-blue .demo-tab-badge-pill {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.demo-tab-card.theme-blue.active {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 55%, #3b82f6 100%);
+  border-color: #2563eb;
+  box-shadow: 0 10px 22px -3px rgba(37, 99, 235, 0.4);
+}
+.demo-tab-card.theme-blue.active .demo-tab-icon-wrapper {
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.35);
 }
-
-.demo-tab-btn.active-blue .demo-tab-badge {
+.demo-tab-card.theme-blue.active .demo-tab-main-title {
+  color: #ffffff;
+}
+.demo-tab-card.theme-blue.active .demo-tab-sub-title {
+  color: #bfdbfe;
+}
+.demo-tab-card.theme-blue.active .demo-tab-badge-pill {
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
 
-/* Active Teal: Survey Engine */
-.demo-tab-btn.active-teal {
-  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 16px -2px rgba(13, 148, 136, 0.35);
+/* ─── Teal Theme: Smart Survey Engine ─── */
+.demo-tab-card.theme-teal .demo-tab-icon-wrapper {
+  background: #f0fdfa;
+  color: #0d9488;
+}
+.demo-tab-card.theme-teal .demo-tab-main-title {
+  color: #134e4a;
+}
+.demo-tab-card.theme-teal .demo-tab-sub-title {
+  color: #64748b;
+}
+.demo-tab-card.theme-teal .demo-tab-badge-pill {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
-.demo-tab-btn.active-teal .demo-tab-badge {
+.demo-tab-card.theme-teal.active {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+  border-color: #0d9488;
+  box-shadow: 0 10px 22px -3px rgba(13, 148, 136, 0.4);
+}
+.demo-tab-card.theme-teal.active .demo-tab-icon-wrapper {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+.demo-tab-card.theme-teal.active .demo-tab-main-title {
+  color: #ffffff;
+}
+.demo-tab-card.theme-teal.active .demo-tab-sub-title {
+  color: #99f6e4;
+}
+.demo-tab-card.theme-teal.active .demo-tab-badge-pill {
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
 
-/* Active Purple: Raw Data */
-.demo-tab-btn.active-purple {
-  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 16px -2px rgba(124, 58, 237, 0.35);
+/* ─── Purple Theme: Raw Survey Data ─── */
+.demo-tab-card.theme-purple .demo-tab-icon-wrapper {
+  background: #faf5ff;
+  color: #7c3aed;
+}
+.demo-tab-card.theme-purple .demo-tab-main-title {
+  color: #4c1d95;
+}
+.demo-tab-card.theme-purple .demo-tab-sub-title {
+  color: #64748b;
+}
+.demo-tab-card.theme-purple .demo-tab-badge-pill {
+  background: #f3e8ff;
+  color: #6b21a8;
 }
 
-.demo-tab-btn.active-purple .demo-tab-badge {
+.demo-tab-card.theme-purple.active {
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #8b5cf6 100%);
+  border-color: #7c3aed;
+  box-shadow: 0 10px 22px -3px rgba(124, 58, 237, 0.4);
+}
+.demo-tab-card.theme-purple.active .demo-tab-icon-wrapper {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+.demo-tab-card.theme-purple.active .demo-tab-main-title {
+  color: #ffffff;
+}
+.demo-tab-card.theme-purple.active .demo-tab-sub-title {
+  color: #ddd6fe;
+}
+.demo-tab-card.theme-purple.active .demo-tab-badge-pill {
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
 
-/* Active Emerald: Household Registry */
-.demo-tab-btn.active-emerald {
-  background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 16px -2px rgba(16, 185, 129, 0.35);
+/* ─── Emerald Theme: Household Master Records ─── */
+.demo-tab-card.theme-emerald .demo-tab-icon-wrapper {
+  background: #ecfdf5;
+  color: #059669;
+}
+.demo-tab-card.theme-emerald .demo-tab-main-title {
+  color: #064e3b;
+}
+.demo-tab-card.theme-emerald .demo-tab-sub-title {
+  color: #64748b;
+}
+.demo-tab-card.theme-emerald .demo-tab-badge-pill {
+  background: #d1fae5;
+  color: #047857;
 }
 
-.demo-tab-btn.active-emerald .demo-tab-badge {
+.demo-tab-card.theme-emerald.active {
+  background: linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%);
+  border-color: #059669;
+  box-shadow: 0 10px 22px -3px rgba(16, 185, 129, 0.4);
+}
+.demo-tab-card.theme-emerald.active .demo-tab-icon-wrapper {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+.demo-tab-card.theme-emerald.active .demo-tab-main-title {
+  color: #ffffff;
+}
+.demo-tab-card.theme-emerald.active .demo-tab-sub-title {
+  color: #a7f3d0;
+}
+.demo-tab-card.theme-emerald.active .demo-tab-badge-pill {
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }

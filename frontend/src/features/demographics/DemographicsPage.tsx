@@ -349,46 +349,78 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
         </div>
       </div>
 
-      {/* Tabs Navigation */}
+      {/* Tabs Navigation Grid */}
       <div className="demo-tabs-container">
+        {/* Tab 1: Analytics Dashboard */}
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`demo-tab-btn ${activeTab === 'analytics' ? 'active-blue' : ''}`}
+          className={`demo-tab-card theme-blue ${activeTab === 'analytics' ? 'active' : ''}`}
         >
-          <PieChart size={18} />
-          <span>Analytics Dashboard (तथ्याङ्क प्रतिवेदन)</span>
-          <span className="demo-tab-badge">BI & Ops</span>
+          <div className="demo-tab-icon-wrapper">
+            <PieChart size={22} />
+          </div>
+          <div className="demo-tab-text-wrap">
+            <div className="demo-tab-title-row">
+              <span className="demo-tab-main-title">तथ्याङ्क प्रतिवेदन</span>
+              <span className="demo-tab-badge-pill">BI & Ops</span>
+            </div>
+            <span className="demo-tab-sub-title">Analytics Dashboard</span>
+          </div>
         </button>
 
         {!isPublicMode && (
           <>
+            {/* Tab 2: Smart Survey Engine */}
             <button
               onClick={() => setActiveTab('survey_engine')}
-              className={`demo-tab-btn ${activeTab === 'survey_engine' ? 'active-teal' : ''}`}
+              className={`demo-tab-card theme-teal ${activeTab === 'survey_engine' ? 'active' : ''}`}
             >
-              <ClipboardList size={18} />
-              <span>डिजिटल घरधुरी सर्भे (Smart Survey Engine)</span>
-              <span className="demo-tab-badge">ODK/Kobo</span>
+              <div className="demo-tab-icon-wrapper">
+                <ClipboardList size={22} />
+              </div>
+              <div className="demo-tab-text-wrap">
+                <div className="demo-tab-title-row">
+                  <span className="demo-tab-main-title">डिजिटल घरधुरी सर्भे</span>
+                  <span className="demo-tab-badge-pill">ODK/Kobo</span>
+                </div>
+                <span className="demo-tab-sub-title">Smart Survey Engine</span>
+              </div>
             </button>
             
+            {/* Tab 3: Raw Survey Data */}
             <button
               onClick={() => setActiveTab('raw_data')}
-              className={`demo-tab-btn ${activeTab === 'raw_data' ? 'active-purple' : ''}`}
+              className={`demo-tab-card theme-purple ${activeTab === 'raw_data' ? 'active' : ''}`}
             >
-              <Layers size={18} />
-              <span>विस्तृत सर्भे डाटा (Raw Data)</span>
-              <span className="demo-tab-badge">JSON Meta</span>
+              <div className="demo-tab-icon-wrapper">
+                <Layers size={22} />
+              </div>
+              <div className="demo-tab-text-wrap">
+                <div className="demo-tab-title-row">
+                  <span className="demo-tab-main-title">विस्तृत सर्भे डाटा</span>
+                  <span className="demo-tab-badge-pill">Raw JSON</span>
+                </div>
+                <span className="demo-tab-sub-title">Raw Survey Records</span>
+              </div>
             </button>
           </>
         )}
         
+        {/* Tab 4: Master Household Registry */}
         <button
           onClick={() => setActiveTab('households')}
-          className={`demo-tab-btn ${activeTab === 'households' ? 'active-emerald' : ''}`}
+          className={`demo-tab-card theme-emerald ${activeTab === 'households' ? 'active' : ''}`}
         >
-          <Home size={18} />
-          <span>घरधुरी म्याट्रिक्स लगत (आधिकारिक Master Records)</span>
-          <span className="demo-tab-badge">५,३५७+</span>
+          <div className="demo-tab-icon-wrapper">
+            <Home size={22} />
+          </div>
+          <div className="demo-tab-text-wrap">
+            <div className="demo-tab-title-row">
+              <span className="demo-tab-main-title">घरधुरी म्याट्रिक्स लगत</span>
+              <span className="demo-tab-badge-pill">५,३५७+ लगत</span>
+            </div>
+            <span className="demo-tab-sub-title">आधिकारिक Master Records</span>
+          </div>
         </button>
       </div>
 
