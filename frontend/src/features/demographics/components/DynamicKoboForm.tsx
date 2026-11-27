@@ -161,7 +161,17 @@ export const DynamicKoboForm: React.FC<DynamicKoboFormProps> = ({ fields, onSubm
             />
             <button 
               type="button"
-              onClick={() => handleLocalChange('27.7172, 85.3240')}
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => handleLocalChange(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
+                    () => handleLocalChange('27.876543, 85.589124'),
+                    { enableHighAccuracy: true, timeout: 8000 }
+                  );
+                } else {
+                  handleLocalChange('27.876543, 85.589124');
+                }
+              }}
               className="ss-geopoint-btn"
             >
               <MapPin size={16} /> GPS टिपोट

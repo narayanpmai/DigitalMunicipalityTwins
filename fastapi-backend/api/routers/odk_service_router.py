@@ -3,7 +3,7 @@ ODK Survey Gateway & Service Router
 - ODK: OpenRosa-compatible form list, form download, XLSForm upload, and survey submission
 - Service Router: Dynamic request routing to appropriate citizen service domain
 """
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request, Response, Body
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 from typing import Optional, Any
@@ -135,6 +135,74 @@ async def handle_odk_submission(request: Request, db: Session = Depends(get_db))
   <message nature="submit_error">Error: {str(e)[:100]}</message>
 </OpenRosaResponse>"""
         return PlainTextResponse(content=error_xml, status_code=500, media_type="text/xml")
+
+
+@odk_router.post("/survey/submit-json")
+async def submit_survey_json(data: dict = Body(...), db: Session = Depends(get_db)):
+    """
+    डिजिटल घरधुरी सर्भे (DynamicKoboForm) बाट आएको JSON डाटा सेभ गर्दछ।
+    सिधै household_registries तालिकामा इन्सर्ट वा अपडेट हुन्छ।
+    """
+    from models.demographics import Household
+    try:
+        hh_name = data.get("hh_name") or data.get("name") or data.get("householdName") or data.get("head_name") or "नयाँ घरधुरी सर्भे"
+        ward_raw = data.get("Ward_No") or data.get("wardNumber") or data.get("ward_no") or 1
+        try:
+            ward_num = int(str(ward_raw).replace("Ward-", "").strip())
+        except Exception:
+            ward_num = 1
+
+        phone = str(data.get("contact") or data.get("contactPhone") or data.get("phone") or "")
+        gender = "female" if str(data.get("hh_Sex") or data.get("gender") or "").lower() in ["female", "महिला"] else "male"
+        is_river = str(data.get("is_riverbank") or data.get("is_riverbank_house") or "").lower() in ["yes", "true", "1", "हो", "छ"]
+
+        lat = None
+        lon = None
+        gps_raw = data.get("GPS") or data.get("gps") or data.get("coordinates")
+        if gps_raw:
+            parts = str(gps_raw).replace(",", " ").split()
+            if len(parts) >= 2:
+                try:
+                    lat = float(parts[0])
+                    lon = float(parts[1])
+                except Exception:
+                    pass
+
+        new_hh = Household(
+            id=str(uuid.uuid4()),
+            household_name=hh_name,
+            ward_number=ward_num,
+            contact_phone=phone,
+            head_gender=gender,
+            is_riverbank_house=is_river,
+            is_at_risk=is_river,
+            risk_level="high" if is_river else "low",
+            gps_lat=lat,
+            gps_lon=lon,
+            tole=data.get("tole") or data.get("tole_name"),
+            ethnicity=data.get("caste") or data.get("ethnicity"),
+            toilet_type=data.get("toilet") or data.get("toilet_type"),
+            cooking_fuel=data.get("cooking_fuel") or data.get("fuel"),
+            drinking_water_source=data.get("water_source") or data.get("drinking_water_source") or "धाराको पानी",
+            submitted_by_public=False,
+            verification_status="approved",
+            meta_data=data,
+        )
+
+        db.add(new_hh)
+        db.commit()
+        db.refresh(new_hh)
+
+        return {
+            "success": True,
+            "message": "घरधुरी तथ्याङ्क सफलतापूर्वक सुरक्षित भयो।",
+            "id": new_hh.id,
+            "householdName": new_hh.household_name,
+            "wardNumber": new_hh.ward_number,
+        }
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "message": f"डाटा सुरक्षित गर्न सकिएन: {str(e)}"}
 
 
 # ─── Service Router ───────────────────────────────────────────────────────────

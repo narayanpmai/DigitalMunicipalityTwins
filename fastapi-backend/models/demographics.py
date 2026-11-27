@@ -68,6 +68,9 @@ class Household(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, name='updatedAt')
     deleted_at = Column(DateTime, nullable=True, name='deletedAt')
 
+# Alias for backward-compatibility with ODK and survey routers
+HouseholdRegistry = Household
+
 class DemographicCategory(Base):
     __tablename__ = 'demographic_categories'
     

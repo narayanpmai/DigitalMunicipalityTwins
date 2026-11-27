@@ -1,57 +1,111 @@
 /* ═══════════════════════════════════════════════════════════════════════════
- * PANCHPOKHARI THANGPAL MUNICIPAL DIGITAL TWIN — DEMOGRAPHICS TABS
+ * MUNICIPAL DIGITAL TWINS — DYNAMIC SURVEY ENGINE & DEMOGRAPHICS TABS
  * ═══════════════════════════════════════════════════════════════════════════ */
 
- .demo-tabs-container {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-  }
-  
-  .demo-tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.5rem;
-    border-radius: 50px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: #f8fafc;
-    color: #64748b;
-  }
-  
-  .demo-tab-btn:hover {
-    background: #e2e8f0;
-    color: #334155;
-    transform: translateY(-2px);
-  }
-  
-  .demo-tab-btn.active-teal {
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 6px 12px rgba(13, 148, 136, 0.3);
-  }
-  
-  .demo-tab-btn.active-emerald {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
-  }
-  
-  .demo-tab-btn.active-blue {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
-  }
+.demo-tabs-container {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+  flex-wrap: wrap;
+  align-items: center;
+  transition: all 0.25s ease;
+}
+
+.demo-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8fafc;
+  color: #475569;
+  position: relative;
+}
+
+.demo-tab-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.demo-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+/* Active Blue: Analytics */
+.demo-tab-btn.active-blue {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.35);
+}
+
+.demo-tab-btn.active-blue .demo-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Active Teal: Survey Engine */
+.demo-tab-btn.active-teal {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px -2px rgba(13, 148, 136, 0.35);
+}
+
+.demo-tab-btn.active-teal .demo-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Active Purple: Raw Data */
+.demo-tab-btn.active-purple {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px -2px rgba(124, 58, 237, 0.35);
+}
+
+.demo-tab-btn.active-purple .demo-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Active Emerald: Household Registry */
+.demo-tab-btn.active-emerald {
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px -2px rgba(16, 185, 129, 0.35);
+}
+
+.demo-tab-btn.active-emerald .demo-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}

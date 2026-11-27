@@ -294,6 +294,33 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
     }
   };
 
+  const handleKoboSubmit = async (formData: Record<string, any>) => {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('p5_token') || '';
+      const res = await fetch('/api/v1/odk/survey/submit-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert('सर्भे तथ्याङ्क सफलतापूर्वक सुरक्षित भयो!');
+        queryClient.invalidateQueries({ queryKey: ['demographics-analytics'] });
+        queryClient.invalidateQueries({ queryKey: ['raw-survey-households'] });
+        queryClient.invalidateQueries({ queryKey: ['households'] });
+        queryClient.invalidateQueries({ queryKey: ['demographics-summary'] });
+        setActiveTab('households');
+      } else {
+        alert('त्रुटि: ' + (result.message || 'डाटा सेभ हुन सकेन'));
+      }
+    } catch (err: any) {
+      alert('सर्भरसँग सम्पर्क हुन सकेन: ' + (err.message || 'Error'));
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Header Banner */}
@@ -330,6 +357,7 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
         >
           <PieChart size={18} />
           <span>Analytics Dashboard (तथ्याङ्क प्रतिवेदन)</span>
+          <span className="demo-tab-badge">BI & Ops</span>
         </button>
 
         {!isPublicMode && (
@@ -340,14 +368,16 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
             >
               <ClipboardList size={18} />
               <span>डिजिटल घरधुरी सर्भे (Smart Survey Engine)</span>
+              <span className="demo-tab-badge">ODK/Kobo</span>
             </button>
             
             <button
               onClick={() => setActiveTab('raw_data')}
-              className={`demo-tab-btn ${activeTab === 'raw_data' ? 'active-teal' : ''}`}
+              className={`demo-tab-btn ${activeTab === 'raw_data' ? 'active-purple' : ''}`}
             >
               <Layers size={18} />
               <span>विस्तृत सर्भे डाटा (Raw Data)</span>
+              <span className="demo-tab-badge">JSON Meta</span>
             </button>
           </>
         )}
@@ -358,6 +388,7 @@ export const DemographicsPage: React.FC<DemographicsPageProps> = ({ isPublicMode
         >
           <Home size={18} />
           <span>घरधुरी म्याट्रिक्स लगत (आधिकारिक Master Records)</span>
+          <span className="demo-tab-badge">५,३५७+</span>
         </button>
       </div>
 
