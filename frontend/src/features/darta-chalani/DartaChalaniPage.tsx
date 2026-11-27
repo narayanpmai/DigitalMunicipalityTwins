@@ -33,6 +33,10 @@ import {
 } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportUtils';
 import { BsCalendarModal } from '../../components/common/BsCalendarModal';
+import {
+  CentralDocumentSheet,
+  CentralPrintPreviewModal,
+} from '../../components/common/CentralLetterhead';
 import { adToBs, toNepaliDigits, toEnglishDigits } from '../../utils/nepaliCalendar';
 import { useTenant } from '../../context/TenantContext';
 
@@ -1845,196 +1849,173 @@ export const DartaChalaniPage: React.FC = () => {
       )}
 
       {/* ─── OFFICIAL LETTERHEAD & QR VERIFICATION MODAL ─── */}
-      {showLetterModal && letterRecord && (
-        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowLetterModal(false); }}>
-          <div className="modal-panel" style={{ maxWidth: '800px', width: '95%' }}>
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Printer size={20} color="#dc2626" />
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>
-                  आधिकारिक सरकारी पत्र प्रिन्ट (Official Letterhead & QR Code)
-                </h3>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="dt-btn dt-btn-primary" onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Printer size={16} />
-                  <span>प्रिन्ट गर्नुहोस् (Print)</span>
-                </button>
-                <button onClick={() => setShowLetterModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* Printable Letterhead Body */}
-            <div style={{ padding: '2rem', backgroundColor: '#ffffff', color: '#0f172a', fontFamily: "'Mukta', 'Noto Sans Devanagari', sans-serif" }}>
-              {/* Government Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '3px double #b91c1c', paddingBottom: '14px', marginBottom: '16px' }}>
-                <div style={{ width: '80px', textAlign: 'center' }}>
-                  <img
-                    src={tenantSettings?.emblem_url || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Emblem_of_Nepal.svg/240px-Emblem_of_Nepal.svg.png"}
-                    style={{ width: '70px', height: 'auto', maxHeight: '70px', objectFit: 'contain' }}
-                    alt="नेपाल सरकार निशाना छाप"
-                  />
-                </div>
-                <div style={{ flex: 1, textAlign: 'center', lineHeight: 1.3, padding: '0 0.5rem' }}>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#b91c1c' }}>नेपाल सरकार / {tenantSettings?.province || 'बागमती प्रदेश'}</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e3a8a' }}>{tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}</div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#b91c1c' }}>गाउँ कार्यपालिकाको कार्यालय</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#334155' }}>{tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#475569' }}>ईमेल: {tenantSettings?.email || 'info@panchpokharimun.gov.np'} | वेबसाइट: {tenantSettings?.website || 'panchpokharimun.gov.np'}</div>
-                </div>
-                <div style={{ width: '80px', textAlign: 'center' }}>
-                  <img
-                    src={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-                    style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'contain', border: '1.5px solid #cbd5e1' }}
-                    alt="Palika Logo"
-                    onError={(e: any) => {
-                      e.target.src = '/panchpokhari-logo.png';
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Meta details */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', fontWeight: 700, margin: '18px 0' }}>
-                <div>
-                  <div>पत्र संख्या: <span style={{ fontWeight: 500 }}>{toNepaliDigits(letterRecord.fiscalYear || '२०८२/०८३')}</span></div>
-                  <div>चलानी नं.: <span style={{ color: '#b91c1c', fontSize: '1.05rem' }}>{toNepaliDigits(letterRecord.dispatchNo) || '-'}</span></div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div>मिति (BS): <span style={{ fontWeight: 500 }}>{toNepaliDigits(letterRecord.dispatchDate) || 'मिति उपलब्ध छैन'}</span></div>
-                  <div>मिति (AD): <span style={{ fontWeight: 500, color: '#475569', fontSize: '0.82rem' }}>{letterRecord.dispatchDateAd || new Date().toISOString().split('T')[0]}</span></div>
-                </div>
-              </div>
-
+      <CentralPrintPreviewModal
+        isOpen={Boolean(showLetterModal && letterRecord)}
+        onClose={() => setShowLetterModal(false)}
+        title="आधिकारिक बहिर्गमन पत्र प्रिन्ट (Official Dispatch Letter) - A4"
+        targetElementId="printable-darta-chalani-letter"
+        paperFormat="A4"
+      >
+        {letterRecord && (
+          <CentralDocumentSheet
+            id="printable-darta-chalani-letter"
+            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
+            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
+            localGovType="स्थानीय सरकार"
+            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
+            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
+            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
+            activeFiscalYear={toNepaliDigits(letterRecord.fiscalYear || '२०८३/०८४')}
+            patraSankhya={toNepaliDigits(letterRecord.fiscalYear || '२०८३/०८४')}
+            chalaniNo={toNepaliDigits(letterRecord.dispatchNo) || '-'}
+            branchTitle={letterRecord.department || 'सामान्य प्रशासन तथा दर्ता-चलानी फाँट'}
+            branchPlacement="left"
+            dateLabel="चलानी मिति"
+            dateBs={toNepaliDigits(letterRecord.dispatchDate) || ''}
+            dateAd={letterRecord.dispatchDateAd || ''}
+            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
+            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
+            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
+            phone={tenantSettings?.phone || '०११-६९०२०२'}
+            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
+            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
+            showWatermark={true}
+            showFooter={true}
+            showNepalSambat={true}
+          >
+            <div style={{ padding: '1.25rem 0.5rem', minHeight: '380px' }}>
               {/* Recipient */}
-              <div style={{ margin: '20px 0', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                <div><strong>श्री {letterRecord.receiverName || letterRecord.receiver || letterRecord.recipientOrganization || 'सम्बन्धित निकाय / व्यक्ति'}</strong>,</div>
-                {letterRecord.receiverAddress && <div>{letterRecord.receiverAddress}</div>}
+              <div style={{ marginBottom: '1.25rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                <div>श्री <strong>{letterRecord.receiverName || letterRecord.receiver || letterRecord.recipientOrganization || 'सम्बन्धित निकाय / व्यक्ति'}</strong>,</div>
+                {letterRecord.receiverAddress && <div style={{ color: '#334155' }}>ठेगाना: {letterRecord.receiverAddress}</div>}
               </div>
 
               {/* Subject */}
-              <div style={{ textAlign: 'center', margin: '24px 0 20px 0', fontSize: '1.1rem', fontWeight: 800 }}>
-                <u>विषय: {letterRecord.subject || '-'}</u>
+              <div style={{ textAlign: 'center', margin: '1.5rem 0 1.25rem 0', fontSize: '1.08rem', fontWeight: 800 }}>
+                विषय: <span style={{ textDecoration: 'underline' }}>{letterRecord.subject || '-'}</span>
               </div>
 
               {/* Body */}
-              <div style={{ minHeight: '200px', fontSize: '0.98rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', textAlign: 'justify', margin: '20px 0 40px 0' }}>
+              <div style={{ minHeight: '220px', fontSize: '0.96rem', lineHeight: 1.85, whiteSpace: 'pre-wrap', textAlign: 'justify', margin: '1.25rem 0 2.5rem 0', color: '#1e293b' }}>
                 {letterContent}
               </div>
 
               {/* Signature Block */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '40px', paddingTop: '10px' }}>
-                <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.4 }}>
-                  <div><strong>बोधार्थ (CC):</strong></div>
-                  <div>- सम्बन्धित शाखा / कार्यालय अभिलेख</div>
-                  <div>- अध्यक्ष / प्रमुख प्रशासकीय अधिकृतको सचिवालय</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '3.5rem', paddingTop: '10px' }}>
+                <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.5 }}>
+                  <div style={{ fontWeight: 700 }}>बोधार्थ (CC):</div>
+                  <div>१. सम्बन्धित शाखा / कार्यालय अभिलेख</div>
+                  <div>२. अध्यक्ष / प्रमुख प्रशासकीय अधिकृतको सचिवालय</div>
                 </div>
-                <div style={{ textAlign: 'center', width: '220px' }}>
-                  <div style={{ height: '35px' }}></div>
-                  <div style={{ borderTop: '1px dotted #000', paddingTop: '4px', fontWeight: 800 }}>
-                    ( {letterRecord.signedBy || 'प्रमुख प्रशासकीय अधिकृत'} )
+                <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                  <div style={{ width: '160px', borderBottom: '1px dashed #64748b', margin: '0 auto 4px auto' }}></div>
+                  <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>
+                    {letterRecord.signedBy || 'प्रमुख प्रशासकीय अधिकृत'}
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: '#475569' }}>गाउँ कार्यपालिकाको कार्यालय</div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>गाउँ कार्यपालिकाको कार्यालय</div>
                 </div>
               </div>
 
-              {/* Official Seal Footer */}
-              <div style={{ marginTop: '30px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: '#475569' }}>
+              {/* DoIT NeGIF Electronic Dispatch Verification Footer Badge */}
+              <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem', color: '#64748b' }}>
                 <div>🔐 नेपाल सरकारको विद्युतीय दर्ता-चलानी प्रणालीबाट प्रमाणित (DoIT NeGIF Standard)</div>
-                <div>प्रमाणीकरण कोड: <strong>{letterRecord.verificationCode || '-'}</strong></div>
+                <div>प्रमाणीकरण कोड: <strong style={{ color: '#1e3a8a', fontFamily: 'monospace' }}>{letterRecord.verificationCode || '-'}</strong></div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </CentralDocumentSheet>
+        )}
+      </CentralPrintPreviewModal>
 
       {/* ─── CITIZEN DARTA SLIP MODAL (नागरिक दर्ता भरपाई) ─── */}
-      {showSlipModal && slipRecord && (
-        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowSlipModal(false); }}>
-          <div className="modal-panel" style={{ maxWidth: '520px' }}>
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Printer size={18} color="#2563eb" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-                  नागरिक दर्ता पावती / भरपाई (Receipt Slip)
-                </h3>
+      <CentralPrintPreviewModal
+        isOpen={Boolean(showSlipModal && slipRecord)}
+        onClose={() => setShowSlipModal(false)}
+        title="नागरिक दर्ता पावती / भरपाई (Registration Receipt Slip) - A5"
+        targetElementId="printable-darta-slip-sheet"
+        paperFormat="A5"
+      >
+        {slipRecord && (
+          <CentralDocumentSheet
+            id="printable-darta-slip-sheet"
+            paperSize="A5"
+            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
+            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
+            localGovType="स्थानीय सरकार"
+            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
+            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
+            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
+            activeFiscalYear={toNepaliDigits(slipRecord.fiscalYear || '२०८३/०८४')}
+            patraSankhya={toNepaliDigits(slipRecord.fiscalYear || '२०८३/०८४')}
+            chalaniNo={toNepaliDigits(slipRecord.registrationNo) || '-'}
+            branchTitle={slipRecord.assignedBranch || slipRecord.department || 'नागरिक सेवा तथा दर्ता फाँट'}
+            documentTitle="नागरिक दर्ता पावती / भरपाई (REGISTRATION RECEIPT SLIP)"
+            dateLabel="दर्ता मिति"
+            dateBs={toNepaliDigits(slipRecord.registeredDate) || ''}
+            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
+            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
+            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
+            phone={tenantSettings?.phone || '०११-६९०२०२'}
+            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
+            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
+            showWatermark={true}
+            showFooter={true}
+            showNepalSambat={false}
+          >
+            <div style={{ padding: '0.85rem 0.5rem' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
+                <table style={{ width: '100%', fontSize: '0.88rem', borderCollapse: 'collapse', lineHeight: 1.9 }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ fontWeight: 700, width: '38%', color: '#475569' }}>दर्ता नम्बर (Reg No):</td>
+                      <td style={{ fontWeight: 900, color: '#1d4ed8', fontSize: '1.15rem' }}>{toNepaliDigits(slipRecord.registrationNo)}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 700, color: '#475569' }}>दर्ता मिति (Date):</td>
+                      <td>{toNepaliDigits(slipRecord.registeredDate)} (आ.व. {toNepaliDigits(slipRecord.fiscalYear || '२०८३/०८४')})</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 700, color: '#475569' }}>निवेदक / पठाउने निकाय:</td>
+                      <td><strong>{slipRecord.senderName}</strong></td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 700, color: '#475569' }}>पत्रको विषय (Subject):</td>
+                      <td style={{ fontWeight: 700, color: '#1e293b' }}>{slipRecord.subject}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 700, color: '#475569' }}>जिम्मेवार फाँट / शाखा:</td>
+                      <td>
+                        <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, fontSize: '0.82rem' }}>
+                          {slipRecord.assignedBranch || slipRecord.department || 'प्रशासन शाखा'}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 700, color: '#475569' }}>तोक आदेश / निर्देशन:</td>
+                      <td><span style={{ color: '#b45309', fontWeight: 600 }}>{slipRecord.tokAdesh || 'कारबाही प्रक्रियामा'}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="dt-btn dt-btn-primary" onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Printer size={15} />
-                  <span>प्रिन्ट (Print)</span>
-                </button>
-                <button onClick={() => setShowSlipModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
 
-            {/* Slip Printable Box */}
-            <div style={{ padding: '1.5rem', backgroundColor: '#ffffff', color: '#0f172a', fontFamily: "'Mukta', sans-serif" }}>
-              <div style={{ textAlign: 'center', borderBottom: '2px solid #2563eb', paddingBottom: '8px', marginBottom: '12px' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#b91c1c' }}>पाँचपोखरी थाङपाल गाउँपालिका</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e3a8a' }}>गाउँ कार्यपालिकाको कार्यालय, थाङपालधाप</div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, backgroundColor: '#e0f2fe', color: '#0369a1', display: 'inline-block', padding: '2px 10px', borderRadius: '4px', marginTop: '4px' }}>
-                  नागरिक दर्ता पावती भरपाई (Darta Slip)
-                </div>
-              </div>
-
-              <div className="dt-responsive-table-wrapper">
-<table style={{ width: '100%', fontSize: '0.88rem', borderCollapse: 'collapse', lineHeight: 1.8 }}>
-                <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 700, width: '35%', color: '#475569' }}>दर्ता नं. (Reg No):</td>
-                    <td style={{ fontWeight: 900, color: '#2563eb', fontSize: '1.15rem' }}>{toNepaliDigits(slipRecord.registrationNo)}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, color: '#475569' }}>दर्ता मिति (Date):</td>
-                    <td>{toNepaliDigits(slipRecord.registeredDate)} (आ.व. {toNepaliDigits(slipRecord.fiscalYear || '२०८२/०८३')})</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, color: '#475569' }}>निवेदक / पठाउने:</td>
-                    <td><strong>{slipRecord.senderName}</strong></td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, color: '#475569' }}>पत्रको विषय (Subject):</td>
-                    <td>{slipRecord.subject}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, color: '#475569' }}>तोकिएको शाखा:</td>
-                    <td><span style={{ backgroundColor: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, color: '#0f172a' }}>{slipRecord.assignedBranch || slipRecord.department || 'प्रशासन शाखा'}</span></td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, color: '#475569' }}>तोक आदेश / निर्देशन:</td>
-                    <td><span style={{ color: '#b45309', fontStyle: 'italic' }}>{slipRecord.tokAdesh || 'कारबाही प्रक्रियामा'}</span></td>
-                  </tr>
-                </tbody>
-              </table>
-</div>
-
-              {/* QR and Instruction */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '14px', padding: '10px', backgroundColor: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '6px' }}>
+              {/* QR and Citizen Instruction */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0.75rem 1rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
                     `${window.location.origin}/api/v1/darta-chalani/verify/${slipRecord.verificationCode || slipRecord.registrationNo}`
                   )}`}
-                  style={{ width: '70px', height: '70px' }}
+                  style={{ width: '64px', height: '64px', borderRadius: '4px', border: '1px solid #94a3b8' }}
                   alt="QR"
                 />
-                <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
-                  <strong>नागरिक अनलाइन ट्र्याकिङ:</strong> यो QR कोड स्क्यान गरी वा पालिकाको पोर्टलमा दर्ता नं. <strong>{toNepaliDigits(slipRecord.registrationNo)}</strong> मार्फत आफ्नो पत्रको कारबाहीको अवस्था हेर्न सक्नुहुन्छ।
+                <div style={{ fontSize: '0.76rem', color: '#475569', lineHeight: 1.5 }}>
+                  <div style={{ fontWeight: 700, color: '#0f172a' }}>📱 मोबाइलबाट QR स्क्यान गरी पत्रको अवस्था थाहा पाउनुहोस्।</div>
+                  <div>सुरक्षा प्रमाणीकरण कोड: <strong style={{ color: '#1e3a8a', fontFamily: 'monospace' }}>{slipRecord.verificationCode || slipRecord.registrationNo}</strong></div>
+                  <div style={{ color: '#64748b' }}>नागरिक सेवा सहजीकरण केन्द्र, {tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}</div>
                 </div>
               </div>
-
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#475569' }}>
-                <div>दर्ता गर्ने: <strong>{slipRecord.approvedBy || 'फाँट अधिकृत'}</strong></div>
-                <div>आधिकारिक छाप: ____________</div>
-              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </CentralDocumentSheet>
+        )}
+      </CentralPrintPreviewModal>
 
       {/* ─── PUBLIC VERIFICATION & TRACKING MODAL ─── */}
       {showVerifyModal && (
