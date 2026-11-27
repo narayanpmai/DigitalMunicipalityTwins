@@ -73,7 +73,7 @@ import {
   printElement,
   computeNepalSambat,
 } from '../../components/common/CentralLetterhead';
-import { bsToAd, toEnglishDigits } from '../../utils/nepaliCalendar';
+import { bsToAd, toEnglishDigits, adToBs, toNepaliDigits } from '../../utils/nepaliCalendar';
 
 interface Vacancy {
   id: string;
@@ -601,6 +601,26 @@ export const RecruitmentPage: React.FC = () => {
       bs: rawDate,
       ad: adDateStr ? `${adDateStr} ${timeAd}`.trim() : ''
     };
+  };
+
+  // Helper to format dynamic BS and AD dates for official letters and notices
+  const getDynamicDocDates = (dateSource?: string) => {
+    try {
+      const todayIso = new Date().toISOString().split('T')[0];
+      const rawDate = dateSource ? dateSource.split('T')[0] : todayIso;
+      const bsStr = adToBs(rawDate);
+      const formattedBs = bsStr ? toNepaliDigits(bsStr.replace(/-/g, '/')) : toNepaliDigits(adToBs(todayIso).replace(/-/g, '/'));
+      return {
+        dateBs: formattedBs,
+        dateAd: rawDate
+      };
+    } catch {
+      const fallbackAd = new Date().toISOString().split('T')[0];
+      return {
+        dateBs: '२०८३/०८/११',
+        dateAd: fallbackAd
+      };
+    }
   };
 
   // -------------------------------------------------------------
@@ -3906,8 +3926,8 @@ return (
                           phone={dynamicPhone}
                           logoUrl={dynamicPalikaLogo}
                           emblemUrl={dynamicEmblemUrl}
-                          dateBs="२०८३/०८/०५"
-                          dateAd="2026-11-20"
+                          dateBs={getDynamicDocDates(admitCardResult.application.verified_at || admitCardResult.application.verifiedAt).dateBs}
+                          dateAd={getDynamicDocDates(admitCardResult.application.verified_at || admitCardResult.application.verifiedAt).dateAd}
                           showWatermark={true}
                           showFooter={true}
                         >
@@ -5875,8 +5895,8 @@ return (
                     phone={dynamicPhone}
                     logoUrl={dynamicPalikaLogo}
                     emblemUrl={dynamicEmblemUrl}
-                    dateBs="२०८३/०८/०५"
-                    dateAd="2026-11-20"
+                    dateBs={getDynamicDocDates().dateBs}
+                    dateAd={getDynamicDocDates().dateAd}
                     showWatermark={true}
                     showFooter={true}
                   >
@@ -6081,8 +6101,8 @@ return (
                   phone={dynamicPhone}
                   logoUrl={dynamicPalikaLogo}
                   emblemUrl={dynamicEmblemUrl}
-                  dateBs="२०८३/०८/०५"
-                  dateAd="2026-11-20"
+                  dateBs={getDynamicDocDates(selectedApprovalApp.verifiedAt || selectedApprovalApp.verified_at).dateBs}
+                  dateAd={getDynamicDocDates(selectedApprovalApp.verifiedAt || selectedApprovalApp.verified_at).dateAd}
                   showWatermark={true}
                   showFooter={true}
                 >
@@ -6109,8 +6129,19 @@ return (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.86rem' }}>
                         <div><strong>रोल नम्बर:</strong> <span style={{ fontFamily: 'monospace', color: '#1d4ed8', fontWeight: 800 }}>{selectedApprovalApp.admitCardRollNo || selectedApprovalApp.admit_card_roll_no || '2083-ROLL-352'}</span></div>
                         <div><strong>राजस्व स्थिति:</strong> <span style={{ color: '#059669', fontWeight: 800 }}>भुक्तानी सम्पन्न (PAID)</span></div>
-                        <div><strong>परीक्षा केन्द्र:</strong> {selectedApprovalApp.examCenter || selectedApprovalApp.exam_center || 'पाँचपोखरी थाङपाल मा.वि., वडा नं ६, सिन्धुपाल्चोक'}</div>
-                        <div><strong>परीक्षा मिति (BS):</strong> {selectedApprovalApp.examDateTime || selectedApprovalApp.exam_date_time || '२०८३-०९-१५ बिहान ११:०० बजे'}</div>
+                        <div><strong>परीक्षा केन्द्र:</strong> {selectedApprovalApp.examCenter || selectedApprovalApp.exam_center || 'पाँचपोखरी थाङपाल गाउँपालिकाको कार्यालय'}</div>
+                        <div>
+                          <strong>परीक्षा मिति (BS):</strong>{' '}
+                          {selectedApprovalApp.examDateTime?.trim() || selectedApprovalApp.exam_date_time?.trim() ? (
+                            <span style={{ fontWeight: 800 }}>
+                              {selectedApprovalApp.examDateTime || selectedApprovalApp.exam_date_time}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#b45309', fontWeight: 800, background: '#fef3c7', padding: '0.12rem 0.5rem', borderRadius: '4px', border: '1px solid #fde68a' }}>
+                              परिक्षाको मिति पछि तय गरिने छ
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -6162,8 +6193,8 @@ return (
                   phone={dynamicPhone}
                   logoUrl={dynamicPalikaLogo}
                   emblemUrl={dynamicEmblemUrl}
-                  dateBs="२०८३/०८/०५"
-                  dateAd="2026-11-20"
+                  dateBs={getDynamicDocDates().dateBs}
+                  dateAd={getDynamicDocDates().dateAd}
                   showWatermark={true}
                   showFooter={true}
                 >
@@ -6244,8 +6275,8 @@ return (
                   phone={dynamicPhone}
                   logoUrl={dynamicPalikaLogo}
                   emblemUrl={dynamicEmblemUrl}
-                  dateBs="२०८३/०८/०५"
-                  dateAd="2026-11-20"
+                  dateBs={getDynamicDocDates().dateBs}
+                  dateAd={getDynamicDocDates().dateAd}
                   showWatermark={true}
                   showFooter={true}
                 >
@@ -6269,7 +6300,7 @@ return (
                         <div><strong>पद / तह:</strong> {selectedAppointmentApp.postTitle || selectedAppointmentApp.post_title}</div>
                         <div><strong>कर्मचारी संकेत नं:</strong> {selectedAppointmentApp.onboardedEmployeeId || selectedAppointmentApp.onboarded_employee_id}</div>
                         <div><strong>पदस्थापन शाखा:</strong> प्रशासन तथा सामान्य प्रशासन शाखा</div>
-                        <div><strong>नियुक्ति मिति:</strong> २०८३/०८/०५ (2026-11-20)</div>
+                        <div><strong>नियुक्ति मिति:</strong> {getDynamicDocDates(selectedAppointmentApp.created_at).dateBs} ({getDynamicDocDates(selectedAppointmentApp.created_at).dateAd})</div>
                       </div>
                     </div>
 
@@ -6327,8 +6358,8 @@ return (
                     phone={dynamicPhone}
                     logoUrl={dynamicPalikaLogo}
                     emblemUrl={dynamicEmblemUrl}
-                    dateBs="२०८३/०८/०५"
-                    dateAd="2026-11-20"
+                    dateBs={getDynamicDocDates().dateBs}
+                    dateAd={getDynamicDocDates().dateAd}
                     showWatermark={true}
                     showFooter={true}
                   >

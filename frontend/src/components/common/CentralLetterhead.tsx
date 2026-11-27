@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useTenant } from '../../context/TenantContext';
 import { Printer, X, ZoomIn, ZoomOut, RotateCcw, Download, CheckCircle2 } from 'lucide-react';
-import { toNepaliDigits, toEnglishDigits, bsToAd } from '../../utils/nepaliCalendar';
+import { toNepaliDigits, toEnglishDigits, bsToAd, adToBs } from '../../utils/nepaliCalendar';
 import QRCode from 'qrcode';
 import './CentralLetterhead.css';
 
@@ -180,8 +180,16 @@ export const useLetterheadConfig = (overrides?: Partial<LetterheadConfigProps>) 
       fontFamily: overrides?.fontFamily || s.letterhead_font_family || 'Mukta',
       showNepalSambat: overrides?.showNepalSambat !== undefined ? overrides.showNepalSambat : (s.letterhead_show_nepal_sambat !== 'false'),
       showFooterQr: overrides?.showFooterQr !== undefined ? overrides.showFooterQr : (s.letterhead_show_qr !== 'false'),
-      dateBs: overrides?.dateBs || '२०८३/०८/०५',
-      dateAd: overrides?.dateAd || '2026-11-20',
+      dateBs: overrides?.dateBs || (() => {
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const bs = adToBs(today);
+          return bs ? toNepaliDigits(bs.replace(/-/g, '/')) : '२०८३/०८/११';
+        } catch {
+          return '२०८३/०८/११';
+        }
+      })(),
+      dateAd: overrides?.dateAd || new Date().toISOString().split('T')[0],
       branchTitle: overrides?.branchTitle || '',
       branchPlacement: overrides?.branchPlacement || 'left',
       documentTitle: overrides?.documentTitle || '',
