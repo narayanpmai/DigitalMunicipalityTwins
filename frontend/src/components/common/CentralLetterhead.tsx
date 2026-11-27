@@ -154,27 +154,41 @@ export const printElement = (elementId: string, pageSize: 'A4' | 'A5' = 'A4') =>
 
 // ─── HOOK: EXTRACT CENTRALIZED LETTERHEAD CONFIG ───
 export const useLetterheadConfig = (overrides?: Partial<LetterheadConfigProps>) => {
-  const { settings } = useTenant();
+  const { settings, tenantId } = useTenant();
 
   return useMemo(() => {
     const s = settings || {};
+    const isPanchpokhari = !tenantId || tenantId === 'panchpokhari';
+
+    // Dynamic province & country
+    const rawProvince = s.province || s.province_country || (isPanchpokhari ? 'बागमती प्रदेश' : '');
+    const provinceCountry = overrides?.provinceCountry || s.province_country || (
+      rawProvince ? (rawProvince.includes('नेपाल') ? rawProvince : `${rawProvince}, नेपाल`) : 'नेपाल'
+    );
+
+    // Dynamic office title based on localGovType
+    const localGovType = overrides?.localGovType || s.local_gov_type || 'स्थानीय सरकार';
+    const defaultOfficeTitle = s.office_title || (
+      localGovType.includes('नगरपालिका') ? 'नगर कार्यपालिकाको कार्यालय' : 'गाउँ कार्यपालिकाको कार्यालय'
+    );
+
     return {
-      palikaName: overrides?.palikaName || s.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका',
-      palikaNameEn: overrides?.palikaNameEn || s.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY',
-      localGovType: overrides?.localGovType || s.local_gov_type || 'स्थानीय सरकार',
-      officeTitle: overrides?.officeTitle || s.office_title || 'गाउँकार्यपालिकाको कार्यालय',
-      location: overrides?.location || s.location || s.headquarters || 'थाङ्पालधाप, सिन्धुपाल्चोक',
-      address: overrides?.address || s.address || 'गाउँ कार्यपालिकाको कार्यालय, थाङ्पालधाप, सिन्धुपाल्चोक',
-      provinceCountry: overrides?.provinceCountry || s.province_country || 'वाग्मती प्रदेश, नेपाल',
-      establishedYear: overrides?.establishedYear || s.established_year || '२०७३',
+      palikaName: overrides?.palikaName || s.palika_name || (isPanchpokhari ? 'पाँचपोखरी थाङपाल गाउँपालिका' : `${tenantId} पालिका`),
+      palikaNameEn: overrides?.palikaNameEn || s.palika_name_en || (isPanchpokhari ? 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY' : `${(tenantId || '').toUpperCase()} MUNICIPALITY`),
+      localGovType,
+      officeTitle: overrides?.officeTitle || defaultOfficeTitle,
+      location: overrides?.location || s.location || s.headquarters || s.address || (isPanchpokhari ? 'थाङ्पालधाप, सिन्धुपाल्चोक' : ''),
+      address: overrides?.address || s.address || s.location || (isPanchpokhari ? 'गाउँ कार्यपालिकाको कार्यालय, थाङ्पालधाप, सिन्धुपाल्चोक' : ''),
+      provinceCountry,
+      establishedYear: overrides?.establishedYear || s.established_year || (isPanchpokhari ? '२०७३' : ''),
       activeFiscalYear: overrides?.activeFiscalYear || s.active_fiscal_year || '२०८३/०८४',
       patraSankhya: overrides?.patraSankhya || s.active_fiscal_year || '२०८३/०८४',
       chalaniNo: overrides?.chalaniNo !== undefined ? overrides.chalaniNo : (s.chalani_no || ''),
-      slogan: overrides?.slogan || s.slogan || '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”',
-      website: overrides?.website || s.website || 'http://panchpokharithangpalmun.gov.np/',
-      email: overrides?.email || s.email || 'ito.panchpokharithangpalmun@gmail.com',
-      phone: overrides?.phone || s.phone || '+9779851109808',
-      logoUrl: overrides?.logoUrl || s.logo_url || '/panchpokhari-logo.png',
+      slogan: overrides?.slogan || s.slogan || (isPanchpokhari ? '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”' : ''),
+      website: overrides?.website || s.website || (isPanchpokhari ? 'http://panchpokharithangpalmun.gov.np/' : ''),
+      email: overrides?.email || s.email || (isPanchpokhari ? 'ito.panchpokharithangpalmun@gmail.com' : ''),
+      phone: overrides?.phone || s.phone || (isPanchpokhari ? '+9779851109808' : ''),
+      logoUrl: overrides?.logoUrl || s.logo_url || (isPanchpokhari ? '/panchpokhari-logo.png' : '/emblem-of-nepal.png'),
       emblemUrl: overrides?.emblemUrl || s.emblem_url || '/emblem-of-nepal.png',
       primaryColor: overrides?.primaryColor || s.letterhead_primary_color || '#dc2626',
       alignment: overrides?.alignment || (s.letterhead_alignment as any) || 'center',
@@ -197,7 +211,7 @@ export const useLetterheadConfig = (overrides?: Partial<LetterheadConfigProps>) 
       documentTitle: overrides?.documentTitle || '',
       lang: overrides?.lang || 'np',
     };
-  }, [settings, overrides]);
+  }, [settings, tenantId, overrides]);
 };
 
 // ─── COMPONENT 1: CENTRAL LETTERHEAD HEADER ───
@@ -248,7 +262,7 @@ export const CentralLetterheadHeader: React.FC<LetterheadConfigProps> = (props) 
             alt="गाउँपालिकाको लोगो"
             className="central-lh-logo-img"
             onError={(e: any) => {
-              e.currentTarget.src = '/panchpokhari-logo.png';
+              e.currentTarget.src = config.emblemUrl || '/emblem-of-nepal.png';
             }}
           />
         </div>
@@ -416,7 +430,7 @@ export const CentralDocumentSheet: React.FC<CentralDocumentSheetProps> = ({
             src={config.logoUrl}
             alt="Watermark"
             onError={(e: any) => {
-              e.currentTarget.src = '/panchpokhari-logo.png';
+              e.currentTarget.src = config.emblemUrl || '/emblem-of-nepal.png';
             }}
           />
         </div>

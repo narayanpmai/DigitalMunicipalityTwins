@@ -1396,12 +1396,7 @@ export const JudicialCommitteePage: React.FC = () => {
       >
         <CentralDocumentSheet
           id="printable-judicial-cause-list"
-          palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-          palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
-          localGovType="स्थानीय सरकार"
           officeTitle="न्यायिक समितिको कार्यालय"
-          location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
-          provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
           activeFiscalYear="२०८३/०८४"
           patraSankhya="२०८३/०८४"
           chalaniNo="इजलास-पेशी-०१"
@@ -1410,12 +1405,6 @@ export const JudicialCommitteePage: React.FC = () => {
           documentTitle="दैनिक इजलास पेशी सूची (DAILY BENCH CAUSE LIST)"
           dateLabel="इजलास मिति"
           dateBs="२०८३/०८/१२"
-          slogan={tenantSettings?.slogan || 'सुलभ, निष्पक्ष र छिटो छरितो न्याय सम्पादन'}
-          website={tenantSettings?.website || 'panchpokharimun.gov.np'}
-          email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
-          phone={tenantSettings?.phone || '०११-६९०२०२'}
-          logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-          emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
           showWatermark={true}
           showFooter={true}
           showNepalSambat={true}

@@ -454,12 +454,6 @@ export const OfficialLettersGeneratorModal: React.FC<OfficialLettersGeneratorMod
         <div className="flex-1 overflow-y-auto p-8 bg-slate-50 flex justify-center">
           <CentralDocumentSheet
             id="printable-project-official-letter"
-            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
-            localGovType="स्थानीय सरकार"
-            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
-            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
-            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
             activeFiscalYear={toNepaliNum(project.fiscalYear || '२०८१/०८२')}
             patraSankhya={toNepaliNum(patraSankhya)}
             chalaniNo={chalaniNo ? toNepaliNum(chalaniNo) : 'दर्ता बाँकी'}
@@ -468,12 +462,6 @@ export const OfficialLettersGeneratorModal: React.FC<OfficialLettersGeneratorMod
             documentTitle={LETTER_SUBJECTS[selectedLetter]}
             dateLabel="चलानी मिति"
             dateBs={toNepaliNum(issueDateBs)}
-            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
-            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
-            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
-            phone={tenantSettings?.phone || '०११-६९०२०२'}
-            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
             showWatermark={true}
             showFooter={true}
             showNepalSambat={true}

@@ -274,39 +274,41 @@ export const RecruitmentPage: React.FC = () => {
     }
   }, [activeTenantId, palikaSync]);
 
+  const isPanchpokhari = !activeTenantId || activeTenantId === 'panchpokhari';
+
   const dynamicPalikaName =
     localOverride.palika_name?.trim() ||
     tenantSettings?.palika_name?.trim() ||
-    'पाँचपोखरी थाङपाल गाउँपालिका';
+    (isPanchpokhari ? 'पाँचपोखरी थाङपाल गाउँपालिका' : `${activeTenantId} पालिका`);
 
   const dynamicPalikaNameEn =
     localOverride.palika_name_en?.trim() ||
     tenantSettings?.palika_name_en?.trim() ||
-    'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY';
+    (isPanchpokhari ? 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY' : `${(activeTenantId || '').toUpperCase()} MUNICIPALITY`);
 
   const dynamicOfficeTitle =
     localOverride.chief_officer_title?.trim() ||
     tenantSettings?.office_title?.trim() ||
-    'गाउँ कार्यपालिकाको कार्यालय';
+    (tenantSettings?.local_gov_type?.includes('नगरपालिका') ? 'नगर कार्यपालिकाको कार्यालय' : 'गाउँ कार्यपालिकाको कार्यालय');
 
   const dynamicAddress =
     localOverride.headquarters?.trim() ||
     localOverride.address?.trim() ||
     tenantSettings?.headquarters?.trim() ||
     tenantSettings?.address?.trim() ||
-    'थाङपालधाप, सिन्धुपाल्चोक';
+    (isPanchpokhari ? 'थाङपालधाप, सिन्धुपाल्चोक' : '');
 
   const dynamicProvince =
     localOverride.province?.trim() ||
     tenantSettings?.province?.trim() ||
-    'बागमती प्रदेश';
+    (isPanchpokhari ? 'बागमती प्रदेश' : '');
 
-  const dynamicProvinceCountry = dynamicProvince.includes('नेपाल') ? dynamicProvince : `${dynamicProvince}, नेपाल`;
+  const dynamicProvinceCountry = dynamicProvince ? (dynamicProvince.includes('नेपाल') ? dynamicProvince : `${dynamicProvince}, नेपाल`) : 'नेपाल';
 
   const dynamicPalikaLogo =
     localOverride.logo_url?.trim() ||
     tenantSettings?.logo_url?.trim() ||
-    '/panchpokhari-logo.png';
+    (isPanchpokhari ? '/panchpokhari-logo.png' : '/emblem-of-nepal.png');
 
   const dynamicEmblemUrl =
     localOverride.emblem_url?.trim() ||
@@ -316,22 +318,22 @@ export const RecruitmentPage: React.FC = () => {
   const dynamicSlogan =
     localOverride.slogan?.trim() ||
     tenantSettings?.slogan?.trim() ||
-    '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”';
+    (isPanchpokhari ? '“शिक्षा, स्वास्थ्य, कृषि र पर्यटन: समृद्ध पाँचपोखरीको मूलधन”' : '');
 
   const dynamicWebsite =
     localOverride.website?.trim() ||
     tenantSettings?.website?.trim() ||
-    'http://panchpokharithangpalmun.gov.np/';
+    (isPanchpokhari ? 'http://panchpokharithangpalmun.gov.np/' : '');
 
   const dynamicEmail =
     localOverride.email?.trim() ||
     tenantSettings?.email?.trim() ||
-    'ito.panchpokharithangpalmun@gmail.com';
+    (isPanchpokhari ? 'ito.panchpokharithangpalmun@gmail.com' : '');
 
   const dynamicPhone =
     localOverride.phone?.trim() ||
     tenantSettings?.phone?.trim() ||
-    '+9779851109808';
+    (isPanchpokhari ? '+9779851109808' : '');
 
   // Detect whether page is public or admin
   const isPublicView = location.pathname === '/recruitment';

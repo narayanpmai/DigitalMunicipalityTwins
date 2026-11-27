@@ -1016,12 +1016,6 @@ export const BusinessRegistrationPage: React.FC<BusinessRegistrationPageProps> =
         {certModalData && (
           <CentralDocumentSheet
             id="printable-business-certificate"
-            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
-            localGovType="स्थानीय सरकार"
-            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
-            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
-            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
             activeFiscalYear="२०८३/०८४"
             patraSankhya="२०८३/०८४"
             chalaniNo={toNepaliDigits(certModalData.registrationNo) || '-'}
@@ -1030,12 +1024,6 @@ export const BusinessRegistrationPage: React.FC<BusinessRegistrationPageProps> =
             documentTitle="ई-व्यापार दर्ता प्रमाणपत्र (DIGITAL BUSINESS REGISTRATION CERTIFICATE)"
             dateLabel="दर्ता मिति"
             dateBs={toNepaliDigits(certModalData.registrationDateBs) || ''}
-            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
-            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
-            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
-            phone={tenantSettings?.phone || '०११-६९०२०२'}
-            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
             showWatermark={true}
             showFooter={true}
             showNepalSambat={true}

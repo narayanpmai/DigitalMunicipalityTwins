@@ -1859,12 +1859,6 @@ export const DartaChalaniPage: React.FC = () => {
         {letterRecord && (
           <CentralDocumentSheet
             id="printable-darta-chalani-letter"
-            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
-            localGovType="स्थानीय सरकार"
-            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
-            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
-            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
             activeFiscalYear={toNepaliDigits(letterRecord.fiscalYear || '२०८३/०८४')}
             patraSankhya={toNepaliDigits(letterRecord.fiscalYear || '२०८३/०८४')}
             chalaniNo={toNepaliDigits(letterRecord.dispatchNo) || '-'}
@@ -1873,12 +1867,6 @@ export const DartaChalaniPage: React.FC = () => {
             dateLabel="चलानी मिति"
             dateBs={toNepaliDigits(letterRecord.dispatchDate) || ''}
             dateAd={letterRecord.dispatchDateAd || ''}
-            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
-            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
-            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
-            phone={tenantSettings?.phone || '०११-६९०२०२'}
-            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
             showWatermark={true}
             showFooter={true}
             showNepalSambat={true}
@@ -1938,12 +1926,6 @@ export const DartaChalaniPage: React.FC = () => {
           <CentralDocumentSheet
             id="printable-darta-slip-sheet"
             paperSize="A5"
-            palikaName={tenantSettings?.palika_name || 'पाँचपोखरी थाङपाल गाउँपालिका'}
-            palikaNameEn={tenantSettings?.palika_name_en || 'PANCHPOKHARI THANGPAL RURAL MUNICIPALITY'}
-            localGovType="स्थानीय सरकार"
-            officeTitle={tenantSettings?.office_title || 'गाउँ कार्यपालिकाको कार्यालय'}
-            location={tenantSettings?.headquarters || tenantSettings?.address || 'थाङपालधाप, सिन्धुपाल्चोक'}
-            provinceCountry={`${tenantSettings?.province || 'बागमती प्रदेश'}, नेपाल`}
             activeFiscalYear={toNepaliDigits(slipRecord.fiscalYear || '२०८३/०८४')}
             patraSankhya={toNepaliDigits(slipRecord.fiscalYear || '२०८३/०८४')}
             chalaniNo={toNepaliDigits(slipRecord.registrationNo) || '-'}
@@ -1951,12 +1933,6 @@ export const DartaChalaniPage: React.FC = () => {
             documentTitle="नागरिक दर्ता पावती / भरपाई (REGISTRATION RECEIPT SLIP)"
             dateLabel="दर्ता मिति"
             dateBs={toNepaliDigits(slipRecord.registeredDate) || ''}
-            slogan={tenantSettings?.slogan || 'सुशासन, समृद्धि र पारदर्शी सेवा प्रवाह'}
-            website={tenantSettings?.website || 'panchpokharimun.gov.np'}
-            email={tenantSettings?.email || 'info@panchpokharimun.gov.np'}
-            phone={tenantSettings?.phone || '०११-६९०२०२'}
-            logoUrl={tenantSettings?.logo_url || '/panchpokhari-logo.png'}
-            emblemUrl={tenantSettings?.emblem_url || '/emblem-of-nepal.png'}
             showWatermark={true}
             showFooter={true}
             showNepalSambat={false}

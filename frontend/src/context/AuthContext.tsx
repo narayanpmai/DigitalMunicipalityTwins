@@ -47,6 +47,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('p5_role', userData.role || 'admin');
     localStorage.setItem('p5_email', userData.email || '');
     localStorage.setItem('p5_name', userData.fullName || '');
+
+    // Synchronize tenant context immediately upon login for any municipality
+    const userTenant = (userData as any).tenantSubdomain || (userData as any).tenant_subdomain || userData.tenantId || (userData as any).tenant_id;
+    if (userTenant && userTenant !== 'all') {
+      localStorage.setItem('tenant_id', userTenant.toLowerCase());
+      window.dispatchEvent(new CustomEvent('tenantChanged', { detail: { tenantId: userTenant.toLowerCase() } }));
+    }
+
     setUser(userData);
   }, []);
 
