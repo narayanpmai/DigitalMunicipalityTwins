@@ -987,21 +987,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isPublic = false }) => {
       >
         <div
           style={{
-            width: '36px',
-            height: '36px',
+            width: '38px',
+            height: '38px',
             borderRadius: '10px',
-            background: 'linear-gradient(135deg, #1565C0, #0284c7)',
+            overflow: 'hidden',
+            flexShrink: 0,
+            boxShadow: '0 2px 10px rgba(2,132,199,0.4)',
+            background: '#09152e',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '0.9rem',
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(2,132,199,0.4)',
           }}
         >
-          {tenantBadge}
+          <img
+            src="/municipal-digital-twins-logo.png"
+            alt="Municipal Digital Twins"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = 'none';
+              if (target.parentElement) {
+                target.parentElement.style.background = 'linear-gradient(135deg, #1565C0, #0284c7)';
+                target.parentElement.innerHTML = `<span style="color:#fff;font-weight:800;font-size:0.9rem">${tenantBadge}</span>`;
+              }
+            }}
+          />
         </div>
         <div>
           <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3 }}>
